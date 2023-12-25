@@ -1,0 +1,52 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id                  String                @id @unique() @default(uuid())
+    email               String                @unique()
+    firstName           String
+    lastName            String
+    createdAt           DateTime              @default(now())
+    updatedAt           DateTime              @updatedAt
+    isVerified          Boolean
+    isGoogleUser        Boolean
+    password            String
+    merchantID          String
+    profile             Profile?              @relation(fields: [profileId], references: [id])
+    profileId           String?               @unique
+    MailVerificationOTp MailVerificationOTp[]
+}
+
+model MailVerificationOTp {
+    id          String   @id @unique() @default(uuid())
+    user        User     @relation(fields: [userId], references: [id])
+    userId      String
+    createdAt   DateTime @default(now())
+    expiredTime DateTime
+    otpCode     String
+}
+
+model Profile {
+    id            String   @id @unique() @default(uuid())
+    user          User?
+    userId        String   @unique
+    middleName    String
+    avatar        String?
+    dateOfBirth   DateTime
+    BvnNumber     String?
+    isBvnVerified Boolean  @default(false)
+    isKycverified Boolean  @default(false)
+    payStackCode  String
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+    gender        String
+    phoneNumber   String
+    country       String
+    countryCode   String
+}
