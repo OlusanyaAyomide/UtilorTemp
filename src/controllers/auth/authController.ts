@@ -10,7 +10,6 @@ import { setAuthCredentials } from "../../utils/credentials-setup";
 import { generateDeviceId } from "../../utils/clientDevice";
 
 
-
 export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
     const {email}:{email:string} = req.body
     //check if email aleready exists

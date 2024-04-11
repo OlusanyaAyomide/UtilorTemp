@@ -1,7 +1,8 @@
 import express from "express"
 import { basicSetUpValidation, credentialSignInValidation, forgotPasswordValidation, googleSignUpValidation, newDeviceValidation, otpvalidation, resendTokenValidation, resetPasswordValidation, signUpValidation } from "../validations/authValidation"
 import { completeBasicDetail, createNewUser, forgotPassword, googleSignIn, googleSignUp, mailVerification,resetPassword, reverifyToken, userLogIn, verifyAndAddNewDevice } from "../controllers/auth/authController"
-import { credentialSignIn } from "../controllers/auth/authSetUpController"
+import { createPin, credentialSignIn } from "../controllers/auth/authSetUpController"
+import { verifyUsers } from "../middlewares/verifyUser"
 
 
 const authRoutes = express.Router()
@@ -16,5 +17,6 @@ authRoutes.route("/resend-token").post(resendTokenValidation,reverifyToken)
 authRoutes.route("/verify-device").post(newDeviceValidation,verifyAndAddNewDevice,credentialSignIn)
 authRoutes.route("/forgot-password").post(forgotPasswordValidation,forgotPassword)
 authRoutes.route("/reset-password").post(resetPasswordValidation,resetPassword)
+authRoutes.route("/testtoken").post(verifyUsers,createPin)
 
 export default authRoutes

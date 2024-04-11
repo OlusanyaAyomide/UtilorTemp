@@ -75,15 +75,15 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
 
     
     const acessToken = jwt.sign(
-        { id:user?.userId,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified},
+        { userId:user?.userId,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified},
         process.env.JWT_SECRET as string,
-        { expiresIn:"2m" }
+        { expiresIn:"4m" }
     );
 
     const refreshToken = jwt.sign(
-        {id:user?.userId},
+        {userId:user?.userId},
         process.env.JWT_SECRET as string,
-        {expiresIn:"1h"}
+        {expiresIn:"62m"}
     )
 
     //check is session with devideID and token already exists
@@ -118,7 +118,7 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
     }
 
     res.cookie("acessToken",acessToken,{
-        maxAge:2*60*1000,
+        maxAge:3*60*1000,
         secure:true,
         httpOnly:true,
         // signed:true,
@@ -143,4 +143,8 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
         }
     }})
 
+})
+
+export const createPin = catchDefaultAsync(async (req,res,next)=>{
+    return ResponseHandler.sendSuccessResponse({res,data:req.user})
 })
