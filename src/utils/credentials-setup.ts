@@ -38,11 +38,12 @@ export  async function setAuthCredentials ({req,res,id,email}:IsetAuthCookie){
     if(!isDeviceActive){
         //if not recognized send user a device verification Token
         const otpCode = generateOTP()
-        const newDeviceOtp = await prismaClient.newDeviceOTP.create({
+        const newDeviceOtp = await prismaClient.verificationOTp.create({
             data:{
                 otpCode,
                 expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE)),
-                userId:id
+                userId:id,
+                type:"DEVICEVERIFCATION"
             }
         })
 

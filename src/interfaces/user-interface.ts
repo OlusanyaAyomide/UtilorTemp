@@ -1,10 +1,15 @@
-import { Request } from "express"
+import { Request } from "express";
 
-export interface IExpressRequest{
-    id:string,
-    email:string
-    firstName:string
-    lastName:string
-    isVerified:boolean
-    merchantID:string
+export interface IExpressRequest extends Request {
+    user?:{
+        userId: string;
+        email: string;
+        isCredentialsSet: boolean;
+        isGoogleUser: boolean;
+        firstName:string
+        lastName:string
+        isMailVerified:boolean
+    }
+
 }
+

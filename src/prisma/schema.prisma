@@ -7,57 +7,55 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
+
 model User {
     id                  String                @id @unique() @default(uuid())
     email               String                @unique()
-    firstName           String
-    lastName            String
-    createdAt           DateTime              @default(now())
-    updatedAt           DateTime              @updatedAt
-    isVerified          Boolean
+    firstName           String?
+    lastName            String?
+    middleName          String?
+    isMailVerified      Boolean                @default(false)
+    BvnNumber           String?   
+    isCredentialsSet    Boolean               @default(false)
     isGoogleUser        Boolean
-    password            String
+    pin                 String?
+    password            String?
+    phoneNumber         String?
+    country   String?
+    countryCode String?
+    dateOfBirth String?
+    avatar String?
+    gender String?
     merchantID          String
-    profile             Profile?              @relation(fields: [profileId], references: [id])
     profileId           String?               @unique
-    MailVerificationOTp MailVerificationOTp[]
-    newDeviceOTP        NewDeviceOTP[]
+    MailVerificationOTp VerificationOTp[]
     session             Session[]             
     sessionId           String?                @unique
     devices  UserDevices[]
-    resetPasswordOTP ResetpasswordOTP[]
+    createdAt           DateTime              @default(now())
+    updatedAt           DateTime              @updatedAt
+
 }
 
-model MailVerificationOTp {
+enum VerificationTYPE{
+    MAILVERIFICATION
+    DEVICEVERIFCATION
+    RESETPASSWORD
+    
+}
+
+model VerificationOTp {
     id          String   @id @unique() @default(uuid())
     user        User     @relation(fields: [userId], references: [id])
     userId      String
     createdAt   DateTime @default(now())
     expiredTime DateTime
     otpCode     String
+    type       VerificationTYPE
 }
 
 
-model Profile {
-    id            String   @id @unique() @default(uuid())
-    user          User?
-    userId        String   @unique
-    middleName    String
-    avatar        String?
-    dateOfBirth   DateTime
-    BvnNumber     String?
-    isBvnVerified Boolean  @default(false)
-    isKycverified Boolean  @default(false)
-    payStackCode  String
-    createdAt     DateTime @default(now())
-    updatedAt     DateTime @updatedAt
-    gender        String
-    phoneNumber   String
-    country       String
-    countryCode   String
-}
-
-//skeeps track of access token and expiry time
+//keeps track of access token and expiry time
 model Session{
     id String @id @unique() @default(uuid())
     user User @relation(fields: [userId], references: [id])
@@ -67,6 +65,7 @@ model Session{
     expiredAt DateTime
     deviceId String
 }
+
 //keeps tracks of devices useer have used to signIn
 model UserDevices{
         id String @id @unique() @default(uuid())
@@ -75,24 +74,6 @@ model UserDevices{
         userId String
 }
 
-model NewDeviceOTP{
-    id String @id @unique() @default(uuid())
-    user        User     @relation(fields: [userId], references: [id])
-    userId      String
-    createdAt   DateTime @default(now())
-    expiredTime DateTime
-    otpCode     String
-}
-
-
-model ResetpasswordOTP{
-    id String @id @unique() @default(uuid())
-    user        User     @relation(fields: [userId], references: [id])
-    userId      String
-    createdAt   DateTime @default(now())
-    expiredTime DateTime
-    otpCode     String
-}
 
 
 

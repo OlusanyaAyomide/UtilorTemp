@@ -6,9 +6,9 @@ export interface ILogInForm{
 export interface ISignUpForm extends ILogInForm{
     firstName:string
     lastName:string
-    confirmPassword:string
-    referralId?:string
+    password:string
     isAgreed:boolean
+    phoneNumber:string
 }
 
 
