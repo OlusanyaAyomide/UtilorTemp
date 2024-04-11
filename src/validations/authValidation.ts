@@ -43,7 +43,7 @@ export async function credentialSignInValidation (req:Request,
     if (validation.error) {
         const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
 
-        return ResponseHandler.sendErrorResponse({ res, code: 400, error });
+        return ResponseHandler.sendErrorResponse({ res, error });
     }
     return next()
 
@@ -56,17 +56,20 @@ export async function otpvalidation (req:Request,
     
     const otpSchema = Joi.object({
         otpCode:Joi.string().required().length(4),
-        verifyToken:Joi.string().optional()
-
     })
     const validation = otpSchema.validate(req.body);
     if (validation.error) {
         const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
 
-        return ResponseHandler.sendErrorResponse({ res, code: 400, error });
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+    console.log(req.cookies)
+    const verificationId = req.cookies["verifyToken"]
+    console.log(verificationId)
+    if(!verificationId){
+        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired"})
     }
     return next()
-    
 }
 
 
@@ -76,15 +79,21 @@ export async function tokenVerifyValidation(req:Request,
     
     const tokenVerifySchema = Joi.object({
         otpCode:Joi.string().required().length(4),
-        verifyToken:Joi.string().required()
     })
 
     const validation = tokenVerifySchema.validate(req.body);
     if (validation.error) {
         const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
 
-        return ResponseHandler.sendErrorResponse({ res, code: 401, error });
+        return ResponseHandler.sendErrorResponse({ res,error });
     }
+    //verity otp id is present in request cookie
+    console.log(req.cookies)
+    const verificationId = req.cookies["verifyToken"]
+    if(!verificationId){
+        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired"})
+    }
+    
     return next()
 }
 
@@ -107,7 +116,6 @@ export async function resendTokenValidation(req:Request,
     res:Response,
     next:NextFunction):Promise<Response | void>{
     const schema = Joi.object({
-        verifyToken:Joi.string().required()
     })
     const validation = schema.validate(req.body);
     if(validation.error){
@@ -115,5 +123,77 @@ export async function resendTokenValidation(req:Request,
 
         return ResponseHandler.sendErrorResponse({ res, code: 400, error });
     }
+
+    console.log(req.cookies)
+    const verificationId = req.cookies["verifyToken"]
+    if(!verificationId){
+        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired"})
+    }
+
     return next()
 }
+
+export async function newDeviceValidation(req:Request,
+    res:Response,
+    next:NextFunction):Promise<Response | void>{
+    const schema = Joi.object({
+        otpCode:Joi.string().required().length(4),
+    })
+    const validation = schema.validate(req.body);
+    if(validation.error){
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, code: 400, error });
+    }
+
+    const verificationId = req.cookies["identityToken"]
+    if(!verificationId){
+        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired"})
+    }
+
+    return next()
+}
+
+
+export async function forgotPasswordValidation(req:Request,
+    res:Response,
+    next:NextFunction):Promise<Response | void>{
+    const schema = Joi.object({
+        email:Joi.string().required(),
+    })
+    const validation = schema.validate(req.body);
+    if(validation.error){
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, code: 400, error });
+    }
+
+    return next()
+}
+
+
+export async function resetPasswordValidation(req:Request,
+    res:Response,
+    next:NextFunction):Promise<Response | void>{
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
+    const schema = Joi.object({
+        otpCode:Joi.string().required().length(4),
+        password: Joi.string().required().regex(passwordRegex).message('Password is not strong enough'),
+    })
+    const validation = schema.validate(req.body);
+    if(validation.error){
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, code: 400, error });
+    }
+
+    const verificationId = req.cookies["resetToken"]
+    if(!verificationId){
+        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired"})
+    }
+
+    return next()
+}
+
+
+

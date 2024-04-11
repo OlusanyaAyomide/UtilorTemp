@@ -21,6 +21,11 @@ model User {
     profile             Profile?              @relation(fields: [profileId], references: [id])
     profileId           String?               @unique
     MailVerificationOTp MailVerificationOTp[]
+    newDeviceOTP        NewDeviceOTP[]
+    session             Session[]             
+    sessionId           String?                @unique
+    devices  UserDevices[]
+    resetPasswordOTP ResetpasswordOTP[]
 }
 
 model MailVerificationOTp {
@@ -31,6 +36,7 @@ model MailVerificationOTp {
     expiredTime DateTime
     otpCode     String
 }
+
 
 model Profile {
     id            String   @id @unique() @default(uuid())
@@ -50,3 +56,43 @@ model Profile {
     country       String
     countryCode   String
 }
+
+//skeeps track of access token and expiry time
+model Session{
+    id String @id @unique() @default(uuid())
+    user User @relation(fields: [userId], references: [id])
+    userId String
+    token String
+    createdAt  DateTime @default(now())
+    expiredAt DateTime
+    deviceId String
+}
+//keeps tracks of devices useer have used to signIn
+model UserDevices{
+        id String @id @unique() @default(uuid())
+        device String
+        user User @relation(fields: [userId], references: [id])
+        userId String
+}
+
+model NewDeviceOTP{
+    id String @id @unique() @default(uuid())
+    user        User     @relation(fields: [userId], references: [id])
+    userId      String
+    createdAt   DateTime @default(now())
+    expiredTime DateTime
+    otpCode     String
+}
+
+
+model ResetpasswordOTP{
+    id String @id @unique() @default(uuid())
+    user        User     @relation(fields: [userId], references: [id])
+    userId      String
+    createdAt   DateTime @default(now())
+    expiredTime DateTime
+    otpCode     String
+}
+
+
+

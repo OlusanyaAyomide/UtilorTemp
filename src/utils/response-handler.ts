@@ -25,6 +25,16 @@ class ResponseHandler {
         const response = custom ? { code: code, message: error } : { success: false, code: code, message: error };
         return res.status(code).json(response);
     }
+
+    public static sendUnauthorizedResponse({
+        res,
+        code=401,
+        error = 'Unauthorized Response',
+        custom = false,
+    }: IResponseError): Response<any> {
+        const response = custom ? { code: code, message: error } : { success: false, code: code, message: error };
+        return res.status(code).json(response);
+    }
 }
 
 export default ResponseHandler;
