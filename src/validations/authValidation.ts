@@ -55,7 +55,7 @@ export async function basicSetUpValidation (req:Request,
         email: Joi.string().required().regex(emailRegex).message('Email is not valid'),
         lastName: Joi.string().required().allow(''),
         password: Joi.string().required().regex(passwordRegex).message('Password is not strong enough'),
-        referralId: Joi.string().optional(),
+        referralId: Joi.string().optional().allow(""),
         confirmPassword: Joi.string().required().valid(Joi.ref('password')).error(new Error('Password mismatch')),
         phoneNumber:Joi.string().max(11).required()
 
