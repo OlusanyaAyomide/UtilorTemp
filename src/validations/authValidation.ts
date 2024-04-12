@@ -197,4 +197,22 @@ export async function resetPasswordValidation(req:Request,
 }
 
 
+export async function createPinValidation(req:Request,
+    res:Response,
+    next:NextFunction):Promise<Response | void>{
+    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
+    const schema = Joi.object({
+        pin:Joi.string().required().length(4),
+    });
+
+    const validation = schema.validate(req.body);
+    if(validation.error){
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, code: 400, error });
+    }
+
+    return next()
+}
+
 

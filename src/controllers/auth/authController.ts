@@ -31,7 +31,7 @@ export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
         })
         newUserId = newUser.id
     }
-  
+
 
     const otpCode = generateOTP()
     await mailSender({to:email,subject:"Utilor Sign up code",body:otpCode,name:`Utilor Verifcation`})

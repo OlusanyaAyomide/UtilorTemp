@@ -8,12 +8,12 @@ import { IExpressRequest, IUserDetail } from '../interfaces/user-interface';
 
 export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFunction):Promise<Response | void>{
     const refreshToken = req.cookies['refreshToken']
-    const accesToken = req.cookies['acessToken']
+    const accessToken = req.cookies['acessToken']
 
 
-    if(accesToken){   
+    if(accessToken){   
         try{
-            const decoded = jwt.verify(accesToken,process.env.JWT_SECRET as string) as IUserDetail
+            const decoded = jwt.verify(accessToken,process.env.JWT_SECRET as string) as IUserDetail
             if(decoded.userId){
                 req.user = decoded
                 return next()
@@ -41,6 +41,7 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
             user:true
         }
     })
+    
     if(!isTokenValid){
         return ResponseHandler.sendErrorResponse({res,error:"Token Expired",code:401})
     }
