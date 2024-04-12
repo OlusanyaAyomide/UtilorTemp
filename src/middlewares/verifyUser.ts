@@ -10,12 +10,12 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     const refreshToken = req.cookies['refreshToken']
     const accessToken = req.cookies['acessToken']
 
-
     if(accessToken){   
         try{
             const decoded = jwt.verify(accessToken,process.env.JWT_SECRET as string) as IUserDetail
             if(decoded.userId){
                 req.user = decoded
+
                 return next()
             }else{
                 return ResponseHandler.sendErrorResponse({res,error:"Token malformed",code:401})

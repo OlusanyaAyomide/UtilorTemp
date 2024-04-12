@@ -3,6 +3,7 @@ import { basicSetUpValidation, createPinValidation, credentialSignInValidation, 
 import { completeBasicDetail, createNewUser, forgotPassword, googleSignIn, googleSignUp, mailVerification,resetPassword, reverifyToken, userLogIn, verifyAndAddNewDevice } from "../controllers/auth/authController"
 import { createPin, credentialSignIn } from "../controllers/auth/authSetUpController"
 import { verifyUsers } from "../middlewares/verifyUser"
+import { verifyUserStats } from "../middlewares/verifyUserStatus"
 
 
 const authRoutes = express.Router()
@@ -17,6 +18,6 @@ authRoutes.route("/resend-token").post(resendTokenValidation,reverifyToken)
 authRoutes.route("/verify-device").post(newDeviceValidation,verifyAndAddNewDevice,credentialSignIn)
 authRoutes.route("/forgot-password").post(forgotPasswordValidation,forgotPassword)
 authRoutes.route("/reset-password").post(resetPasswordValidation,resetPassword)
-authRoutes.route("/pin-setup").post(createPinValidation, verifyUsers,createPin)
+authRoutes.route("/pin-setup").post(createPinValidation, verifyUsers,verifyUserStats,createPin)
 
 export default authRoutes

@@ -151,97 +151,12 @@ export const createPin = catchDefaultAsync(async (req,res,next)=>{
     const user = req.user;
     
     if (!user) {
-        return ResponseHandler.sendErrorResponse({res, error: "Something went wrong. Please login once more", code: 403})
+        return ResponseHandler.sendErrorResponse({res, error: "Server Error", code: 500})
     }
     
     // Get user PIN
     const {pin}: {pin: string} = req.body;
 
-    // Get user Device ID
-    const deviceId = generateDeviceId(req)
-    
-    const isDeviceActive = await prismaClient.userDevices.findFirst({
-        where:{
-            device:deviceId,
-            userId:user?.userId
-        }
-    })
-    
-    //check if user device is recognised
-    console.log(isDeviceActive,"device active")
-
-    if(!isDeviceActive){
-        //if not recognized send user a device verification Token
-        const otpCode = generateOTP()
-        
-        const newDeviceOtp = await prismaClient.verificationOTp.create({
-            data:{
-                otpCode,
-                expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE)),
-                userId:user?.userId || "",
-                type:"DEVICEVERIFCATION"
-            }
-        })
-
-        await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
-
-        res.cookie("identityToken",newDeviceOtp.id,{
-            maxAge:30*60*1000,
-            secure:true,
-            httpOnly:true,
-            // signed:true,
-        })
-        return ResponseHandler.sendErrorResponse({res,error:"Verify device",code:403})
-    }
-
-    //Todo check if user device is mobile/tablet
-    // if (isDeviceActive.device) {
-
-    // }
-
-    
-    const acessToken = jwt.sign(
-        { userId:user?.userId,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified},
-        process.env.JWT_SECRET as string,
-        { expiresIn:"4m" }
-    );
-
-    const refreshToken = jwt.sign(
-        {userId:user?.userId},
-        process.env.JWT_SECRET as string,
-        {expiresIn:"62m"}
-    )
-
-    //check is session with deviceID and token already exists
-    const isSessionExisting = await prismaClient.session.findFirst({
-        where:{
-            deviceId,
-            userId:user?.userId,
-        }
-    }) 
-    
-
-
-    if(isSessionExisting){
-        await prismaClient.session.update({
-            where:{id:isSessionExisting.id},
-            data:{
-                token:refreshToken,
-                expiredAt:getTimeFromNow(60)
-            }
-        })
-    }
-    else{   
-        //create new session for user 
-        await prismaClient.session.create({
-            data:{
-                userId:user?.userId || "",
-                token:refreshToken,
-                deviceId,
-                expiredAt:getTimeFromNow(60)
-            }
-        })
-    }
 
     const hashedPin = await bcryptHash(pin);
 
@@ -252,11 +167,11 @@ export const createPin = catchDefaultAsync(async (req,res,next)=>{
         select: {pin: true}
     })
 
-    if (pinAlreadyExists) {
+    if (pinAlreadyExists?.pin) {
         return ResponseHandler.sendErrorResponse({res, error: "PIN already set up", code: 409})
     }
 
-    const savedUser = await prismaClient.user.update({
+    await prismaClient.user.update({
         where:{id: user.userId},
         data: {
             pin: hashedPin
