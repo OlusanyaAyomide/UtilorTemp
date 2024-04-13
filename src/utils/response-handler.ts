@@ -28,7 +28,7 @@ class ResponseHandler {
 
     public static sendUnauthorizedResponse({
         res,
-        code=401,
+        code=403,
         error = 'Unauthorized Response',
         custom = false,
     }: IResponseError): Response<any> {

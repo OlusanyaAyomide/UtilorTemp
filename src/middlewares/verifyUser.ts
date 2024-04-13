@@ -29,7 +29,7 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     }
     
     if(!refreshToken){
-        return ResponseHandler.sendErrorResponse({res,error:"Session Expired",code:401,})
+        return ResponseHandler.sendErrorResponse({res,error:"Session Expired",code:401})
     }
     const deviceId = generateDeviceId(req)
     const isTokenValid = await prismaClient.session.findFirst({
@@ -44,6 +44,16 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     
     if(!isTokenValid){
         return ResponseHandler.sendErrorResponse({res,error:"Token Expired",code:401})
+    }
+
+    const currentDate = new Date()
+    const isExpired = isTokenValid.expiredAt > currentDate
+    
+    if(isExpired){
+        await prismaClient.session.delete({
+            where:{id:isTokenValid.id}
+        })
+        return ResponseHandler.sendErrorResponse({res,error:"Session Expired",code:401})
     }
 
     const user =isTokenValid.user

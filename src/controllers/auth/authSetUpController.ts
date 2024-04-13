@@ -95,13 +95,15 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
     }) 
     
 
-
     if(isSessionExisting){
+        //update session to new token
+        const currentDate = new Date()
         await prismaClient.session.update({
             where:{id:isSessionExisting.id},
             data:{
                 token:refreshToken,
-                expiredAt:getTimeFromNow(60)
+                expiredAt:getTimeFromNow(60),
+                createdAt:currentDate
             }
         })
     }
@@ -112,7 +114,7 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
                 userId:user?.userId || "",
                 token:refreshToken,
                 deviceId,
-                expiredAt:getTimeFromNow(60)
+                expiredAt:getTimeFromNow(60),
             }
         })
     }
