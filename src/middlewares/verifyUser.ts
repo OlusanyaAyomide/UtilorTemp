@@ -29,7 +29,7 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     }
     
     if(!refreshToken){
-        return ResponseHandler.sendErrorResponse({res,error:"Session Expired",code:401})
+        return ResponseHandler.sendErrorResponse({res,error:"Session Expired 1",code:401})
     }
     const deviceId = generateDeviceId(req)
     const isTokenValid = await prismaClient.session.findFirst({
@@ -41,20 +41,25 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
             user:true
         }
     })
+    console.log(isTokenValid)
     
     if(!isTokenValid){
-        return ResponseHandler.sendErrorResponse({res,error:"Token Expired",code:401})
+        return ResponseHandler.sendErrorResponse({res,error:"Token Expired 2",code:401})
     }
 
-    const currentDate = new Date()
-    const isExpired = isTokenValid.expiredAt > currentDate
-    
-    if(isExpired){
-        await prismaClient.session.delete({
-            where:{id:isTokenValid.id}
-        })
-        return ResponseHandler.sendErrorResponse({res,error:"Session Expired",code:401})
-    }
+    // const currentDate = new Date()
+    // const expiredDate = new Date(isTokenValid.expiredAt)
+    // const isExpired = expiredDate > currentDate
+    // console.log(expiredDate.toLocaleDateString())
+    // console.log(currentDate.toLocaleDateString())
+    // console.log(isExpired)
+    // if(isExpired){
+    //     await prismaClient.session.delete({
+    //         where:{id:isTokenValid.id}
+    //     })
+    //     res.clearCookie("refreshToken")
+    //     return ResponseHandler.sendErrorResponse({res,error:"Session Expired exp",code:401})
+    // }
 
     const user =isTokenValid.user
 

@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer"
 import fs from "fs"
 import handlebars from "handlebars"
+import path from "path"
 
 // import axios from "axios";
 
@@ -55,6 +56,7 @@ export const mailSender = async ({to,body,subject,name}:{to:string,body:string,s
             pass:process.env.EMAIL_PASSWORD
         }
         })
+        const sourceFd = ""
         const source = fs.readFileSync("src/templates/index.html","utf-8").toString()
         const template = handlebars.compile(source)
         const replacement = {

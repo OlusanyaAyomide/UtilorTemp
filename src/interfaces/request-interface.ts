@@ -16,3 +16,4 @@ export interface IOtpVerication{
     otpCode:string
     verifyToken:string
 }
+

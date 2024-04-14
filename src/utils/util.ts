@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import base64 from "base-64"
 
 export function generateOTP(): string {
   const otpLength = 4;
@@ -9,11 +10,14 @@ export function generateOTP(): string {
   return otp;
 }
 
+
+
+
 export function generateMerchantID(): string {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let id = '';
 
-  while (id.length < 10) {
+  while (id.length < 11) {
     const randomIndex = Math.floor(Math.random() * characters.length);
     const char = characters.charAt(randomIndex);
 
@@ -43,4 +47,28 @@ export async function bcryptHash(password:string){
 export async function  bcryptCompare({password,hashedPassword}:{password:string,hashedPassword:string}){
     const isValid =  await bcrypt.compare(password,hashedPassword)
     return isValid
+}
+
+export  function convertToDate(dateString:string){
+    const date = new Date(dateString)
+    return date
+}
+//this would be prefixed to the transaction ref, it would be used later from the webhook for find the resulting type of model to query
+
+export function generateTransactionRef(){
+    let id = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijlmnopqrstuvwxyz';
+    while (id.length < 14) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      const char = characters.charAt(randomIndex);
+    
+      if (!id.includes(char)) {
+        id += char;
+      }
+    }
+    //encode the transactionRef so the prefix wont be visible to users
+
+  
+    return id
+
 }

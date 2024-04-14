@@ -34,15 +34,28 @@ model User {
     devices  UserDevices[]
     createdAt           DateTime              @default(now())
     updatedAt           DateTime              @updatedAt
+    usaveforu       USaveForU[]
+    refs TransactionRefs[]
 
+
+}
+
+enum InvestmentCurrency{
+    NGN
+    USD
 }
 
 enum VerificationTYPE{
     MAILVERIFICATION
     DEVICEVERIFCATION
     RESETPASSWORD
-    
 }
+
+enum TransactionType{
+    WITHDRAWAL
+    DEPOSIT
+}
+
 
 model VerificationOTp {
     id          String   @id @unique() @default(uuid())
@@ -75,5 +88,47 @@ model UserDevices{
 }
 
 
+
+model USaveForU{
+    id String @id @unique() @default(uuid())
+    user        User     @relation(fields: [userId], references: [id])
+    userId String
+    currency InvestmentCurrency
+    investmentCapital  Int
+    returnOfInvestment Int
+    totalInvestment   Int
+    isActivated Boolean                @default(false)
+    savingsName String
+    expectedDepositDay Int
+    expectedMonthlyAmount Int
+    endingDate DateTime
+    createdAt  DateTime @default(now())
+    history ForUHistory[]
+
+}
+
+model ForUHistory{
+    id String @id @unique() @default(uuid())
+    forUSaving USaveForU @relation(fields: [savingsid], references: [id])
+    savingsid String
+    type TransactionType
+    createdAt DateTime @default(now())
+
+}
+enum DESCRIPTIONTYPE {
+    FORU
+    EMERGENCY
+    UANDI 
+    CABAL
+}
+
+
+model TransactionRefs{
+    id String @id @unique() @default(uuid())
+    user        User     @relation(fields: [userId], references: [id])
+    refrence String
+    userId String
+    description DESCRIPTIONTYPE
+}
 
 
