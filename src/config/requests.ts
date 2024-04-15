@@ -1,3 +1,4 @@
+import {writeFile, writeFileSync} from 'node:fs';
 import { IGetRedirectLink } from "../interfaces/interface"
 import request from "./flutterwaveinterceptor"
 
@@ -26,6 +27,11 @@ export const generatePaymentLink = async (data:IGetRedirectLink)=>{
     try{
         const response = await request.post("/payments",body)
         if(response.data){
+            // writeFileSync('output.txt', JSON.stringify(response.data));
+
+            console.log("=======================================================");
+            console.log(response.data);
+            console.log("=======================================================");
             return response.data
         }else{return null}
     }

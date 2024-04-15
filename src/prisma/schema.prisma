@@ -36,10 +36,9 @@ model User {
     updatedAt           DateTime              @updatedAt
     usaveforu       USaveForU[]
     refs TransactionRefs[]
-
-
 }
 
+//Todo: All Enums should be written in capital snake_case
 enum InvestmentCurrency{
     NGN
     USD
@@ -104,6 +103,7 @@ model USaveForU{
     endingDate DateTime
     createdAt  DateTime @default(now())
     history ForUHistory[]
+    transactions UsaveForUTransaction[]
 
 }
 
@@ -113,8 +113,8 @@ model ForUHistory{
     savingsid String
     type TransactionType
     createdAt DateTime @default(now())
-
 }
+
 enum DESCRIPTIONTYPE {
     FORU
     EMERGENCY
@@ -126,9 +126,27 @@ enum DESCRIPTIONTYPE {
 model TransactionRefs{
     id String @id @unique() @default(uuid())
     user        User     @relation(fields: [userId], references: [id])
-    refrence String
+    reference String
     userId String
     description DESCRIPTIONTYPE
+}
+
+model UsaveForUTransaction {
+    id String @id @unique() @default(uuid())
+    usaveForUAccount        USaveForU     @relation(fields: [uSaveForUAccountId], references: [id])
+    uSaveForUAccountId String
+    transactionRef String
+    amount Int
+    transactionStatus TRANSACTIONSTATUS
+    transactionType TransactionType
+    transactionCurrency InvestmentCurrency
+    isInitialDeposit Boolean
+}
+
+enum TRANSACTIONSTATUS {
+    PENDING
+    SUCCESS
+    FAIL
 }
 
 
