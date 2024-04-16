@@ -49,10 +49,10 @@ export const channelWebHookData = async(req: Request, res: Response, next: NextF
 }
 
 export const depositIntoForUSaving = async(dataFromWebhook: WebhookData) => {
+    // Todo: Put all this logic into a try-catch block
     // Todo: Implement the best practices outlined by Flutterwave docs
     const {tx_ref, status} = dataFromWebhook.data;
 
-    
     const correspondingUSaveForUTransaction = await prismaClient.usaveForUTransaction.findFirst({
         where: {transactionRef: tx_ref}
     });
@@ -98,7 +98,7 @@ export const depositIntoForUSaving = async(dataFromWebhook: WebhookData) => {
         where: {id: correspondingUSaveForUTransaction.uSaveForUAccountId}
     });
 
-    if (uSaveForUAccount?.currency == "USD") {
+    if (uSaveForUAccount?.currency === "USD") {
         let dollarRate = getCurrentDollarRate();
         convertedAmount = correspondingUSaveForUTransaction.amount / dollarRate
     } else {
