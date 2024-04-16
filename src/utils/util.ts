@@ -72,3 +72,8 @@ export function generateTransactionRef(){
     return id
 
 }
+
+export function getCurrentDollarRate() {
+  // Todo: Implement receiving current rate from the db
+  return 1100.00;
+}

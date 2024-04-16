@@ -3,12 +3,20 @@ import { WebhookData } from "../../interfaces/webhook.interface";
 import prismaClient from "../../prisma/pris-client";
 import catchDefaultAsync from "../../utils/catch-async";
 import ResponseHandler from "../../utils/response-handler";
+import { getCurrentDollarRate } from "../../utils/util";
 
 export const channelWebHookData = async(req: Request, res: Response, next: NextFunction) => {
-    // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
-
+    
     // Send success message back to Flutterwave to prevent delay and resending of webhook notification;
     res.status(200).json({message: "Webhook notification received"});
+    
+    // // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
+    // Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings, if not return
+    console.log(req.headers);
+    if (req.headers['verif-hash'] !== process.env.FLW_HASH) {
+        console.log("Hash Didn't match")
+        return
+    }
 
     //* Begin request computations
     const eventType = req.body['event.type'] // 'event.type' is sent as a string in flutterWave's response
@@ -84,11 +92,24 @@ export const depositIntoForUSaving = async(dataFromWebhook: WebhookData) => {
     })
 
     // Modify the USaveForUAccount as needed
+    let convertedAmount = 0;
+
+    const uSaveForUAccount = await prismaClient.uSaveForU.findFirst({
+        where: {id: correspondingUSaveForUTransaction.uSaveForUAccountId}
+    });
+
+    if (uSaveForUAccount?.currency == "USD") {
+        let dollarRate = getCurrentDollarRate();
+        convertedAmount = correspondingUSaveForUTransaction.amount / dollarRate
+    } else {
+        convertedAmount = correspondingUSaveForUTransaction.amount
+    }
+
     await prismaClient.uSaveForU.update({
         where: {id: correspondingUSaveForUTransaction.uSaveForUAccountId},
         data: {
-            investmentCapital: {increment: correspondingUSaveForUTransaction.amount},
-            totalInvestment: {increment: correspondingUSaveForUTransaction.amount}
+            investmentCapital: {increment: convertedAmount},
+            totalInvestment: {increment: convertedAmount}
         }
     })
 

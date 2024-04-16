@@ -17,7 +17,8 @@ const ENV_KEYS = [
     "EMAIL_PASSWORD",
     "EMAIL_SERVICE",
     "OTP_EXPIRY_MINUTE",
-    "FLW_SECRET"
+    "FLW_SECRET",
+    "FLW_HASH"
 ]
 
 if (ENV_KEYS.some((k) => { return !process.env[k] })) {
