@@ -165,6 +165,10 @@ export const  userLogIn=catchDefaultAsync(async(req,res,next)=>{
         if(user.isGoogleUser){
             return ResponseHandler.sendErrorResponse({res,error:"Sign In with google account"})
         }
+
+        // if(!user.password){
+        //     return ResponseHandler.sendErrorResponse({res,error:"Please set up your account"})
+        // }
         
         const isPasswordValid = await bcryptCompare({hashedPassword:user.password || "",password})
         if(!isPasswordValid){

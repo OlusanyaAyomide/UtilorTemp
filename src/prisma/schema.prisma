@@ -87,32 +87,22 @@ model UserDevices{
 }
 
 
-
+// U-SAVE/FORU account model
 model USaveForU{
     id String @id @unique() @default(uuid())
     user        User     @relation(fields: [userId], references: [id])
     userId String
     currency InvestmentCurrency
-    investmentCapital  Int
-    returnOfInvestment Int
-    totalInvestment   Int
+    investmentCapital  Float
+    returnOfInvestment Float
+    totalInvestment   Float
     isActivated Boolean                @default(false)
     savingsName String
     expectedDepositDay Int
     expectedMonthlyAmount Int
     endingDate DateTime
     createdAt  DateTime @default(now())
-    history ForUHistory[]
     transactions UsaveForUTransaction[]
-
-}
-
-model ForUHistory{
-    id String @id @unique() @default(uuid())
-    forUSaving USaveForU @relation(fields: [savingsid], references: [id])
-    savingsid String
-    type TransactionType
-    createdAt DateTime @default(now())
 }
 
 enum DESCRIPTIONTYPE {
@@ -129,6 +119,13 @@ model TransactionRefs{
     reference String
     userId String
     description DESCRIPTIONTYPE
+    paymentMethod PAYMENT_METHOD
+}
+
+enum PAYMENT_METHOD {
+    USTASH
+    BANK
+    CARD
 }
 
 model UsaveForUTransaction {
@@ -140,7 +137,6 @@ model UsaveForUTransaction {
     transactionStatus TRANSACTIONSTATUS
     transactionType TransactionType
     transactionCurrency InvestmentCurrency
-    isInitialDeposit Boolean
 }
 
 enum TRANSACTIONSTATUS {

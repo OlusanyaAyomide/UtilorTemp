@@ -1,8 +1,8 @@
 import {writeFile, writeFileSync} from 'node:fs';
-import { IGetRedirectLink } from "../interfaces/interface"
+import { IPaymentInformation } from "../interfaces/interface"
 import request from "./flutterwaveinterceptor"
 
-export const generatePaymentLink = async (data:IGetRedirectLink)=>{
+export const generatePaymentLink = async (data:IPaymentInformation)=>{
     const body = {
         tx_ref: data.tx_ref,
         amount:`${data.amount}`,
@@ -36,6 +36,4 @@ export const generatePaymentLink = async (data:IGetRedirectLink)=>{
         }else{return null}
     }
     catch(err){return null}
-   
- 
 }
