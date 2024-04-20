@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import base64 from "base-64"
+import base64 from "base-64";
 
 export function generateOTP(): string {
   const otpLength = 4;
@@ -77,6 +77,7 @@ export function getCurrentDollarRate() {
   // Todo: Implement receiving current rate from the db
   return 1100.00;
 }
+
 
 // Todo: Implement an enumToRegex function to help with JOI Validation
 // export function enumToRegex(enum: Enum) {

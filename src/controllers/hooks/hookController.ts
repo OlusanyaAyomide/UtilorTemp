@@ -31,9 +31,9 @@ export const channelWebHookData = async(req: Request, res: Response, next: NextF
         return
     }
 
-    console.log("********************************");
-    console.log(transaction.description);
-    console.log("********************************");
+    // console.log("********************************");
+    // console.log(transaction.description);
+    // console.log("********************************");
 
     //? Now run different transactions depending on transaction type/description
     switch (transaction.description) {
@@ -52,7 +52,7 @@ export const depositIntoForUSaving = async(dataFromWebhook: WebhookData) => {
     const {tx_ref, status} = dataFromWebhook.data;
 
     const correspondingUSaveForUTransaction = await prismaClient.usaveForUTransaction.findFirst({
-        where: {transactionRef: tx_ref}
+        where: {transactionReference: tx_ref}
     });
 
     // If no corresponding u-save/forU transaction not found, return

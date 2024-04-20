@@ -5,6 +5,9 @@ import { ICreateForU, IDepositForU } from "../../interfaces/bodyInterface";
 import { generateTransactionRef } from "../../utils/util";
 import { generatePaymentLink } from "../../config/requests";
 import { IPaymentInformation } from "../../interfaces/interface";
+import { saveForUTransaction, saveTransaction, saveUwalletTransaction, updateForUTransactionStatus, updateGenericTransactionStatus, updateUWalletTransactionStats } from "../../utils/transactions.util";
+import { TransactionData, USaveForUTransactionData, UWalletTransactionData } from "../../interfaces/transactions.interface";
+import { UWalletTransaction } from "@prisma/client";
 
 
 
@@ -61,7 +64,7 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
     const {amount} = depositData;
 
     // Check if payment method is USTASH and compute as required
-    if (depositData.paymentMethod == "UWALLET") {
+    if (depositData.paymentMethod === "UWALLET") {
         // Check for Valid UWALLET
         const uWallet = await prismaClient.uWallet.findFirst({
             where: {
@@ -79,7 +82,51 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
             return ResponseHandler.sendErrorResponse({res, error: "Insufficient funds in U-Wallet", code: 400})
         }
 
-        // Remove from wallet if all else passes
+        // Proceed if all else passes
+
+        // initialize  For-U deposit transaction data
+        const forUDepositGenericTransactionData: TransactionData = {
+            userId: user.userId,
+            transactionReference: tx_ref,
+            amount: depositData.amount,
+            transactionCurrency: uWallet.currency,
+            description: "FORU",
+            paymentMethod: depositData.paymentMethod,
+            transactionType: "DEPOSIT"
+        }
+        
+        const uWalletWithdrawalGenericTransactionData: TransactionData = {
+            ...forUDepositGenericTransactionData,
+            description: "UWALLET",
+            transactionType: "WITHDRAWAL"
+        }
+        
+        // Save the generic transactions to the database, holding the type of transaction created
+        const newForUDepositGenericTransaction = await saveTransaction(forUDepositGenericTransactionData);
+        const newUWalletWithdrawalGenericTransaction = await saveTransaction(uWalletWithdrawalGenericTransactionData);
+
+        // Initialize U-save/For-U transaction data
+        const forUTransactionData: USaveForUTransactionData = {
+            ...forUDepositGenericTransactionData,
+            uSaveForUAccountId: forUAccount.id,
+        };
+
+        // Save the ForU transaction to the database
+        const newForUTransaction = await saveForUTransaction(forUTransactionData);
+
+        
+
+        // Initialize U-wallet transaction data
+        const uWalletTransactionData: UWalletTransactionData = {
+            ...uWalletWithdrawalGenericTransactionData,
+            uWalletAccountId: uWallet.id
+        };
+
+        // Save the U-Wallet transaction to the database
+        const newUWalletTransaction = await saveUwalletTransaction(uWalletTransactionData);
+
+
+        // Remove from wallet
         const updateUWallet = await prismaClient.uWallet.update({
             where: {id: uWallet.id},
             data: {
@@ -87,7 +134,19 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
             }
         });
 
+        // Return error if wallet withdrawal fails
         if (!updateUWallet) {
+
+            // Update Generic Transactions status to failed
+            await updateGenericTransactionStatus(newUWalletWithdrawalGenericTransaction.id, "FAIL");
+            await updateGenericTransactionStatus(newForUDepositGenericTransaction.id, "FAIL");
+    
+            // Update main U-Wallet transaction to be failed
+            await updateUWalletTransactionStats(newUWalletTransaction.id, "FAIL");
+            
+            // Update main For-U transaction to be failed
+            await updateForUTransactionStatus(newForUTransaction.id, "FAIL");
+
             return ResponseHandler.sendErrorResponse({res, code: 500, error: "Could not debit from U-Wallet"});
         }
 
@@ -102,6 +161,17 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
 
         // If for-U update failed
         if (!updateForU) {
+
+            // Update Generic Transactions status to failed
+            await updateGenericTransactionStatus(newUWalletWithdrawalGenericTransaction.id, "FAIL");
+            await updateGenericTransactionStatus(newForUDepositGenericTransaction.id, "FAIL");
+    
+            // Update main U-Wallet transaction to be failed
+            await updateUWalletTransactionStats(newUWalletTransaction.id, "FAIL");
+            
+            // Update main For-U transaction to be failed
+            await updateForUTransactionStatus(newForUTransaction.id, "FAIL");
+
             // Reimburse U-Wallet
             await prismaClient.uWallet.update({
                 where: {id: uWallet.id},
@@ -116,6 +186,16 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
             
         }
 
+        // Update Generic Transactions status to successful
+        await updateGenericTransactionStatus(newUWalletWithdrawalGenericTransaction.id, "SUCCESS");
+        await updateGenericTransactionStatus(newForUDepositGenericTransaction.id, "SUCCESS");
+
+        // Update main U-Wallet transaction to be successful
+        await updateUWalletTransactionStats(newUWalletTransaction.id, "SUCCESS");
+        
+        // Update main For-U transaction to be successful
+        await updateForUTransactionStatus(newForUTransaction.id, "SUCCESS");
+
 
         // Return success response
         return ResponseHandler.sendSuccessResponse({
@@ -127,15 +207,11 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
                 forUBalance: updateForU.totalInvestment
             }
         })
-
-
-
-
     }
 
 
 
-
+    // If payment Method is NOT U-Wallet
 
     const paymentInformation: IPaymentInformation = {
         user,
@@ -154,6 +230,7 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
         const newTransaction = await prismaClient.transaction.create({
             data: {
                 userId: user.userId,
+                amount: paymentInformation.amount,
                 transactionReference: tx_ref,
                 transactionCurrency: paymentInformation.currency,
                 description: "FORU",
@@ -169,7 +246,7 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
                 amount: depositData.amount,
                 transactionType: "DEPOSIT",
                 uSaveForUAccountId: depositData.id,
-                transactionRef: tx_ref,
+                transactionReference: tx_ref,
                 transactionStatus: "PENDING",
                 transactionCurrency: "NGN"
             }
@@ -179,37 +256,4 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
     } else {
         return ResponseHandler.sendErrorResponse({res,error:"Payment link could not be generated"})
     }
-
-    // const paymentLink =await generatePaymentLink({user,tx_ref,amount,currency:forUData.currency,product:"FORU",productId:newSaving.id})
-    // if(paymentLink){
-        
-    //     // Save the generic transaction to the database, holding the type of transaction created
-    //     const newTransaction = await prismaClient.transactionRefs.create ({
-    //         data: {
-    //             userId: user.userId,
-    //             reference: tx_ref,
-    //             description: "FORU"
-    //         }
-    //     })
-    //     // Save the ForU transaction to the database, ...await webhook trigger and subsequently update from webhook data
-    //     const newForUTransaction = await prismaClient.usaveForUTransaction.create({
-    //         data:  {
-    //             amount: forUData.amount,
-    //             transactionType: "DEPOSIT",
-    //             uSaveForUAccountId: newSaving.id,
-    //             transactionRef: tx_ref,
-    //             transactionStatus: "PENDING",
-    //             transactionCurrency: forUData.currency,
-    //             isInitialDeposit: true
-    //         }
-    //     });
-
-    //     return ResponseHandler.sendSuccessResponse({res,data:paymentLink})
-    // }
-    // //if for some reason the id could not be generated , delete the savings and return  a 500 for user to try again
-    // else{
-    //     await prismaClient.uSaveForU.delete({where:{id:newSaving.id}})
-    //     return ResponseHandler.sendErrorResponse({res,error:"Payment link could not be generated"})
-    // }
-    
 })
