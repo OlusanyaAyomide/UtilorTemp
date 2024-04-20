@@ -4,14 +4,21 @@ import ResponseHandler from "../../utils/response-handler";
 import { ICreateForU, IDepositForU } from "../../interfaces/bodyInterface";
 import { generateTransactionRef } from "../../utils/util";
 import { generatePaymentLink } from "../../config/requests";
-import { TransactionType } from "@prisma/client";
 import { IPaymentInformation } from "../../interfaces/interface";
 
 
 
 export const createNewForUplan = catchDefaultAsync(async(req,res,next)=>{
-    const user = req.user
-    const forUData:ICreateForU = req.body
+    const user = req.user;
+    const forUData:ICreateForU = req.body;
+
+    const now = new Date();
+    const ending = new Date(forUData.endingDate);
+
+    // Prevent from setting ending date in the past;
+    if (now >= ending) {
+        return ResponseHandler.sendErrorResponse({res, error: "Ending date must be in the future", code: 400});
+    }
     
     if(!user){return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})}
     
@@ -51,6 +58,85 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
     }
 
     // Proceed if exists
+    const {amount} = depositData;
+
+    // Check if payment method is USTASH and compute as required
+    if (depositData.paymentMethod == "UWALLET") {
+        // Check for Valid UWALLET
+        const uWallet = await prismaClient.uWallet.findFirst({
+            where: {
+                currency: "NGN" // user can only pay in NGN
+            }
+        });
+
+        // Respond with error if no valid wallet
+        if (!uWallet) {
+            return ResponseHandler.sendErrorResponse({res, error: "No U-Wallet found", code: 404})
+        }
+
+        // Respond with error if valid wallet has insufficient balance
+        if (uWallet.balance < amount) {
+            return ResponseHandler.sendErrorResponse({res, error: "Insufficient funds in U-Wallet", code: 400})
+        }
+
+        // Remove from wallet if all else passes
+        const updateUWallet = await prismaClient.uWallet.update({
+            where: {id: uWallet.id},
+            data: {
+                balance: {decrement: amount}
+            }
+        });
+
+        if (!updateUWallet) {
+            return ResponseHandler.sendErrorResponse({res, code: 500, error: "Could not debit from U-Wallet"});
+        }
+
+        // Add to forU
+        const updateForU = await prismaClient.uSaveForU.update({
+            where: {id: forUAccount.id},
+            data: {
+                investmentCapital: {increment: amount},
+                totalInvestment: {increment: amount},
+            }
+        });
+
+        // If for-U update failed
+        if (!updateForU) {
+            // Reimburse U-Wallet
+            await prismaClient.uWallet.update({
+                where: {id: uWallet.id},
+                data: {
+                    balance: {increment: amount}
+                }
+            });
+
+            // Send error response
+            return ResponseHandler.sendErrorResponse({res, code: 500, error: "Could not credit for-U"});
+
+            
+        }
+
+
+        // Return success response
+        return ResponseHandler.sendSuccessResponse({
+            res,
+            code: 200,
+            message: `For-U account "${forUAccount.savingsName}" successfully funded from U-Wallet`,
+            data: {
+                uWalletBalance: updateUWallet.balance,
+                forUBalance: updateForU.totalInvestment
+            }
+        })
+
+
+
+
+    }
+
+
+
+
+
     const paymentInformation: IPaymentInformation = {
         user,
         tx_ref,
@@ -65,12 +151,14 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
     if (paymentLink) {
         
         // Save the generic transaction to the database, holding the type of transaction created
-        const newTransaction = await prismaClient.transactionRefs.create({
+        const newTransaction = await prismaClient.transaction.create({
             data: {
                 userId: user.userId,
-                reference: tx_ref,
+                transactionReference: tx_ref,
+                transactionCurrency: paymentInformation.currency,
                 description: "FORU",
                 paymentMethod: depositData.paymentMethod,
+                transactionType: "DEPOSIT"
             }
         });
 

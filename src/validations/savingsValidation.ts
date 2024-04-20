@@ -16,7 +16,7 @@ export async function createForUValidation(
         expectedDepositDay: Joi.number().integer().required(),
         expectedMonthlyAmount: Joi.number().integer().required(),
         // amount:Joi.number().required().min(5000),
-        endingDate: Joi.date().iso(),
+        endingDate: Joi.date().iso().required(),
     });
 
     const validation = investmentSchema.validate(req.body);
@@ -35,12 +35,12 @@ export async function depositForUValidation(
     res: Response,
     next: NextFunction
 ): Promise<Response | void> {
-    const paymentMethodRegex = /^(USTASH|BANK|CARD)$/; // Regular expression for paymentMethod enum
+    const paymentMethodRegex = /^(UWALLET|BANK|CARD)$/; // Regular expression for paymentMethod enum
 
     const depositSchema = Joi.object({
         id: Joi.string().required(),
         amount:Joi.number().required().min(1),
-        paymentMethod: Joi.string().required().regex(paymentMethodRegex).message("Payment method must be either 'USTASH', 'BANK', or 'CARD' ")
+        paymentMethod: Joi.string().required().regex(paymentMethodRegex).message("Payment method must be either 'UWALLET', 'BANK', or 'CARD' ")
     });
 
     const validation = depositSchema.validate(req.body);

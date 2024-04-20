@@ -11,12 +11,6 @@ export const channelWebHookData = async(req: Request, res: Response, next: NextF
     res.status(200).json({message: "Webhook notification received"});
     
     // // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
-    // Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings, if not return
-    console.log(req.headers);
-    if (req.headers['verif-hash'] !== process.env.FLW_HASH) {
-        console.log("Hash Didn't match")
-        return
-    }
 
     //* Begin request computations
     const eventType = req.body['event.type'] // 'event.type' is sent as a string in flutterWave's response
@@ -28,14 +22,18 @@ export const channelWebHookData = async(req: Request, res: Response, next: NextF
     const {tx_ref} = dataFromWebhook.data;
 
     // Check for corresponding transaction on the db
-    const transaction = await prismaClient.transactionRefs.findFirst({
-        where: {reference: tx_ref}
+    const transaction = await prismaClient.transaction.findFirst({
+        where: {transactionReference: tx_ref}
     })
 
     // If none, just return
     if (!transaction) {
         return
     }
+
+    console.log("********************************");
+    console.log(transaction.description);
+    console.log("********************************");
 
     //? Now run different transactions depending on transaction type/description
     switch (transaction.description) {

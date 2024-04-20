@@ -9,5 +9,5 @@ export interface ICreateForU {
 export interface IDepositForU {
     id: string;
     amount: number
-    paymentMethod: 'USTASH' | 'BANK' | 'CARD';
+    paymentMethod: 'UWALLET' | 'BANK' | 'CARD';
 }

@@ -14,7 +14,7 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use('/user',authRoutes)
-app.use('/saving',savingRoutes)
+app.use('/savings',savingRoutes)
 app.use('/hooks',hookRoutes)
 
 

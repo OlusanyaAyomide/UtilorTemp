@@ -4,7 +4,9 @@ export interface IPaymentInformation{
     user:IUserDetail
     tx_ref:string
     amount:number
-    currency:string
+    currency: Currency,
     product: "FORU"|"EMERGENCY"|"UANDI"|"CABAL"
     productId:string
 }
+
+type Currency = "NGN" | "USD"

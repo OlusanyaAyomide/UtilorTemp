@@ -77,3 +77,8 @@ export function getCurrentDollarRate() {
   // Todo: Implement receiving current rate from the db
   return 1100.00;
 }
+
+// Todo: Implement an enumToRegex function to help with JOI Validation
+// export function enumToRegex(enum: Enum) {
+
+// }

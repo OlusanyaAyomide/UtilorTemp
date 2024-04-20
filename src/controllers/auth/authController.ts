@@ -30,6 +30,15 @@ export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
             data:{email,isGoogleUser:false,merchantID}
         })
         newUserId = newUser.id
+
+    // Create a corresponding new Naira wallet
+        const newUserWallet = await prismaClient.uWallet.create({
+            data: {
+                balance: 0.0,
+                currency: "NGN",
+                userId: newUserId
+            }
+        })
     }
 
 
