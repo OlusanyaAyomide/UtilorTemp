@@ -39,23 +39,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resendTokenValidation = exports.googleSignUpValidation = exports.tokenVerifyValidation = exports.otpvalidation = exports.credentialSignInValidation = exports.signUpValidation = void 0;
+exports.createPinValidation = exports.resetPasswordValidation = exports.forgotPasswordValidation = exports.newDeviceValidation = exports.resendTokenValidation = exports.googleSignUpValidation = exports.credentialSignInValidation = exports.basicSetUpValidation = exports.otpvalidation = exports.signUpValidation = void 0;
 var joi_1 = __importDefault(require("joi"));
 var response_handler_1 = __importDefault(require("../utils/response-handler"));
 function signUpValidation(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var emailRegex, passwordRegex, signUpSchema, validation, error;
+        var emailRegex, signUpSchema, validation, error;
         return __generator(this, function (_a) {
             emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-            passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
             signUpSchema = joi_1.default.object({
-                firstName: joi_1.default.string().required(),
-                lastName: joi_1.default.string().required().allow(''),
                 email: joi_1.default.string().required().regex(emailRegex).message('Email is not valid'),
-                password: joi_1.default.string().required().regex(passwordRegex).message('Password is not strong enough'),
-                referralId: joi_1.default.string().optional(),
-                confirmPassword: joi_1.default.string().required().valid(joi_1.default.ref('password')).error(new Error('Password mismatch')),
-                isAgreed: joi_1.default.boolean().required().valid(true).error(new Error('Accept terms and conditions')),
             });
             validation = signUpSchema.validate(req.body);
             if (validation.error) {
@@ -67,6 +60,53 @@ function signUpValidation(req, res, next) {
     });
 }
 exports.signUpValidation = signUpValidation;
+function otpvalidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var otpSchema, validation, error, verificationId;
+        return __generator(this, function (_a) {
+            otpSchema = joi_1.default.object({
+                otpCode: joi_1.default.string().required().length(4),
+            });
+            validation = otpSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            console.log(req.cookies);
+            verificationId = req.cookies["MAILVERIFICATION"];
+            if (!verificationId) {
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired" })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.otpvalidation = otpvalidation;
+function basicSetUpValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var passwordRegex, emailRegex, signUpSchema, validation, error;
+        return __generator(this, function (_a) {
+            passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
+            emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            signUpSchema = joi_1.default.object({
+                firstName: joi_1.default.string().required(),
+                email: joi_1.default.string().required().regex(emailRegex).message('Email is not valid'),
+                lastName: joi_1.default.string().required().allow(''),
+                password: joi_1.default.string().required().regex(passwordRegex).message('Password is not strong enough'),
+                referralId: joi_1.default.string().optional().allow(""),
+                confirmPassword: joi_1.default.string().required().valid(joi_1.default.ref('password')).error(new Error('Password mismatch')),
+                phoneNumber: joi_1.default.string().max(11).required()
+            });
+            validation = signUpSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.basicSetUpValidation = basicSetUpValidation;
 function credentialSignInValidation(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
         var emailRegex, passwordRegex, signInSchema, validation, error;
@@ -80,49 +120,13 @@ function credentialSignInValidation(req, res, next) {
             validation = signInSchema.validate(req.body);
             if (validation.error) {
                 error = validation.error.message ? validation.error.message : validation.error.details[0].message;
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
             }
             return [2 /*return*/, next()];
         });
     });
 }
 exports.credentialSignInValidation = credentialSignInValidation;
-function otpvalidation(req, res, next) {
-    return __awaiter(this, void 0, void 0, function () {
-        var otpSchema, validation, error;
-        return __generator(this, function (_a) {
-            otpSchema = joi_1.default.object({
-                otpCode: joi_1.default.string().required().length(4),
-                verifyToken: joi_1.default.string().optional()
-            });
-            validation = otpSchema.validate(req.body);
-            if (validation.error) {
-                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
-            }
-            return [2 /*return*/, next()];
-        });
-    });
-}
-exports.otpvalidation = otpvalidation;
-function tokenVerifyValidation(req, res, next) {
-    return __awaiter(this, void 0, void 0, function () {
-        var tokenVerifySchema, validation, error;
-        return __generator(this, function (_a) {
-            tokenVerifySchema = joi_1.default.object({
-                otpCode: joi_1.default.string().required().length(4),
-                verifyToken: joi_1.default.string().required()
-            });
-            validation = tokenVerifySchema.validate(req.body);
-            if (validation.error) {
-                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: error })];
-            }
-            return [2 /*return*/, next()];
-        });
-    });
-}
-exports.tokenVerifyValidation = tokenVerifyValidation;
 function googleSignUpValidation(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
         var schema, validation, error;
@@ -142,10 +146,51 @@ function googleSignUpValidation(req, res, next) {
 exports.googleSignUpValidation = googleSignUpValidation;
 function resendTokenValidation(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
+        var schema, validation, error, verificationId;
+        return __generator(this, function (_a) {
+            schema = joi_1.default.object({});
+            validation = schema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
+            }
+            console.log(req.cookies);
+            verificationId = req.cookies["MAILVERIFICATION"];
+            if (!verificationId) {
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired" })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.resendTokenValidation = resendTokenValidation;
+function newDeviceValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var schema, validation, error, verificationId;
+        return __generator(this, function (_a) {
+            schema = joi_1.default.object({
+                otpCode: joi_1.default.string().required().length(4),
+            });
+            validation = schema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
+            }
+            verificationId = req.cookies["identityToken"];
+            if (!verificationId) {
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired" })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.newDeviceValidation = newDeviceValidation;
+function forgotPasswordValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
         var schema, validation, error;
         return __generator(this, function (_a) {
             schema = joi_1.default.object({
-                verifyToken: joi_1.default.string().required()
+                email: joi_1.default.string().required(),
             });
             validation = schema.validate(req.body);
             if (validation.error) {
@@ -156,4 +201,45 @@ function resendTokenValidation(req, res, next) {
         });
     });
 }
-exports.resendTokenValidation = resendTokenValidation;
+exports.forgotPasswordValidation = forgotPasswordValidation;
+function resetPasswordValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var passwordRegex, schema, validation, error, verificationId;
+        return __generator(this, function (_a) {
+            passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
+            schema = joi_1.default.object({
+                otpCode: joi_1.default.string().required().length(4),
+                password: joi_1.default.string().required().regex(passwordRegex).message('Password is not strong enough'),
+            });
+            validation = schema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
+            }
+            verificationId = req.cookies["resetToken"];
+            if (!verificationId) {
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired" })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.resetPasswordValidation = resetPasswordValidation;
+function createPinValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var passwordRegex, schema, validation, error;
+        return __generator(this, function (_a) {
+            passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
+            schema = joi_1.default.object({
+                pin: joi_1.default.string().required().length(4),
+            });
+            validation = schema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.createPinValidation = createPinValidation;

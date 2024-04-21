@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
+exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
 var bcrypt_1 = __importDefault(require("bcrypt"));
 function generateOTP() {
     var otpLength = 4;
@@ -53,7 +53,7 @@ exports.generateOTP = generateOTP;
 function generateMerchantID() {
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     var id = '';
-    while (id.length < 10) {
+    while (id.length < 11) {
         var randomIndex = Math.floor(Math.random() * characters.length);
         var char = characters.charAt(randomIndex);
         if (!id.includes(char)) {
@@ -87,17 +87,45 @@ function bcryptHash(password) {
 }
 exports.bcryptHash = bcryptHash;
 function bcryptCompare(_a) {
-    var password = _a.password, hashedPassword = _a.hashedPassword;
-    return __awaiter(this, void 0, void 0, function () {
+    return __awaiter(this, arguments, void 0, function (_b) {
         var isValid;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var password = _b.password, hashedPassword = _b.hashedPassword;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0: return [4 /*yield*/, bcrypt_1.default.compare(password, hashedPassword)];
                 case 1:
-                    isValid = _b.sent();
+                    isValid = _c.sent();
                     return [2 /*return*/, isValid];
             }
         });
     });
 }
 exports.bcryptCompare = bcryptCompare;
+function convertToDate(dateString) {
+    var date = new Date(dateString);
+    return date;
+}
+exports.convertToDate = convertToDate;
+//this would be prefixed to the transaction ref, it would be used later from the webhook for find the resulting type of model to query
+function generateTransactionRef() {
+    var id = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijlmnopqrstuvwxyz';
+    while (id.length < 14) {
+        var randomIndex = Math.floor(Math.random() * characters.length);
+        var char = characters.charAt(randomIndex);
+        if (!id.includes(char)) {
+            id += char;
+        }
+    }
+    //encode the transactionRef so the prefix wont be visible to users
+    return id;
+}
+exports.generateTransactionRef = generateTransactionRef;
+function getCurrentDollarRate() {
+    // Todo: Implement receiving current rate from the db
+    return 1100.00;
+}
+exports.getCurrentDollarRate = getCurrentDollarRate;
+// Todo: Implement an enumToRegex function to help with JOI Validation
+// export function enumToRegex(enum: Enum) {
+// }

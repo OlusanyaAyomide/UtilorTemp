@@ -3,47 +3,7 @@ import fs from "fs"
 import handlebars from "handlebars"
 import path from "path"
 
-// import axios from "axios";
 
-
-// export const mailSender = async ({to,body,subject,name}:{to:string,body:string,subject:string,name:string})=>{
-//     console.log("mail triggered")
-//     const url = "https://api.brevo.com/v3/smtp/email"
-//     const requestBody = {
-//         sender:{
-//             "name":"Utilor Support",
-//             "email":"gracesegzy@gmail.com"
-//         },
-//         to:[
-//            {
-//                "email":to,
-//                "name":name
-//            } 
-//         ],
-//         subject:subject,
-//         htmlContent:`<div>
-//             <h3>Hi ${name} Welocome to utilor</h3>
-//             <h1>${body}</h1>
-//             <h4>Use the code below to continue your sign up</h4>
-//         </div> `
-//     }
-//     const headers = {
-//           'api-key': process.env.BREVO_KEY as string,
-//           'Content-type': 'application/json',
-          
-//     };
-//     console.log(process.env.BREVO_KEY)
-//     const res = await fetch(url, {
-//           method: 'POST',
-//           headers: headers,
-//           body: JSON.stringify(requestBody),
-//          })
-//     const result = await res.json()
-//     console.log(result)
-//     return result
-
-    
-// }
 
 export const mailSender = async ({to,body,subject,name}:{to:string,body:string,subject:string,name:string})=>{
     const transporter = nodemailer.createTransport({ 
@@ -56,8 +16,9 @@ export const mailSender = async ({to,body,subject,name}:{to:string,body:string,s
             pass:process.env.EMAIL_PASSWORD
         }
         })
-        const sourceFd = ""
-        const source = fs.readFileSync("src/templates/index.html","utf-8").toString()
+        const sourcePath = path.join(__dirname,"..","templates","index.html")
+        // console.log(sourcePath)
+        const source = fs.readFileSync(sourcePath).toString()
         const template = handlebars.compile(source)
         const replacement = {
             name:`${name}`,

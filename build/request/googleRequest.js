@@ -41,36 +41,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserCredentials = void 0;
 var axios_1 = __importDefault(require("axios"));
-var getUserCredentials = function (_a) {
-    var googleToken = _a.googleToken;
-    return __awaiter(void 0, void 0, void 0, function () {
-        var userData, err_1;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    _b.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, axios_1.default.get("https://www.googleapis.com/oauth2/v1/userinfo?access_token=".concat(googleToken), {
-                            headers: {
-                                Authorization: "Bearer ".concat(googleToken),
-                                Accept: 'application/json'
-                            }
-                        })];
-                case 1:
-                    userData = _b.sent();
-                    if (userData.status === 200) {
-                        return [2 /*return*/, userData.data];
-                    }
-                    else {
-                        console.log(userData);
-                        return [2 /*return*/, null];
-                    }
-                    return [3 /*break*/, 3];
-                case 2:
-                    err_1 = _b.sent();
+var getUserCredentials = function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
+    var userData, err_1;
+    var googleToken = _b.googleToken;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                _c.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, axios_1.default.get("https://www.googleapis.com/oauth2/v1/userinfo?access_token=".concat(googleToken), {
+                        headers: {
+                            Authorization: "Bearer ".concat(googleToken),
+                            Accept: 'application/json'
+                        }
+                    })];
+            case 1:
+                userData = _c.sent();
+                if (userData.status === 200) {
+                    return [2 /*return*/, userData.data];
+                }
+                else {
+                    console.log(userData);
                     return [2 /*return*/, null];
-                case 3: return [2 /*return*/];
-            }
-        });
+                }
+                return [3 /*break*/, 3];
+            case 2:
+                err_1 = _c.sent();
+                return [2 /*return*/, null];
+            case 3: return [2 /*return*/];
+        }
     });
-};
+}); };
 exports.getUserCredentials = getUserCredentials;

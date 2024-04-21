@@ -26,6 +26,11 @@ var ResponseHandler = /** @class */ (function () {
         var response = custom ? { code: code, message: error } : { success: false, code: code, message: error };
         return res.status(code).json(response);
     };
+    ResponseHandler.sendUnauthorizedResponse = function (_a) {
+        var res = _a.res, _b = _a.code, code = _b === void 0 ? 403 : _b, _c = _a.error, error = _c === void 0 ? 'Unauthorized Response' : _c, _d = _a.custom, custom = _d === void 0 ? false : _d;
+        var response = custom ? { code: code, message: error } : { success: false, code: code, message: error };
+        return res.status(code).json(response);
+    };
     return ResponseHandler;
 }());
 exports.default = ResponseHandler;

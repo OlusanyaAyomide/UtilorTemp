@@ -35,107 +35,58 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mailSender = void 0;
-// import axios from "axios";
-// const transporter = nodemailer.createTransport({
-//     service: "gmail", 
-//     host: "smtp.gmail.com",
-//     port:587,
-//     secure: false,
-//     auth:{
-//         user:"johnwellaca@gmail.com",
-//         pass:process.env.TEST_EMAILKEY
-//     }
-// })
-// try{
-//     const mailsender = await transporter.sendMail({
-//         from:process.env.TEST_EMAIL,
-//         to:[to],
-//         subject,
-//         html:`<h1>${body}</h1>`
-//     })
-//     console.log(mailsender.messageId,"mail sent")
-// }
-// catch(err){
-//     console.log(err)
-// }
-var mailSender = function (_a) {
-    var to = _a.to, body = _a.body, subject = _a.subject, name = _a.name;
-    return __awaiter(void 0, void 0, void 0, function () {
-        var url, requestBody, headers, res, result;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    console.log("mail triggered");
-                    url = "https://api.brevo.com/v3/smtp/email";
-                    requestBody = {
-                        sender: {
-                            "name": "Utilor Support",
-                            "email": "gracesegzy@gmail.com"
-                        },
-                        to: [
-                            {
-                                "email": to,
-                                "name": name
-                            }
-                        ],
-                        subject: subject,
-                        htmlContent: "<div>\n            <h3>Hi ".concat(name, " Welocome to utilor</h3>\n            <h1>").concat(body, "</h1>\n            <h4>Use the code below to continue your sign up</h4>\n        </div> ")
-                    };
-                    headers = {
-                        'api-key': process.env.BREVO_KEY,
-                        'Content-type': 'application/json',
-                    };
-                    console.log(process.env.BREVO_KEY);
-                    return [4 /*yield*/, fetch(url, {
-                            method: 'POST',
-                            headers: headers,
-                            body: JSON.stringify(requestBody),
-                        })];
-                case 1:
-                    res = _b.sent();
-                    return [4 /*yield*/, res.json()];
-                case 2:
-                    result = _b.sent();
-                    console.log(result);
-                    return [2 /*return*/, result
-                        // const res = await axios.post(url,requestBody,{headers})
-                        // console.log(res.status)
-                        // console.log(process.env.S_EMAIL_USER,process.env.S_EMAIL_PASS,process.env.S_EMAIL_HOST)
-                        // const transporter = nodemailer.createTransport({ 
-                        // host: process.env.S_EMAIL_HOST as string,
-                        // port:587,
-                        // secure: false,
-                        // auth:{
-                        //     user:process.env.S_EMAIL_USER,
-                        //     pass:process.env.S_EMAIL_PASS
-                        // },
-                        // })
-                        // const mailOptions = {
-                        //     from: "ayomideflex72@gmail.com",
-                        //     to,
-                        //     subject,
-                        //     html: `<div>
-                        //                 <h3>Hi ${name} Welocome to utilor</h3>
-                        //                 <br/>
-                        //                 <br/>
-                        //                 <h1>${body}</h1>
-                        //                 <h4>Use the code below to continue your sign up</h4>
-                        //             </div> `,
-                        // };
-                        // try {
-                        //     const val =await transporter.sendMail(mailOptions);
-                        //     console.log(val.response)
-                        //     return;
-                        // } catch (error) {
-                        //     console.log(error);
-                        // }
-                    ];
-            }
-        });
+var nodemailer_1 = __importDefault(require("nodemailer"));
+var fs_1 = __importDefault(require("fs"));
+var handlebars_1 = __importDefault(require("handlebars"));
+var path_1 = __importDefault(require("path"));
+var mailSender = function (_a) { return __awaiter(void 0, [_a], void 0, function (_b) {
+    var transporter, sourcePath, source, template, replacement, mailOptions, val, error_1;
+    var to = _b.to, body = _b.body, subject = _b.subject, name = _b.name;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                transporter = nodemailer_1.default.createTransport({
+                    host: process.env.EMAIL_HOST,
+                    service: process.env.EMAIL_SERVICE,
+                    port: 587,
+                    secure: true,
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASSWORD
+                    }
+                });
+                sourcePath = path_1.default.join(__dirname, "..", "templates", "index.html");
+                source = fs_1.default.readFileSync(sourcePath).toString();
+                template = handlebars_1.default.compile(source);
+                replacement = {
+                    name: "".concat(name),
+                    body: body
+                };
+                mailOptions = {
+                    from: "ayomideflex72@gmail.com",
+                    to: to,
+                    subject: subject,
+                    html: template(replacement),
+                };
+                _c.label = 1;
+            case 1:
+                _c.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, transporter.sendMail(mailOptions)];
+            case 2:
+                val = _c.sent();
+                console.log(val.response);
+                return [2 /*return*/, val.response];
+            case 3:
+                error_1 = _c.sent();
+                console.log(error_1);
+                return [2 /*return*/, null];
+            case 4: return [2 /*return*/];
+        }
     });
-};
+}); };
 exports.mailSender = mailSender;
-//S_EMAIL_USER = lekandar11@gmail.com
-//S_EMAIL_PASS = VzHcI0JDGx1RTKSq

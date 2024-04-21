@@ -6,6 +6,7 @@ import ResponseHandler from "../../utils/response-handler";
 import { getCurrentDollarRate } from "../../utils/util";
 
 export const channelWebHookData = async(req: Request, res: Response, next: NextFunction) => {
+    console.log(req.body)
     
     // Send success message back to Flutterwave to prevent delay and resending of webhook notification;
     res.status(200).json({message: "Webhook notification received"});
