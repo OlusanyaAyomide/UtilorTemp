@@ -68,6 +68,7 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
         // Check for Valid UWALLET
         const uWallet = await prismaClient.uWallet.findFirst({
             where: {
+                userId: user.userId,
                 currency: "NGN" // user can only pay in NGN
             }
         });
