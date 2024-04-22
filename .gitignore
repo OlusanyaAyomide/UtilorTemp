@@ -1,6 +1,7 @@
 # dependencies
 /node_modules
-/build
+/build/node_modules
+# /build
 .env
 .env.example
 .env.local
