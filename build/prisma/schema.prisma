@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String            @id @unique() @default(uuid())
+  email               String            @unique()
+  firstName           String?
+  lastName            String?
+  middleName          String?
+  isMailVerified      Boolean           @default(false)
+  BvnNumber           String?
+  isCredentialsSet    Boolean           @default(false)
+  isGoogleUser        Boolean
+  pin                 String?
+  password            String?
+  phoneNumber         String?
+  country             String?
+  countryCode         String?
+  dateOfBirth         String?
+  avatar              String?
+  gender              String?
+  merchantID          String
+  profileId           String?           @unique
+  MailVerificationOTp VerificationOTp[]
+  session             Session[]
+  sessionId           String?           @unique
+  devices             UserDevices[]
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  usaveforu           USaveForU[]
+  transactions        Transaction[]
+  uWalletAccounts      UWallet[]
+}
+
+enum VERIFICATION_TYPE {
+  MAILVERIFICATION
+  DEVICEVERIFCATION
+  RESETPASSWORD
+}
+
+model VerificationOTp {
+  id          String           @id @unique() @default(uuid())
+  user        User             @relation(fields: [userId], references: [id])
+  userId      String
+  createdAt   DateTime         @default(now())
+  expiredTime DateTime
+  otpCode     String
+  type        VERIFICATION_TYPE
+}
+
+//keeps track of access token and expiry time
+model Session {
+  id        String   @id @unique() @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  token     String
+  createdAt DateTime @default(now())
+  expiredAt DateTime
+  deviceId  String
+}
+
+//keeps tracks of devices useer have used to signIn
+model UserDevices {
+  id     String @id @unique() @default(uuid())
+  device String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+}
+// U-WALLET MODEL
+
+// Generic transaction modal, first point of storage of all transactions
+model Transaction {
+  id            String          @id @unique() @default(uuid())
+  user          User            @relation(fields: [userId], references: [id])
+  transactionReference     String
+  userId        String
+  amount Float
+  transactionType TRANSACTION_TYPE
+  description   DESCRIPTION_TYPE
+  paymentMethod PAYMENT_METHOD
+  transactionCurrency CURRENCY
+  transactionStatus TRANSACTION_STATUS @default(PENDING)
+  createdAt     DateTime        @default(now())
+}
+
+
+enum TRANSACTION_STATUS {
+  PENDING
+  SUCCESS
+  FAIL
+}
+
+enum DESCRIPTION_TYPE {
+  FORU
+  EMERGENCY
+  UANDI
+  CABAL
+  UWALLET
+}
+
+enum PAYMENT_METHOD {
+  UWALLET
+  BANK
+  CARD
+}
+
+enum TRANSACTION_TYPE {
+  WITHDRAWAL
+  DEPOSIT
+}
+
+enum CURRENCY {
+  NGN
+  USD
+}
+
+
+// U-SAVE/FORU account model
+model USaveForU {
+  id                    String                 @id @unique() @default(uuid())
+  user                  User                   @relation(fields: [userId], references: [id])
+  userId                String
+  currency              CURRENCY
+  investmentCapital     Float
+  returnOfInvestment    Float
+  totalInvestment       Float
+  isActivated           Boolean                @default(false)
+  savingsName           String
+  expectedDepositDay    Int
+  expectedMonthlyAmount Int
+  endingDate            DateTime
+  createdAt             DateTime               @default(now())
+  transactions          UsaveForUTransaction[]
+}
+model UsaveForUTransaction {
+  id                  String            @id @unique() @default(uuid())
+  usaveForUAccount    USaveForU         @relation(fields: [uSaveForUAccountId], references: [id])
+  uSaveForUAccountId  String
+  transactionReference      String
+  amount              Float
+  transactionStatus   TRANSACTION_STATUS @default(PENDING)
+  transactionType     TRANSACTION_TYPE
+  transactionCurrency CURRENCY
+}
+
+model UWallet {
+  id       String   @id @unique() @default(uuid())
+  balance  Float
+  currency CURRENCY
+  transactions UWalletTransaction[]
+  createdAt             DateTime               @default(now())
+  user                  User                   @relation(fields: [userId], references: [id])
+  userId                String
+}
+
+model UWalletTransaction {
+  id  String   @id @unique() @default(uuid())
+  uWalletAccount UWallet @relation(fields: [uWalletAccountId], references: [id])
+  uWalletAccountId String
+  transactionReference String
+  amount Float
+  transactionStatus   TRANSACTION_STATUS @default(PENDING)
+  transactionType     TRANSACTION_TYPE
+  transactionCurrency CURRENCY
+
+
+}
