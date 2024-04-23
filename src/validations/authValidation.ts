@@ -57,8 +57,8 @@ export async function basicSetUpValidation (req:Request,
         password: Joi.string().required().regex(passwordRegex).message('Password is not strong enough'),
         referralId: Joi.string().optional().allow(""),
         confirmPassword: Joi.string().required().valid(Joi.ref('password')).error(new Error('Password mismatch')),
-        phoneNumber:Joi.string().max(11).required()
-
+        phoneNumber:Joi.string().max(11).required(),
+        merchantID:Joi.string().optional()
     });
 
     const validation = signUpSchema.validate(req.body);

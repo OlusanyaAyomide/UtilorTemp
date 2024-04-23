@@ -9,6 +9,7 @@ export interface ISignUpForm extends ILogInForm{
     password:string
     isAgreed:boolean
     phoneNumber:string
+    merchantID?:string
 }
 
 

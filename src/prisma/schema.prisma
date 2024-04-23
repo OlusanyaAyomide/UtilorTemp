@@ -31,11 +31,16 @@ model User {
   session             Session[]
   sessionId           String?           @unique
   devices             UserDevices[]
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
   usaveforu           USaveForU[]
   transactions        Transaction[]
-  uWalletAccounts      UWallet[]
+  uWalletAccounts     UWallet[]
+  referrals           User[] @relation("UserToUser")
+  referredBy          User?    @relation("UserToUser", fields: [referredById], references: [id])
+  referredById String?
+  redeemedForSelf     Boolean @default(false)
+  redeemedForReferral Boolean @default(false)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 }
 
 enum VERIFICATION_TYPE {
@@ -157,6 +162,7 @@ model UWallet {
   createdAt             DateTime               @default(now())
   user                  User                   @relation(fields: [userId], references: [id])
   userId                String
+  referralBalance       Int @default(0)
 }
 
 model UWalletTransaction {

@@ -8,7 +8,7 @@ import { getUserCredentials } from "../../request/googleRequest";
 import { bcryptCompare } from "../../utils/util";
 import { setAuthCredentials } from "../../utils/credentials-setup";
 import { generateDeviceId } from "../../utils/clientDevice";
-
+import type { User } from "@prisma/client";
 
 export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
     const {email}:{email:string} = req.body
@@ -116,7 +116,7 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
 
 
 export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
-    const {firstName,lastName,password,email,phoneNumber}:ISignUpForm = req.body
+    const {firstName,lastName,password,email,phoneNumber,merchantID}:ISignUpForm = req.body
     //check i
     const isExisting = await prismaClient.user.findFirst({
         where:{
@@ -128,13 +128,51 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"Email supplied invalid"})
     }
 
+    //set referredByUser global
+    let referredByUser:User| null = null
+    //get referral user via merchantID
+
+    if(merchantID){
+        referredByUser = await prismaClient.user.findFirst({
+            where:{merchantID}
+        })
+        if(!referredByUser){
+            return ResponseHandler.sendErrorResponse({res,error:"merchantID is invalid"})
+        }
+    }
 
     const hashedPassword = await bcryptHash(password)
     //update created user information
     const user = await prismaClient.user.update({
         where:{email},
-        data:{firstName,lastName,password:hashedPassword,phoneNumber,isCredentialsSet:true},
+        data:{
+            firstName,lastName,password:hashedPassword,phoneNumber,isCredentialsSet:true,
+            referredById:referredByUser?.id
+        },
     })
+
+    if(referredByUser){
+        /////TODO//////
+        //update new user referral wallet
+        //update referedByUser wallet
+
+
+        //connect refrerred By User with new user
+        await prismaClient.user.update({
+            where:{id:referredByUser.id},
+            data:{
+                referrals:{
+                    connect:{
+                        id:user.id
+                    }
+                }
+            }
+        })
+    }
+  
+
+
+    //if user is referred update referredBy user with the new referral
 
     //add device to list of user Devices
     const deviceId = generateDeviceId(req)
