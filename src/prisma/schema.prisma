@@ -7,6 +7,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+enum TRANSACTION_STATUS {
+  PENDING
+  SUCCESS
+  FAIL
+}
+
+enum DESCRIPTION_TYPE {
+  FORU
+  EMERGENCY
+  UANDI
+  CABAL
+  UWALLET
+}
+
+enum PAYMENT_METHOD {
+  UWALLET
+  BANK
+  CARD
+}
+
+enum TRANSACTION_TYPE {
+  WITHDRAWAL
+  DEPOSIT
+  INTEREST
+}
+
+enum CURRENCY {
+  NGN
+  USD
+}
+
+enum VERIFICATION_TYPE {
+  MAILVERIFICATION
+  DEVICEVERIFCATION
+  RESETPASSWORD
+}
+
 model User {
   id                  String            @id @unique() @default(uuid())
   email               String            @unique()
@@ -43,11 +81,7 @@ model User {
   updatedAt           DateTime          @updatedAt
 }
 
-enum VERIFICATION_TYPE {
-  MAILVERIFICATION
-  DEVICEVERIFCATION
-  RESETPASSWORD
-}
+
 
 model VerificationOTp {
   id          String           @id @unique() @default(uuid())
@@ -92,38 +126,9 @@ model Transaction {
   transactionCurrency CURRENCY
   transactionStatus TRANSACTION_STATUS @default(PENDING)
   createdAt     DateTime        @default(now())
+  featureId String?
 }
 
-
-enum TRANSACTION_STATUS {
-  PENDING
-  SUCCESS
-  FAIL
-}
-
-enum DESCRIPTION_TYPE {
-  FORU
-  EMERGENCY
-  UANDI
-  CABAL
-  UWALLET
-}
-
-enum PAYMENT_METHOD {
-  UWALLET
-  BANK
-  CARD
-}
-
-enum TRANSACTION_TYPE {
-  WITHDRAWAL
-  DEPOSIT
-}
-
-enum CURRENCY {
-  NGN
-  USD
-}
 
 
 // U-SAVE/FORU account model
@@ -141,39 +146,17 @@ model USaveForU {
   expectedMonthlyAmount Int
   endingDate            DateTime
   createdAt             DateTime               @default(now())
-  transactions          UsaveForUTransaction[]
 }
-model UsaveForUTransaction {
-  id                  String            @id @unique() @default(uuid())
-  usaveForUAccount    USaveForU         @relation(fields: [uSaveForUAccountId], references: [id])
-  uSaveForUAccountId  String
-  transactionReference      String
-  amount              Float
-  transactionStatus   TRANSACTION_STATUS @default(PENDING)
-  transactionType     TRANSACTION_TYPE
-  transactionCurrency CURRENCY
-}
+
+
 
 model UWallet {
   id       String   @id @unique() @default(uuid())
   balance  Float
   currency CURRENCY
-  transactions UWalletTransaction[]
   createdAt             DateTime               @default(now())
   user                  User                   @relation(fields: [userId], references: [id])
   userId                String
   referralBalance       Int @default(0)
 }
 
-model UWalletTransaction {
-  id  String   @id @unique() @default(uuid())
-  uWalletAccount UWallet @relation(fields: [uWalletAccountId], references: [id])
-  uWalletAccountId String
-  transactionReference String
-  amount Float
-  transactionStatus   TRANSACTION_STATUS @default(PENDING)
-  transactionType     TRANSACTION_TYPE
-  transactionCurrency CURRENCY
-
-
-}
