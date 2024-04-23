@@ -2,7 +2,7 @@ import express from "express"
 import { verifyUserStats } from "../middlewares/verifyUserStatus"
 import { verifyUsers } from "../middlewares/verifyUser"
 import { createForUValidation, depositForUValidation, depositUWalletValidation } from "../validations/savingsValidation"
-import { createNewForUplan, depositIntoForUSavings } from "../controllers/savings/savingcontroller"
+import { createNewForUplan, depositIntoForUSavings, depositIntoUWallet } from "../controllers/savings/savingcontroller"
 
 
 
@@ -14,7 +14,7 @@ savingRoutes.route("/foru/deposit").post(depositForUValidation, verifyUsers, ver
 // savingRoutes.route("/foru/withdraw").post(createForUValidation, verifyUsers,verifyUserStats,createNewForUplan)
 
 // UWallet Routes
-savingRoutes.route("/uwallet/deposit").post(depositUWalletValidation, verifyUsers, verifyUserStats)
+savingRoutes.route("/uwallet/deposit").post(depositUWalletValidation, verifyUsers, verifyUserStats, depositIntoUWallet)
 
 
 export default savingRoutes

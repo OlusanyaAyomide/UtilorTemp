@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
 import ResponseHandler from '../utils/response-handler';
+import { CURRENCY } from '@prisma/client';
 
 
 export async function createForUValidation(
@@ -65,6 +66,8 @@ export async function depositUWalletValidation(
     const depositSchema = Joi.object({
         id: Joi.string().required(),
         amount:Joi.number().required().min(1),
+        currency: Joi.string().valid(...Object.values(CURRENCY)).required(),
+        paymentMethod: Joi.string().valid("CARD", "BANK").required()
     });
 
     const validation = depositSchema.validate(req.body);

@@ -24,6 +24,9 @@ export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
         case "FORU":
             depositIntoForUSaving(dataFromWebhook, transaction)
             break;
+        case "UWALLET":
+            depositIntoUWallet(dataFromWebhook, transaction)
+            break;
         default:
             break;
     }
@@ -73,9 +76,17 @@ export const depositIntoForUSaving = async(dataFromWebhook: WebhookData2, transa
         where: {id: transaction.featureId}
     });
 
-    if (uSaveForUAccount?.currency === "USD") {
+    if (!uSaveForUAccount) {
+        throw new Error("For-U account not found");
+    }
+
+    
+    if (uSaveForUAccount.currency === "USD" && transaction.transactionCurrency == "NGN") {
         let dollarRate = getCurrentDollarRate();
         convertedAmount = transaction.amount / dollarRate
+    } else if (uSaveForUAccount.currency === "NGN" && transaction.transactionCurrency == "USD") {
+        let dollarRate = getCurrentDollarRate();
+        convertedAmount = transaction.amount * dollarRate
     } else {
         convertedAmount = transaction.amount
     }
@@ -84,7 +95,76 @@ export const depositIntoForUSaving = async(dataFromWebhook: WebhookData2, transa
         where: {id: transaction.featureId},
         data: {
             investmentCapital: {increment: convertedAmount},
-            totalInvestment: {increment: convertedAmount}
+            totalInvestment: {increment: convertedAmount},
+        }
+    })
+
+    }
+
+}
+
+
+export const depositIntoUWallet = async(dataFromWebhook: WebhookData2, transaction: Transaction) => {
+    // Todo: Put all this logic into a try-catch block
+    // Todo: Implement the best practices outlined by Flutterwave docs
+    const {status} = dataFromWebhook;
+
+    if (transaction.transactionStatus !== "PENDING") {
+        throw new Error("Transaction status has already been modified");
+    }
+
+    //Todo: Re-Verify transaction status from flutterwave as per developer guidelines
+
+    if (status !== "successful") {
+        // If failed, update and return
+        await prismaClient.transaction.update({
+            where: {id: transaction.id},
+            data: {
+                transactionStatus: "FAIL"
+            }
+        });
+
+        throw new Error("Flutterwave transaction unsuccessful");
+    } else {
+
+
+    //* Transaction status successful and not modified. We can safely deposit the money
+
+    // Update USaveForUTransaction to be successful
+    await prismaClient.transaction.update({
+        where: {
+            id: transaction.id
+        },
+        data: {
+            transactionStatus: "SUCCESS"
+        }
+    })
+
+    // Modify the UWallet as needed
+    
+    const uWallet = await prismaClient.uWallet.findFirst({
+        where: {id: transaction.featureId}
+    });
+    
+    if (!uWallet) {
+        throw new Error("U-Wallet not found");
+    }
+    
+    let convertedAmount = 0;
+    if (uWallet.currency === "USD" && transaction.transactionCurrency == "NGN") {
+        let dollarRate = getCurrentDollarRate();
+        convertedAmount = transaction.amount / dollarRate
+    } else if (uWallet.currency === "NGN" && transaction.transactionCurrency == "USD") {
+        let dollarRate = getCurrentDollarRate();
+        convertedAmount = transaction.amount * dollarRate
+    } else {
+        convertedAmount = transaction.amount
+    }
+
+    await prismaClient.uWallet.update({
+        where: {id: transaction.featureId},
+        data: {
+            balance: {increment: convertedAmount},
         }
     })
 

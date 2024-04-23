@@ -4,7 +4,7 @@ import ResponseHandler from "../../utils/response-handler";
 import { ICreateForU, IDepositForU } from "../../interfaces/bodyInterface";
 import { generateTransactionRef } from "../../utils/util";
 import { generatePaymentLink } from "../../config/requests";
-import { IPaymentInformation } from "../../interfaces/interface";
+import { IPaymentInformation, IUWalletDepositInformation } from "../../interfaces/interface";
 import { updateTransactionStatus} from "../../utils/transactions.util";
 
 
@@ -212,4 +212,62 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
     } else {
         return ResponseHandler.sendErrorResponse({res,error:"Payment link could not be generated"})
     }
+})
+
+export const depositIntoUWallet = catchDefaultAsync(async(req, res, next) => {
+    const depositData: IUWalletDepositInformation = req.body;
+    const tx_ref = generateTransactionRef();
+
+    const user = req.user;
+
+    const uWallet = await prismaClient.uWallet.findFirst({
+        where: {id: depositData.id}
+    })
+
+    if (!uWallet) {
+        return ResponseHandler.sendErrorResponse({res, code: 400, error: "Specified U-Wallet not found"})
+    }
+
+    if (!user) {
+        return ResponseHandler.sendErrorResponse({res, code: 500, error: "Something went wrong"})
+    }
+
+    const paymentInformation: IPaymentInformation = {
+        user,
+        tx_ref,
+        amount: depositData.amount,
+        //? Might remove or add this later, currency: "NGN", // Users can only deposit in NGN
+        currency: depositData.currency,
+        product: "FORU",
+        productId: uWallet.id
+    }
+
+    const paymentLink = await generatePaymentLink(paymentInformation);
+
+    if (paymentLink) {
+        
+        // Save the transaction to the database, holding the type of transaction created
+        const newTransaction = await prismaClient.transaction.create({
+            data: {
+                userId: user.userId,
+                amount: paymentInformation.amount,
+                transactionReference: tx_ref,
+                transactionCurrency: paymentInformation.currency,
+                description: "UWALLET",
+                paymentMethod: depositData.paymentMethod,
+                transactionType: "DEPOSIT",
+                featureId: uWallet.id
+            }
+        });
+
+        if (!newTransaction) {
+            return ResponseHandler.sendErrorResponse({res, error: "Transaction could not be initialized", code: 500})
+        }
+
+        return ResponseHandler.sendSuccessResponse({res,data:paymentLink})
+    } else {
+        return ResponseHandler.sendErrorResponse({res,error:"Payment link could not be generated"})
+    }
+
+
 })
