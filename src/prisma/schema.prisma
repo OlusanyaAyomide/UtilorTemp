@@ -126,7 +126,7 @@ model Transaction {
   transactionCurrency CURRENCY
   transactionStatus TRANSACTION_STATUS @default(PENDING)
   createdAt     DateTime        @default(now())
-  featureId String?
+  featureId String
 }
 
 

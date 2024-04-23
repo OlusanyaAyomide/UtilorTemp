@@ -1,6 +1,5 @@
 import express from "express"
 import { verifyHook } from "../controllers/hooks/verifyHook"
-import { channelWebHookData, depositIntoForUSaving } from "../controllers/hooks/hookController"
 import { WebhookData } from "../interfaces/webhook.interface"
 
 
@@ -8,7 +7,7 @@ import { WebhookData } from "../interfaces/webhook.interface"
 const hookRoutes = express.Router()
 
 
-hookRoutes.route("/").post(verifyHook, channelWebHookData)
+hookRoutes.route("/").post(verifyHook)
 
 
 export default hookRoutes

@@ -1,45 +1,28 @@
-import { NextFunction, Request, Response } from "express";
-import { WebhookData } from "../../interfaces/webhook.interface";
+import { WebhookData, WebhookData2 } from "../../interfaces/webhook.interface";
 import prismaClient from "../../prisma/pris-client";
-import catchDefaultAsync from "../../utils/catch-async";
-import ResponseHandler from "../../utils/response-handler";
 import { getCurrentDollarRate } from "../../utils/util";
+import { Transaction } from "@prisma/client";
 
-export const channelWebHookData = async(req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body)
-    
-    // Send success message back to Flutterwave to prevent delay and resending of webhook notification;
-    res.status(200).json({message: "Webhook notification received"});
-    
-    // // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
+export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
+    // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
 
     //* Begin request computations
-    const eventType = req.body['event.type'] // 'event.type' is sent as a string in flutterWave's response
-    
-    // Cast webhook data to appropriate type
-    const dataFromWebhook: WebhookData = req.body;
-
-    // Retrieve transaction reference and transaction status
-    const {tx_ref} = dataFromWebhook.data;
+    const {txRef} = dataFromWebhook;
 
     // Check for corresponding transaction on the db
     const transaction = await prismaClient.transaction.findFirst({
-        where: {transactionReference: tx_ref}
+        where: {transactionReference: txRef}
     })
 
     // If none, just return
     if (!transaction) {
-        return
+        throw new Error("Transaction not found in the database")
     }
-
-    // console.log("********************************");
-    // console.log(transaction.description);
-    // console.log("********************************");
 
     //? Now run different transactions depending on transaction type/description
     switch (transaction.description) {
         case "FORU":
-            depositIntoForUSaving(dataFromWebhook)
+            depositIntoForUSaving(dataFromWebhook, transaction)
             break;
         default:
             break;
@@ -47,43 +30,36 @@ export const channelWebHookData = async(req: Request, res: Response, next: NextF
 
 }
 
-export const depositIntoForUSaving = async(dataFromWebhook: WebhookData) => {
+export const depositIntoForUSaving = async(dataFromWebhook: WebhookData2, transaction: Transaction) => {
     // Todo: Put all this logic into a try-catch block
     // Todo: Implement the best practices outlined by Flutterwave docs
-    const {tx_ref, status} = dataFromWebhook.data;
+    const {status} = dataFromWebhook;
 
-    const correspondingUSaveForUTransaction = await prismaClient.usaveForUTransaction.findFirst({
-        where: {transactionReference: tx_ref}
-    });
-
-    // If no corresponding u-save/forU transaction not found, return
-    if (!correspondingUSaveForUTransaction) {
-        return
-    }
-
-    // If corresponding u-save/forU transaction found, but already updated, return
-    if (correspondingUSaveForUTransaction.transactionStatus !== "PENDING") {
-        return
+    if (transaction.transactionStatus !== "PENDING") {
+        throw new Error("Transaction status has already been modified");
     }
 
     //Todo: Re-Verify transaction status from flutterwave as per developer guidelines
+
     if (status !== "successful") {
         // If failed, update and return
-        await prismaClient.usaveForUTransaction.update({
-            where: {id: correspondingUSaveForUTransaction.id},
+        await prismaClient.transaction.update({
+            where: {id: transaction.id},
             data: {
                 transactionStatus: "FAIL"
             }
         });
 
-        return
+        throw new Error("Flutterwave transaction unsuccessful");
     } else {
-    //* Transaction status successful, uSaveForUTransaction not modified. We can safely deposit the money
+
+
+    //* Transaction status successful and not modified. We can safely deposit the money
 
     // Update USaveForUTransaction to be successful
-    await prismaClient.usaveForUTransaction.update({
+    await prismaClient.transaction.update({
         where: {
-            id: correspondingUSaveForUTransaction.id
+            id: transaction.id
         },
         data: {
             transactionStatus: "SUCCESS"
@@ -94,18 +70,18 @@ export const depositIntoForUSaving = async(dataFromWebhook: WebhookData) => {
     let convertedAmount = 0;
 
     const uSaveForUAccount = await prismaClient.uSaveForU.findFirst({
-        where: {id: correspondingUSaveForUTransaction.uSaveForUAccountId}
+        where: {id: transaction.featureId}
     });
 
     if (uSaveForUAccount?.currency === "USD") {
         let dollarRate = getCurrentDollarRate();
-        convertedAmount = correspondingUSaveForUTransaction.amount / dollarRate
+        convertedAmount = transaction.amount / dollarRate
     } else {
-        convertedAmount = correspondingUSaveForUTransaction.amount
+        convertedAmount = transaction.amount
     }
 
     await prismaClient.uSaveForU.update({
-        where: {id: correspondingUSaveForUTransaction.uSaveForUAccountId},
+        where: {id: transaction.featureId},
         data: {
             investmentCapital: {increment: convertedAmount},
             totalInvestment: {increment: convertedAmount}
