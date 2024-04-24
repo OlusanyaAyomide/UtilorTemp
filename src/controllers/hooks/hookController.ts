@@ -2,6 +2,7 @@ import { WebhookData, WebhookData2 } from "../../interfaces/webhook.interface";
 import prismaClient from "../../prisma/pris-client";
 import { getCurrentDollarRate } from "../../utils/util";
 import { Transaction } from "@prisma/client";
+import { manageReferralBalance } from "./hookUtility";
 
 export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
     // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
@@ -19,12 +20,17 @@ export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
         throw new Error("Transaction not found in the database")
     }
 
+    
+
     //? Now run different transactions depending on transaction type/description
     switch (transaction.description) {
+
         case "FORU":
+            manageReferralBalance(transaction)
             depositIntoForUSaving(dataFromWebhook, transaction)
             break;
         case "UWALLET":
+            manageReferralBalance(transaction)
             depositIntoUWallet(dataFromWebhook, transaction)
             break;
         default:

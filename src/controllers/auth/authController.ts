@@ -9,6 +9,7 @@ import { bcryptCompare } from "../../utils/util";
 import { setAuthCredentials } from "../../utils/credentials-setup";
 import { generateDeviceId } from "../../utils/clientDevice";
 import type { User } from "@prisma/client";
+import { referralAmount } from "../../utils/TempRates";
 
 export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
     const {email}:{email:string} = req.body
@@ -30,15 +31,17 @@ export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
             data:{email,isGoogleUser:false,merchantID}
         })
         newUserId = newUser.id
+        
+        // Create a corresponding new Naira wallet
+        await prismaClient.uWallet.create({
+        data: {
+            balance: 0.0,
+            currency: "NGN",
+            userId:newUser.id
+        }
+    })
 
-    // Create a corresponding new Naira wallet
-        const newUserWallet = await prismaClient.uWallet.create({
-            data: {
-                balance: 0.0,
-                currency: "NGN",
-                userId: newUserId
-            }
-        })
+
     }
 
 
@@ -118,18 +121,23 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
 export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
     const {firstName,lastName,password,email,phoneNumber,merchantID}:ISignUpForm = req.body
     //check i
-    const isExisting = await prismaClient.user.findFirst({
+    const existingUser = await prismaClient.user.findFirst({
         where:{
             email:email
         }
     })
 
-    if(!isExisting){
+    if(!existingUser){
         return ResponseHandler.sendErrorResponse({res,error:"Email supplied invalid"})
+    }
+    //check if user has completely basic detail setup
+    if(existingUser.isCredentialsSet){
+        return ResponseHandler.sendErrorResponse({res,error:"Basic Detail already setup"})
     }
 
     //set referredByUser global
     let referredByUser:User| null = null
+
     //get referral user via merchantID
 
     if(merchantID){
@@ -151,12 +159,8 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
         },
     })
 
+    //if user is referred update referredBy user with the new referral 
     if(referredByUser){
-        /////TODO//////
-        //update new user referral wallet
-        //update referedByUser wallet
-
-
         //connect refrerred By User with new user
         await prismaClient.user.update({
             where:{id:referredByUser.id},
@@ -168,11 +172,35 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
                 }
             }
         })
-    }
   
+        //update new user referral wallet
+        const newuserWallet = await prismaClient.uWallet.findFirst({
+            where:{userId:user.id,currency:"NGN"}
+        })
+        if(!newuserWallet){
+            return ResponseHandler.sendErrorResponse({res,error:"Corresponding wallet is not found"})
+        }
+        await prismaClient.uWallet.update({
+            where:{id:newuserWallet.id},
+            data:{referralBalance:{increment:referralAmount}}
+        })
 
-
-    //if user is referred update referredBy user with the new referral
+        //update user "that referred new user" wallet
+        const referalUserWallet = await prismaClient.uWallet.findFirst({
+            where:{userId:referredByUser.id,currency:"NGN"},
+        })
+       
+        if(!referalUserWallet){
+            return ResponseHandler.sendErrorResponse({res,error:"Corresponding wallet is not found"})
+        }
+        await prismaClient.uWallet.update({
+            where:{id:referalUserWallet.id},
+            data:{
+                referralBalance:{increment:referralAmount}
+            }
+        })
+    }
+    
 
     //add device to list of user Devices
     const deviceId = generateDeviceId(req)
@@ -183,6 +211,7 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
             device:deviceId
         }
     })
+
     req.user={
         userId:user.id,
         firstName,lastName,

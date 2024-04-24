@@ -32,6 +32,7 @@ enum TRANSACTION_TYPE {
   WITHDRAWAL
   DEPOSIT
   INTEREST
+  REFERRAL
 }
 
 enum CURRENCY {
@@ -77,6 +78,7 @@ model User {
   referredById String?
   redeemedForSelf     Boolean @default(false)
   redeemedForReferral Boolean @default(false)
+  hasMadeDeposit      Boolean @default(false)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 }

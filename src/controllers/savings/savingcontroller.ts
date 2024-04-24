@@ -95,6 +95,7 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
             }
         })
 
+        //create a withdrawal transaction in the wallet
         const newUWalletWithdrawalTransaction = await prismaClient.transaction.create({
             data: {
                 userId: user.userId,
