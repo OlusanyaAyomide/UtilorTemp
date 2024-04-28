@@ -55,10 +55,11 @@ export  function convertToDate(dateString:string){
 }
 //this would be prefixed to the transaction ref, it would be used later from the webhook for find the resulting type of model to query
 
-export function generateTransactionRef(){
+export function generateTransactionRef(length?:number){
+    const stringLength = length || 14
     let id = '';
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijlmnopqrstuvwxyz';
-    while (id.length < 14) {
+    while (id.length < stringLength) {
       const randomIndex = Math.floor(Math.random() * characters.length);
       const char = characters.charAt(randomIndex);
     
@@ -66,8 +67,6 @@ export function generateTransactionRef(){
         id += char;
       }
     }
-    //encode the transactionRef so the prefix wont be visible to users
-
   
     return id
 
@@ -75,7 +74,7 @@ export function generateTransactionRef(){
 
 export function getCurrentDollarRate() {
   // Todo: Implement receiving current rate from the db
-  return 1100.00;
+  return 1200.00;
 }
 
 
@@ -83,3 +82,8 @@ export function getCurrentDollarRate() {
 // export function enumToRegex(enum: Enum) {
 
 // }
+
+
+export const generateConsentToken = ()=>{
+
+}

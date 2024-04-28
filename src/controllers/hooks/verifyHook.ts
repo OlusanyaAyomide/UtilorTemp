@@ -14,7 +14,6 @@ export const verifyHook = async(req: Request, res: Response, next: NextFunction)
     console.log(req.headers);
 
     if (req.headers['verif-hash'] !== process.env.FLW_HASH) {
-        console.log("Hash Didn't match")
         ResponseHandler.sendSuccessResponse({res, code: 200, message: "Received"});
         return;
     }

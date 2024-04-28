@@ -49,8 +49,9 @@ var googleRequest_1 = require("../../request/googleRequest");
 var util_2 = require("../../utils/util");
 var credentials_setup_1 = require("../../utils/credentials-setup");
 var clientDevice_1 = require("../../utils/clientDevice");
+var TempRates_1 = require("../../utils/TempRates");
 exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var email, existingUser, newUserId, merchantID, newUser, newUserWallet, otpCode, otpObject;
+    var email, existingUser, newUserId, merchantID, newUser, otpCode, otpObject;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -75,15 +76,17 @@ exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { r
             case 2:
                 newUser = _a.sent();
                 newUserId = newUser.id;
+                // Create a corresponding new Naira wallet
                 return [4 /*yield*/, pris_client_1.default.uWallet.create({
                         data: {
                             balance: 0.0,
                             currency: "NGN",
-                            userId: newUserId
+                            userId: newUser.id
                         }
                     })];
             case 3:
-                newUserWallet = _a.sent();
+                // Create a corresponding new Naira wallet
+                _a.sent();
                 _a.label = 4;
             case 4:
                 otpCode = (0, util_1.generateOTP)();
@@ -165,34 +168,107 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
     });
 }); });
 exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, firstName, lastName, password, email, phoneNumber, isExisting, hashedPassword, user, deviceId;
+    var _a, firstName, lastName, password, email, phoneNumber, merchantID, existingUser, referredByUser, hashedPassword, user, newuserWallet, referalUserWallet, deviceId;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, firstName = _a.firstName, lastName = _a.lastName, password = _a.password, email = _a.email, phoneNumber = _a.phoneNumber;
+                _a = req.body, firstName = _a.firstName, lastName = _a.lastName, password = _a.password, email = _a.email, phoneNumber = _a.phoneNumber, merchantID = _a.merchantID;
                 return [4 /*yield*/, pris_client_1.default.user.findFirst({
                         where: {
                             email: email
                         }
                     })];
             case 1:
-                isExisting = _b.sent();
-                if (!isExisting) {
+                existingUser = _b.sent();
+                if (!existingUser) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Email supplied invalid" })];
                 }
-                return [4 /*yield*/, (0, util_1.bcryptHash)(password)
-                    //update created user information
-                ];
+                //check if user has completely basic detail setup
+                if (existingUser.isCredentialsSet) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Basic Detail already setup" })];
+                }
+                referredByUser = null;
+                if (!merchantID) return [3 /*break*/, 3];
+                return [4 /*yield*/, pris_client_1.default.user.findFirst({
+                        where: { merchantID: merchantID }
+                    })];
             case 2:
+                referredByUser = _b.sent();
+                if (!referredByUser) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "merchantID is invalid" })];
+                }
+                _b.label = 3;
+            case 3: return [4 /*yield*/, (0, util_1.bcryptHash)(password)
+                //update created user information
+            ];
+            case 4:
                 hashedPassword = _b.sent();
                 return [4 /*yield*/, pris_client_1.default.user.update({
                         where: { email: email },
-                        data: { firstName: firstName, lastName: lastName, password: hashedPassword, phoneNumber: phoneNumber, isCredentialsSet: true },
+                        data: {
+                            firstName: firstName,
+                            lastName: lastName,
+                            password: hashedPassword,
+                            phoneNumber: phoneNumber,
+                            isCredentialsSet: true,
+                            referredById: referredByUser === null || referredByUser === void 0 ? void 0 : referredByUser.id
+                        },
                     })
-                    //add device to list of user Devices
+                    //if user is referred update referredBy user with the new referral 
                 ];
-            case 3:
+            case 5:
                 user = _b.sent();
+                if (!referredByUser) return [3 /*break*/, 11];
+                //connect refrerred By User with new user
+                return [4 /*yield*/, pris_client_1.default.user.update({
+                        where: { id: referredByUser.id },
+                        data: {
+                            referrals: {
+                                connect: {
+                                    id: user.id
+                                }
+                            }
+                        }
+                    })
+                    //update new user referral wallet
+                ];
+            case 6:
+                //connect refrerred By User with new user
+                _b.sent();
+                return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
+                        where: { userId: user.id, currency: "NGN" }
+                    })];
+            case 7:
+                newuserWallet = _b.sent();
+                if (!newuserWallet) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Corresponding wallet is not found" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.uWallet.update({
+                        where: { id: newuserWallet.id },
+                        data: { referralBalance: { increment: TempRates_1.referralAmount } }
+                    })
+                    //update user "that referred new user" wallet
+                ];
+            case 8:
+                _b.sent();
+                return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
+                        where: { userId: referredByUser.id, currency: "NGN" },
+                    })];
+            case 9:
+                referalUserWallet = _b.sent();
+                if (!referalUserWallet) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Corresponding wallet is not found" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.uWallet.update({
+                        where: { id: referalUserWallet.id },
+                        data: {
+                            referralBalance: { increment: TempRates_1.referralAmount }
+                        }
+                    })];
+            case 10:
+                _b.sent();
+                _b.label = 11;
+            case 11:
                 deviceId = (0, clientDevice_1.generateDeviceId)(req);
                 return [4 /*yield*/, pris_client_1.default.userDevices.create({
                         data: {
@@ -200,7 +276,7 @@ exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, nex
                             device: deviceId
                         }
                     })];
-            case 4:
+            case 12:
                 _b.sent();
                 req.user = {
                     userId: user.id,

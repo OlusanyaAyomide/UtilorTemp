@@ -31,6 +31,8 @@ enum PAYMENT_METHOD {
 enum TRANSACTION_TYPE {
   WITHDRAWAL
   DEPOSIT
+  INTEREST
+  REFERRAL
 }
 
 enum CURRENCY {
@@ -68,14 +70,22 @@ model User {
   session             Session[]
   sessionId           String?           @unique
   devices             UserDevices[]
+  
   usaveforu           USaveForU[]
+  uAndICreator        UANDI[] @relation("UAndICreator")
+  uAndIPartner        UANDI[] @relation("UAndIPartner")
+  
   transactions        Transaction[]
+  notifications       Notification[]
+  consentToken        ConsentToken[]
+
   uWalletAccounts     UWallet[]
   referrals           User[] @relation("UserToUser")
   referredBy          User?    @relation("UserToUser", fields: [referredById], references: [id])
   referredById String?
   redeemedForSelf     Boolean @default(false)
   redeemedForReferral Boolean @default(false)
+  hasMadeDeposit      Boolean @default(false)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 }
@@ -125,6 +135,7 @@ model Transaction {
   transactionCurrency CURRENCY
   transactionStatus TRANSACTION_STATUS @default(PENDING)
   createdAt     DateTime        @default(now())
+  featureId String
 }
 
 
@@ -144,39 +155,64 @@ model USaveForU {
   expectedMonthlyAmount Int
   endingDate            DateTime
   createdAt             DateTime               @default(now())
-  transactions          UsaveForUTransaction[]
 }
-model UsaveForUTransaction {
-  id                  String            @id @unique() @default(uuid())
-  usaveForUAccount    USaveForU         @relation(fields: [uSaveForUAccountId], references: [id])
-  uSaveForUAccountId  String
-  transactionReference      String
-  amount              Float
-  transactionStatus   TRANSACTION_STATUS @default(PENDING)
-  transactionType     TRANSACTION_TYPE
-  transactionCurrency CURRENCY
-}
+
+
 
 model UWallet {
   id       String   @id @unique() @default(uuid())
   balance  Float
   currency CURRENCY
-  transactions UWalletTransaction[]
   createdAt             DateTime               @default(now())
   user                  User                   @relation(fields: [userId], references: [id])
   userId                String
   referralBalance       Int @default(0)
 }
 
-model UWalletTransaction {
-  id  String   @id @unique() @default(uuid())
-  uWalletAccount UWallet @relation(fields: [uWalletAccountId], references: [id])
-  uWalletAccountId String
-  transactionReference String
-  amount Float
-  transactionStatus   TRANSACTION_STATUS @default(PENDING)
-  transactionType     TRANSACTION_TYPE
-  transactionCurrency CURRENCY
+model UANDI{
+  id   String   @id @unique() @default(uuid())
+  creatorCapital Float    @default(0)
+  partnerCapital Float    @default(0)
+  totalCapital Float  @default(0)
+  creatorInvestmentReturn Float @default(0)
+  partnerInvestmentReturn Float @default(0)
+  totalInvestmentReturn Float @default(0)
 
+  creator   User @relation(fields: [creatorId], references: [id],name: "UAndICreator")
+  creatorId String
+  partner User @relation(fields: [partnerId], references: [id],name: "UAndIPartner")
+  partnerId String
+  isAccepted   Boolean  @default(true) //set to true for now, when user accepts u and I deposit can deposit
+
+
+  isActivated           Boolean                @default(false)
+  Savingsname String
+  currency CURRENCY
+  expectedDepositDay    Int
+  expectedMonthlyAmount Int
+  endingDate            DateTime
+  createdAt             DateTime               @default(now())
 }
 
+
+model Notification{
+  id                    String                 @id @unique() @default(uuid())
+  user                  User                   @relation(fields: [userId], references: [id])
+  userId                String
+  description           String
+  createdAt             String
+  imageUrl              String?
+}
+
+
+
+model ConsentToken{
+  id                    String                 @id @unique() @default(uuid())
+  user                  User                   @relation(fields: [userId], references: [id])
+  userId                String      
+  token                 String
+  productDescription    DESCRIPTION_TYPE
+  expiryTime            DateTime
+  createdAt             DateTime             @default(now())
+  
+}

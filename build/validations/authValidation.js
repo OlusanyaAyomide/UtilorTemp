@@ -95,7 +95,8 @@ function basicSetUpValidation(req, res, next) {
                 password: joi_1.default.string().required().regex(passwordRegex).message('Password is not strong enough'),
                 referralId: joi_1.default.string().optional().allow(""),
                 confirmPassword: joi_1.default.string().required().valid(joi_1.default.ref('password')).error(new Error('Password mismatch')),
-                phoneNumber: joi_1.default.string().max(11).required()
+                phoneNumber: joi_1.default.string().max(11).required(),
+                merchantID: joi_1.default.string().optional()
             });
             validation = signUpSchema.validate(req.body);
             if (validation.error) {

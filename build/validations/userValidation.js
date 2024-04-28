@@ -39,38 +39,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyHook = void 0;
-var response_handler_1 = __importDefault(require("../../utils/response-handler"));
-var hookController_1 = require("./hookController");
-//this middleware verify the hooks is valid and from flutterwave
-var verifyHook = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var dataFromWebhook, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                // Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings, if not return
-                console.log(req.body);
-                console.log(req.headers);
-                if (req.headers['verif-hash'] !== process.env.FLW_HASH) {
-                    response_handler_1.default.sendSuccessResponse({ res: res, code: 200, message: "Received" });
-                    return [2 /*return*/];
-                }
-                response_handler_1.default.sendSuccessResponse({ res: res, code: 200, message: "Received" });
-                dataFromWebhook = req.body;
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, (0, hookController_1.channelWebHookData)(dataFromWebhook)];
-            case 2:
-                _a.sent();
-                return [3 /*break*/, 4];
-            case 3:
-                e_1 = _a.sent();
-                console.log("An error occurred processing webhook");
-                console.log(e_1);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
-        }
+exports.createConsentValidation = void 0;
+var joi_1 = __importDefault(require("joi"));
+var response_handler_1 = __importDefault(require("../utils/response-handler"));
+function createConsentValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var paymentMethodRegex, depositSchema, validation, error;
+        return __generator(this, function (_a) {
+            paymentMethodRegex = /^(UWALLET|BANK|CARD)$/;
+            depositSchema = joi_1.default.object({
+                description: joi_1.default.string().valid("FORU", "UANDI", "UWALLET").required()
+            });
+            validation = depositSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
     });
-}); };
-exports.verifyHook = verifyHook;
+}
+exports.createConsentValidation = createConsentValidation;

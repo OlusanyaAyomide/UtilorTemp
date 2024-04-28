@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
+exports.generateConsentToken = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
 var bcrypt_1 = __importDefault(require("bcrypt"));
 function generateOTP() {
     var otpLength = 4;
@@ -107,25 +107,28 @@ function convertToDate(dateString) {
 }
 exports.convertToDate = convertToDate;
 //this would be prefixed to the transaction ref, it would be used later from the webhook for find the resulting type of model to query
-function generateTransactionRef() {
+function generateTransactionRef(length) {
+    var stringLength = length || 14;
     var id = '';
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijlmnopqrstuvwxyz';
-    while (id.length < 14) {
+    while (id.length < stringLength) {
         var randomIndex = Math.floor(Math.random() * characters.length);
         var char = characters.charAt(randomIndex);
         if (!id.includes(char)) {
             id += char;
         }
     }
-    //encode the transactionRef so the prefix wont be visible to users
     return id;
 }
 exports.generateTransactionRef = generateTransactionRef;
 function getCurrentDollarRate() {
     // Todo: Implement receiving current rate from the db
-    return 1100.00;
+    return 1200.00;
 }
 exports.getCurrentDollarRate = getCurrentDollarRate;
 // Todo: Implement an enumToRegex function to help with JOI Validation
 // export function enumToRegex(enum: Enum) {
 // }
+var generateConsentToken = function () {
+};
+exports.generateConsentToken = generateConsentToken;

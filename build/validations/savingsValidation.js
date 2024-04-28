@@ -39,9 +39,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.depositUWalletValidation = exports.depositForUValidation = exports.createForUValidation = void 0;
+exports.createUAndIValidation = exports.depositUWalletValidation = exports.depositForUValidation = exports.createForUValidation = void 0;
 var joi_1 = __importDefault(require("joi"));
 var response_handler_1 = __importDefault(require("../utils/response-handler"));
+var client_1 = require("@prisma/client");
 function createForUValidation(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
         var currencyRegex, investmentSchema, validation, error;
@@ -85,13 +86,17 @@ function depositForUValidation(req, res, next) {
     });
 }
 exports.depositForUValidation = depositForUValidation;
+//should be moved
 function depositUWalletValidation(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
         var depositSchema, validation, error;
-        return __generator(this, function (_a) {
+        var _a;
+        return __generator(this, function (_b) {
             depositSchema = joi_1.default.object({
                 id: joi_1.default.string().required(),
                 amount: joi_1.default.number().required().min(1),
+                currency: (_a = joi_1.default.string()).valid.apply(_a, Object.values(client_1.CURRENCY)).required(),
+                paymentMethod: joi_1.default.string().valid("CARD", "BANK").required()
             });
             validation = depositSchema.validate(req.body);
             if (validation.error) {
@@ -103,3 +108,27 @@ function depositUWalletValidation(req, res, next) {
     });
 }
 exports.depositUWalletValidation = depositUWalletValidation;
+function createUAndIValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var currencyRegex, investmentSchema, validation, error;
+        return __generator(this, function (_a) {
+            currencyRegex = /^(NGN|USD)$/;
+            investmentSchema = joi_1.default.object({
+                currency: joi_1.default.string().required().regex(currencyRegex).message('Currency must be either NGN or USD'),
+                savingsName: joi_1.default.string().required(),
+                expectedDepositDay: joi_1.default.number().integer().required(),
+                expectedMonthlyAmount: joi_1.default.number().integer().required(),
+                // amount:Joi.number().required().min(5000),
+                endingDate: joi_1.default.date().iso().required(),
+                consentToken: joi_1.default.string().min(9).required()
+            });
+            validation = investmentSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.createUAndIValidation = createUAndIValidation;

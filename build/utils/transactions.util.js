@@ -39,77 +39,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateForUTransactionStatus = exports.updateUWalletTransactionStats = exports.updateGenericTransactionStatus = exports.saveForUTransaction = exports.saveTransaction = exports.saveUwalletTransaction = void 0;
+exports.getConvertedRate = exports.updateTransactionStatus = void 0;
 var pris_client_1 = __importDefault(require("../prisma/pris-client"));
-function saveUwalletTransaction(transactionData) {
-    return __awaiter(this, void 0, void 0, function () {
-        var newUWalletTransaction;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, pris_client_1.default.uWalletTransaction.create({
-                        data: {
-                            uWalletAccountId: transactionData.uWalletAccountId,
-                            amount: transactionData.amount,
-                            transactionReference: transactionData.transactionReference,
-                            transactionType: transactionData.transactionType,
-                            transactionCurrency: transactionData.transactionCurrency
-                        }
-                    })];
-                case 1:
-                    newUWalletTransaction = _a.sent();
-                    return [2 /*return*/, newUWalletTransaction];
-            }
-        });
-    });
-}
-exports.saveUwalletTransaction = saveUwalletTransaction;
-function saveTransaction(transactionData) {
-    return __awaiter(this, void 0, void 0, function () {
-        var newTransaction;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, pris_client_1.default.transaction.create({
-                        data: {
-                            userId: transactionData.userId,
-                            transactionReference: transactionData.transactionReference,
-                            amount: transactionData.amount,
-                            transactionCurrency: transactionData.transactionCurrency,
-                            transactionType: transactionData.transactionType,
-                            description: transactionData.description,
-                            paymentMethod: transactionData.paymentMethod
-                        }
-                    })];
-                case 1:
-                    newTransaction = _a.sent();
-                    return [2 /*return*/, newTransaction];
-            }
-        });
-    });
-}
-exports.saveTransaction = saveTransaction;
-function saveForUTransaction(transactionData) {
-    return __awaiter(this, void 0, void 0, function () {
-        var newTransaction;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, pris_client_1.default.usaveForUTransaction.create({
-                        data: {
-                            transactionReference: transactionData.transactionReference,
-                            transactionCurrency: transactionData.transactionCurrency,
-                            amount: transactionData.amount,
-                            uSaveForUAccountId: transactionData.uSaveForUAccountId,
-                            transactionType: transactionData.transactionType
-                        }
-                    })];
-                case 1:
-                    newTransaction = _a.sent();
-                    return [2 /*return*/, newTransaction];
-            }
-        });
-    });
-}
-exports.saveForUTransaction = saveForUTransaction;
-function updateGenericTransactionStatus(id, status) {
+var util_1 = require("./util");
+function updateTransactionStatus(id, status) {
     return __awaiter(this, void 0, void 0, function () {
         var updatedTransaction;
         return __generator(this, function (_a) {
@@ -125,38 +58,18 @@ function updateGenericTransactionStatus(id, status) {
         });
     });
 }
-exports.updateGenericTransactionStatus = updateGenericTransactionStatus;
-function updateUWalletTransactionStats(id, status) {
-    return __awaiter(this, void 0, void 0, function () {
-        var updatedTransaction;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, pris_client_1.default.uWalletTransaction.update({
-                        where: { id: id },
-                        data: { transactionStatus: status }
-                    })];
-                case 1:
-                    updatedTransaction = _a.sent();
-                    return [2 /*return*/, updatedTransaction];
-            }
-        });
-    });
-}
-exports.updateUWalletTransactionStats = updateUWalletTransactionStats;
-function updateForUTransactionStatus(id, status) {
-    return __awaiter(this, void 0, void 0, function () {
-        var updatedTransaction;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, pris_client_1.default.usaveForUTransaction.update({
-                        where: { id: id },
-                        data: { transactionStatus: status }
-                    })];
-                case 1:
-                    updatedTransaction = _a.sent();
-                    return [2 /*return*/, updatedTransaction];
-            }
-        });
-    });
-}
-exports.updateForUTransactionStatus = updateForUTransactionStatus;
+exports.updateTransactionStatus = updateTransactionStatus;
+var getConvertedRate = function (_a) {
+    var amount = _a.amount, from = _a.from, to = _a.to;
+    var rate = (0, util_1.getCurrentDollarRate)();
+    if ((from === "NGN") && (to === "USD")) {
+        return amount / rate;
+    }
+    else if ((from === "USD") && (to === "NGN")) {
+        return amount * rate;
+    }
+    else {
+        return amount;
+    }
+};
+exports.getConvertedRate = getConvertedRate;

@@ -17,3 +17,4 @@ export interface IUWalletDepositInformation{
     paymentMethod: PAYMENT_METHOD,
     currency: CURRENCY
 }
+

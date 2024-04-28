@@ -39,38 +39,55 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyHook = void 0;
+exports.retrieveConsentToken = exports.createConsentToken = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
-var hookController_1 = require("./hookController");
-//this middleware verify the hooks is valid and from flutterwave
-var verifyHook = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var dataFromWebhook, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+var catch_async_1 = __importDefault(require("../../utils/catch-async"));
+var util_1 = require("../../utils/util");
+var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
+exports.createConsentToken = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, bodyData, futureHour, token, newToken;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                // Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings, if not return
-                console.log(req.body);
-                console.log(req.headers);
-                if (req.headers['verif-hash'] !== process.env.FLW_HASH) {
-                    response_handler_1.default.sendSuccessResponse({ res: res, code: 200, message: "Received" });
-                    return [2 /*return*/];
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                bodyData = req.body;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, code: 500, message: "server error" })];
                 }
-                response_handler_1.default.sendSuccessResponse({ res: res, code: 200, message: "Received" });
-                dataFromWebhook = req.body;
-                _a.label = 1;
+                futureHour = (0, util_1.getTimeFromNow)(60);
+                token = (0, util_1.generateTransactionRef)(16);
+                return [4 /*yield*/, pris_client_1.default.consentToken.create({
+                        data: {
+                            userId: userId,
+                            token: token,
+                            productDescription: bodyData.description, expiryTime: futureHour
+                        }
+                    })];
             case 1:
-                _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, (0, hookController_1.channelWebHookData)(dataFromWebhook)];
-            case 2:
-                _a.sent();
-                return [3 /*break*/, 4];
-            case 3:
-                e_1 = _a.sent();
-                console.log("An error occurred processing webhook");
-                console.log(e_1);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                newToken = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
+                            consentToken: newToken
+                        } })];
         }
     });
-}); };
-exports.verifyHook = verifyHook;
+}); });
+exports.retrieveConsentToken = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, userTokens;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, code: 500, message: "server error" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.consentToken.findMany({
+                        where: { userId: userId }
+                    })];
+            case 1:
+                userTokens = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: userTokens })];
+        }
+    });
+}); });
