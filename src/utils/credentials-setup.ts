@@ -19,7 +19,7 @@ export  async function setAuthCredentials ({req,res,id,email}:IsetAuthCookie){
         { expiresIn:"2m" }
     );
     const refreshToken = jwt.sign(
-        {id},
+        {userid:id},
         process.env.JWT_SECRET as string,
         {expiresIn:"1h"}
     )

@@ -4,6 +4,7 @@ import { generateDeviceId } from '../utils/clientDevice';
 import prismaClient from '../prisma/pris-client';
 import jwt from "jsonwebtoken";
 import { IExpressRequest, IUserDetail } from '../interfaces/user-interface';
+import { getTimeFromNow } from '../utils/util';
 
 
 export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFunction):Promise<Response | void>{
@@ -36,6 +37,9 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
         where:{
             deviceId,
             token:refreshToken,
+            expiredAt:{
+                gt:new Date()
+            }
         },
         include:{
             user:true
@@ -47,28 +51,43 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
         return ResponseHandler.sendErrorResponse({res,error:"Token Expired 2",code:401})
     }
 
-    // const currentDate = new Date()
-    // const expiredDate = new Date(isTokenValid.expiredAt)
-    // const isExpired = expiredDate > currentDate
-    // console.log(expiredDate.toLocaleDateString())
-    // console.log(currentDate.toLocaleDateString())
-    // console.log(isExpired)
-    // if(isExpired){
-    //     await prismaClient.session.delete({
-    //         where:{id:isTokenValid.id}
-    //     })
-    //     res.clearCookie("refreshToken")
-    //     return ResponseHandler.sendErrorResponse({res,error:"Session Expired exp",code:401})
-    // }
+
 
     const user =isTokenValid.user
 
+
+    //create new access token
     const newAcessToken = jwt.sign(
-        { userId:user?.id,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified},
+        { userId:user.id,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified},
         process.env.JWT_SECRET as string,
         { expiresIn:"4m" }
     );
 
+
+    //rotate refresh token to keep user coninously signed in
+    const newRefreshToken = jwt.sign(
+        {userId:user.id},
+        process.env.JWT_SECRET as string,
+        {expiresIn:"1h"}
+    )
+
+    await prismaClient.session.update({
+        where:{id:isTokenValid.id},
+        data:{
+            token:newRefreshToken,
+            expiredAt:getTimeFromNow(60)
+        }
+    })
+
+    //set  refresh token to cookie
+    res.cookie("refreshToken",newRefreshToken,{
+        maxAge:60*60*1000,
+        secure:true,
+        httpOnly:true,
+        // signed:true,
+    })
+
+    //set accesss token to cookie
     res.cookie("acessToken",newAcessToken,{
         maxAge:3*60*1000,
         secure:true,
