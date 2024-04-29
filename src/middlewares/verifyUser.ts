@@ -52,13 +52,12 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     }
 
 
-
     const user =isTokenValid.user
 
 
     //create new access token
     const newAcessToken = jwt.sign(
-        { userId:user.id,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified},
+        { userId:user.id,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified,firstName:user.firstName,lastName:user.lastName},
         process.env.JWT_SECRET as string,
         { expiresIn:"4m" }
     );

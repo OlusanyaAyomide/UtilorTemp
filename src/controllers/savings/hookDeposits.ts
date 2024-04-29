@@ -146,7 +146,17 @@ export const depositIntoUAndISavingViaFlutterwave = async(dataFromWebhook: Webho
             }
         });
     }
+    //create user notification for both users
+    const depositUserInfo = await prismaClient.user.findFirst({where:{id:transaction.userId}})
 
+    await prismaClient.notification.createMany({
+        data:[
+            {userId:uAndISaving.creatorId,description:`${depositUserInfo?.firstName} ${depositUserInfo?.lastName} Deposited ${uAndISaving.currency} ${depositAmount} into ${uAndISaving.Savingsname}`},
+
+            {userId:uAndISaving.partnerId,description:`${depositUserInfo?.firstName} ${depositUserInfo?.lastName} Deposited ${uAndISaving.currency} ${depositAmount} into ${uAndISaving.Savingsname}`}
+        ]
+    })
+    
 
 
     }

@@ -12,6 +12,7 @@ interface IsetAuthCookie{
     id:string
     email:string
 }
+
 export  async function setAuthCredentials ({req,res,id,email}:IsetAuthCookie){
     const acessToken = jwt.sign(
         { id,email },

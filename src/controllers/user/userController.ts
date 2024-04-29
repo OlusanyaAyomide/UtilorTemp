@@ -37,3 +37,18 @@ export const retrieveConsentToken = catchDefaultAsync( async(req,res,next)=>{
   return ResponseHandler.sendSuccessResponse({res,data:userTokens})
 
 })
+
+
+export const getUserNotifications = catchDefaultAsync(async (req,res,next)=>{
+  const userId = req.user?.userId
+
+  if(!userId){
+      return ResponseHandler.sendSuccessResponse({res,code:500,message:"server error"})
+  }
+
+  const notications = await prismaClient.notification.findMany({
+    where:{userId},
+    orderBy:{createdAt:"desc"}
+  })
+  return ResponseHandler.sendSuccessResponse({res,data:notications})
+})

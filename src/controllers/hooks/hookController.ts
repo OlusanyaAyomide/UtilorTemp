@@ -4,7 +4,7 @@ import { getCurrentDollarRate } from "../../utils/util";
 import { Transaction } from "@prisma/client";
 import { manageReferralBalance } from "./hookUtility";
 import { depositIntoForUSavingViaFlutterwave, depositIntoUAndISavingViaFlutterwave } from "../savings/hookDeposits";
-import { getConvertedRate } from "../../utils/transactions.util";
+import { getConvertedRate, updateTransactionStatus } from "../../utils/transactions.util";
 
 export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
     // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
@@ -111,12 +111,8 @@ export const depositIntoUWallet = async(dataFromWebhook: WebhookData2, transacti
             balance: {increment: depositAmount}, 
         }
     })
-    await  prismaClient.transaction.update({
-        where:{id:transaction.id},
-        data:{
-            transactionStatus:"SUCCESS"
-        }
-    })
+    await updateTransactionStatus(transaction.id,"SUCCESS")
+
 
     }
 

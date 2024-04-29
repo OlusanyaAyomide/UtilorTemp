@@ -330,6 +330,13 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
         await updateTransactionStatus(newUWalletWithdrawalTransaction.id, "SUCCESS");
         await updateTransactionStatus(newUandITransaction.id, "SUCCESS");
 
+        //create notification for both users
+        await prismaClient.notification.createMany({
+            data:[
+                {userId:updatedUAndI.creatorId,description:`${req.user.firstName} ${req.user.lastName} Deposited ${updatedUAndI.currency} ${depositAmount} into ${updatedUAndI.Savingsname} `},
+                {userId:updatedUAndI.partnerId,description:`${req.user.firstName} ${req.user.lastName} Deposited ${updatedUAndI.currency} ${depositAmount} into ${updatedUAndI.Savingsname} `}
+            ]
+        })
         // Return success response
         
         return ResponseHandler.sendSuccessResponse({

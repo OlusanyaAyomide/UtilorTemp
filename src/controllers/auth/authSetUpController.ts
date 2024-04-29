@@ -73,9 +73,9 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"Verify device",code:403})
     }
 
-    
+   
     const acessToken = jwt.sign(
-        { userId:user?.userId,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified},
+        { userId:user?.userId,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified,firstName:user.firstName,lastName:user.lastName},
         process.env.JWT_SECRET as string,
         { expiresIn:"4m" }
     );

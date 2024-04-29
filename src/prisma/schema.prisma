@@ -200,7 +200,7 @@ model Notification{
   user                  User                   @relation(fields: [userId], references: [id])
   userId                String
   description           String
-  createdAt             String
+  createdAt             DateTime                 @default(now())
   imageUrl              String?
 }
 
