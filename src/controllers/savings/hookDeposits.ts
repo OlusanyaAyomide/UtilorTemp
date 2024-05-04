@@ -1,7 +1,6 @@
 import prismaClient from "../../prisma/pris-client";
 import { WebhookData2 } from "../../interfaces/webhook.interface";
 import { CURRENCY, Transaction } from "@prisma/client";
-import { getCurrentDollarRate } from "../../utils/util";
 import { getConvertedRate } from "../../utils/transactions.util";
 
 export const depositIntoForUSavingViaFlutterwave = async(dataFromWebhook: WebhookData2, transaction: Transaction) => {
@@ -54,15 +53,6 @@ export const depositIntoForUSavingViaFlutterwave = async(dataFromWebhook: Webhoo
     const depositAmount = getConvertedRate({amount:transaction.amount,from:dataFromWebhook.currency as CURRENCY,to:uSaveForUAccount.currency})
     // let convertedAmount = 0;
 
-    // if (uSaveForUAccount.currency === "USD" && transaction.transactionCurrency == "NGN") {
-    //     let dollarRate = getCurrentDollarRate();
-    //     convertedAmount = transaction.amount / dollarRate
-    // } else if (uSaveForUAccount.currency === "NGN" && transaction.transactionCurrency == "USD") {
-    //     let dollarRate = getCurrentDollarRate();
-    //     convertedAmount = transaction.amount * dollarRate
-    // } else {
-    //     convertedAmount = transaction.amount
-    // }
 
     await prismaClient.uSaveForU.update({
         where: {id: transaction.featureId},
@@ -114,7 +104,7 @@ export const depositIntoUAndISavingViaFlutterwave = async(dataFromWebhook: Webho
         }
     })
 
-    // Modify the USaveForUAccount as needed
+    // Modify the CABAL ACCOUNT as needed
 
     const uAndISaving = await prismaClient.uANDI.findFirst({
         where: {id: transaction.featureId}
@@ -157,8 +147,151 @@ export const depositIntoUAndISavingViaFlutterwave = async(dataFromWebhook: Webho
         ]
     })
     
+    }
+}
 
+
+export const depositIntoMyCabalSavingViaFlutterwave = async(dataFromWebhook: WebhookData2, transaction: Transaction) => {
+    // Todo: Put all this logic into a try-catch block
+    // Todo: Implement the best practices outlined by Flutterwave docs
+    const {status} = dataFromWebhook;
+
+    if (transaction.transactionStatus !== "PENDING") {
+        throw new Error("Transaction status has already been modified");
+    }
+
+    //Todo: Re-Verify transaction status from flutterwave as per developer guidelines
+
+    if (status !== "successful") {
+        // If failed, update and return
+        await prismaClient.transaction.update({
+            where: {id: transaction.id},
+            data: {
+                transactionStatus: "FAIL"
+            }
+        });
+
+        throw new Error("Flutterwave transaction unsuccessful");
+    } else {
+
+    //* Transaction status successful and not modified. We can safely deposit the money
+
+    // Update USaveForUTransaction to be successful
+    await prismaClient.transaction.update({
+        where: {
+            id: transaction.id
+        },
+        data: {
+            transactionStatus: "SUCCESS"
+        }
+    })
+
+    // Modify the USaveForUAccount as needed
+
+    const userCabal = await prismaClient.userCabal.findFirst({
+        where: {id: transaction.featureId},
+        include:{
+            cabelGroup:true,
+            user:{
+                select:{
+                    firstName:true,
+                    lastName:true
+                }
+            }
+        }
+    });
+
+    if (!userCabal) {
+        throw new Error("Cabal Account not found");
+    }
+
+    const depositAmount = getConvertedRate({amount:transaction.amount,from:dataFromWebhook.currency as CURRENCY,to:userCabal.cabelGroup.currency})
+
+    await prismaClient.userCabal.update({
+        where: {id: transaction.featureId},
+        data: {
+            cabalCapital: {increment: depositAmount},
+            totalBalance: {increment: depositAmount},
+        }
+    })
+    //create notifications for all cabal users
+    const allUsers = await prismaClient.userCabal.findMany({
+        where:{cabalGroupId:userCabal.cabelGroup?.id}
+    })
+    //create a dashboard notifcation for all user in cabal
+    await prismaClient.notification.createMany({
+        data:allUsers.map((item)=>{
+            return {userId:item.userId,description:`${userCabal.user.firstName} ${userCabal.user.lastName} Deposited ${userCabal.cabelGroup.currency} ${depositAmount} into ${userCabal.cabelGroup.groupName}`}
+        })
+    })
+
+    }
+}
+
+
+export const depositIntoEmeergencySavingViaFlutterwave = async(dataFromWebhook: WebhookData2, transaction: Transaction) => {
+    // Todo: Put all this logic into a try-catch block
+    // Todo: Implement the best practices outlined by Flutterwave docs
+    const {status} = dataFromWebhook;
+
+    if (transaction.transactionStatus !== "PENDING") {
+        throw new Error("Transaction status has already been modified");
+    }
+    
+
+    //Todo: Re-Verify transaction status from flutterwave as per developer guidelines
+
+    if (status !== "successful") {
+        // If failed, update and return
+        await prismaClient.transaction.update({
+            where: {id: transaction.id},
+            data: {
+                transactionStatus: "FAIL"
+            }
+        });
+
+        throw new Error("Flutterwave transaction unsuccessful");
+    } else {
+
+
+    //* Transaction status successful and not modified. We can safely deposit the money
+
+    // Update USaveForUTransaction to be successful
+    await prismaClient.transaction.update({
+        where: {
+            id: transaction.id
+        },
+        data: {
+            transactionStatus: "SUCCESS"
+        }
+    })
+
+    // Modify the EmergencyAccount as needed
+
+    const emergecyAccount = await prismaClient.emergency.findFirst({
+        where: {id: transaction.featureId}
+    });
+
+    if (!emergecyAccount) {
+        throw new Error("For-U account not found");
+    }
+
+    const depositAmount = getConvertedRate({amount:transaction.amount,from:dataFromWebhook.currency as CURRENCY,to:emergecyAccount.currency})
+    // let convertedAmount = 0;
+
+
+    await prismaClient.emergency.update({
+        where: {id: transaction.featureId},
+        data: {
+            investmentCapital: {increment: depositAmount},
+            totalInvestment: {increment: depositAmount},
+        }
+    })
 
     }
 
 }
+
+
+
+

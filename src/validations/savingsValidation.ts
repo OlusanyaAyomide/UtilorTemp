@@ -18,6 +18,7 @@ export async function createForUValidation(
         expectedMonthlyAmount: Joi.number().integer().required(),
         // amount:Joi.number().required().min(5000),
         endingDate: Joi.date().iso().required(),
+        iconLink : Joi.string().required()
     });
 
     const validation = investmentSchema.validate(req.body);
@@ -96,7 +97,8 @@ export async function createUAndIValidation(
         expectedMonthlyAmount: Joi.number().integer().required(),
         // amount:Joi.number().required().min(5000),
         endingDate: Joi.date().iso().required(),
-        consentToken:Joi.string().min(9).required()
+        consentToken:Joi.string().min(9).required(),
+        iconLink : Joi.string().required(),
     });
 
     const validation = investmentSchema.validate(req.body);
@@ -108,3 +110,53 @@ export async function createUAndIValidation(
 
     return next();
 }
+
+
+export async function createCabalValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+
+    const investmentSchema = Joi.object({
+        lockedInDate:Joi.date().iso().required(),
+        groupName:Joi.string(),
+        currency: Joi.string().valid(...Object.values(CURRENCY)).required(),
+        iconLink : Joi.string().required(),
+        description : Joi.string().required()
+    });
+
+    const validation = investmentSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}
+
+
+
+export async function sendCabalInvitationValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+
+    const investmentSchema = Joi.object({
+        merchantId : Joi.string().required(),
+        cabalId : Joi.string().required()
+    });
+
+    const validation = investmentSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}
+
+

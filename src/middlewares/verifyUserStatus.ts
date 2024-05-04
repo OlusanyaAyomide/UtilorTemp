@@ -70,7 +70,7 @@ export async function verifyUserStats  (req:IExpressRequest,res:Response,next:Ne
             httpOnly:true,
             // signed:true,
         })
-        return ResponseHandler.sendUnauthorizedResponse({res,error:"Verify device"})
+        return ResponseHandler.sendUnauthorizedResponse({res,error:"Verify device",status_code:"VERIFY_DEVICE"})
     }
 
     return next()

@@ -1,4 +1,4 @@
-import { ICreateForU, ICreateUandI } from "../../interfaces/bodyInterface";
+import { ICreateCabal, ICreateForU, ICreateUandI, ISendCabalInvitation } from "../../interfaces/bodyInterface";
 import catchDefaultAsync from "../../utils/catch-async";
 import ResponseHandler from "../../utils/response-handler";
 import prismaClient from "../../prisma/pris-client";
@@ -22,9 +22,6 @@ export const createNewForUplan = catchDefaultAsync(async(req,res,next)=>{
     const newSaving = await prismaClient.uSaveForU.create({
         data:{
             userId:user.userId,
-            investmentCapital:0,
-            totalInvestment:0,
-            returnOfInvestment:0,
             ...rest
         }
     });
@@ -38,7 +35,6 @@ export const createNewForUplan = catchDefaultAsync(async(req,res,next)=>{
     return ResponseHandler.sendSuccessResponse({res, code: 200, message: `ForU savings "${forUData.savingsName}" created successfully`, data});
 
 })
-
 
 
 export const createNewUAndISavings = catchDefaultAsync(async(req,res,next)=>{
@@ -83,7 +79,8 @@ export const createNewUAndISavings = catchDefaultAsync(async(req,res,next)=>{
             currency:uAndIData.currency,
             expectedDepositDay:uAndIData.expectedDepositDay,
             expectedMonthlyAmount:uAndIData.expectedMonthlyAmount,   
-            endingDate:uAndIData.endingDate
+            endingDate:uAndIData.endingDate,
+            iconLink:uAndIData.iconLink
         }
     })
 
@@ -95,5 +92,69 @@ export const createNewUAndISavings = catchDefaultAsync(async(req,res,next)=>{
 
     return ResponseHandler.sendSuccessResponse({res, code: 200, message: `You And I savings "${newUandISaving.Savingsname}" created successfully`, data});
 
+
+})
+
+
+export const createMyCabal = catchDefaultAsync(async(req,res,next)=>{
+    const user =req.user
+    if(!user){return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})}
+
+    const cabalData:ICreateCabal = req.body
+
+    const ending = new Date(cabalData.lockedInDate);
+
+    //create a cabal group with user as Admin and also create user Cabal
+
+    const newCabal = await prismaClient.cabalGroup.create({
+        data:{
+            groupName:cabalData.groupName,
+            lockedInDate:ending,
+            cabalAdminId:user.userId,
+            currency:cabalData.currency,
+            iconLink:cabalData.iconLink,
+            description:cabalData.description,
+            userCabals:{
+                create:{
+                    userId:user.userId
+                }
+            }
+        }
+    })
+    
+    return ResponseHandler.sendSuccessResponse({res,message:`New My Cabal Savings ${newCabal.groupName} has succesfully been created`,data:{cabalId:newCabal.id}})
+
+})
+
+
+export const createNewEmergency = catchDefaultAsync(async(req,res,next)=>{
+    const user = req.user;
+    const forUData:ICreateForU = req.body;
+
+    const now = new Date();
+    const ending = new Date(forUData.endingDate);
+
+    // Prevent from setting ending date in the past;
+    if (now >= ending) {
+        return ResponseHandler.sendErrorResponse({res, error: "Ending date must be in the future", code: 400});
+    }
+    
+    if(!user){return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})}
+    
+    const {...rest} = forUData
+    const newSaving = await prismaClient.emergency.create({
+        data:{
+            userId:user.userId,
+            ...rest
+        }
+    });
+
+    const data = {
+        savingId:newSaving.id,
+        savingName:newSaving.savingsName,
+        currency:newSaving.currency
+    }
+    
+    return ResponseHandler.sendSuccessResponse({res, code: 200, message: `Emergency savings "${forUData.savingsName}" created successfully`, data});
 
 })

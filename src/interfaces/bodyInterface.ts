@@ -5,6 +5,7 @@ export interface ICreateForU {
     expectedDepositDay: number;
     expectedMonthlyAmount: number;
     endingDate:string;
+    iconLink:string
 }
 
 export interface IDepositForU {
@@ -20,7 +21,32 @@ export interface IDepositUAndI {
     paymentMethod: 'UWALLET' | 'BANK' | 'CARD';
 }
 
+export interface IDepositToMyCabal {
+    id: string;
+    amount: number
+    paymentMethod: 'UWALLET' | 'BANK' | 'CARD';
+}
 
 export interface ICreateUandI extends ICreateForU{
     consentToken:string
 }   
+
+
+export interface ICreateCabal{
+    lockedInDate:string
+    groupName:string
+    currency:CURRENCY
+    iconLink : string
+    description : string
+}
+
+
+
+export interface ISendCabalInvitation{
+    merchantId : string
+    cabalId : string
+}
+
+export interface IJoinCabal{
+    cabalId :string
+}

@@ -18,3 +18,8 @@ export interface IOtpVerication{
     verifyToken:string
 }
 
+
+
+export interface ICreateNewCabal{
+    
+}

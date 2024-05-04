@@ -33,7 +33,7 @@ export const manageReferralBalance= async(transaction:Transaction)=>{
                 }
             })
             if(!referredByUserWallet){
-                throw new Error("Referral user could not be found")
+                throw new Error("Referral user wallet could not be found")
             }
 
             await prismaClient.user.update({

@@ -245,6 +245,25 @@ export const  userLogIn=catchDefaultAsync(async(req,res,next)=>{
         // if(!user.password){
         //     return ResponseHandler.sendErrorResponse({res,error:"Please set up your account"})
         // }
+        if(!user.isMailVerified){
+            const otpCode = generateOTP()
+            await mailSender({to:email,subject:"Utilor Sign up code",body:otpCode,name:`Utilor Verifcation`})
+            const otpObject = await prismaClient.verificationOTp.create({
+                data:{
+                    otpCode,
+                    userId:user.id,
+                    type:"MAILVERIFICATION",
+                    expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE))
+                }
+            })
+        
+            res.cookie("MAILVERIFICATION",otpObject.id,{
+                maxAge:30*60*1000,
+                secure:true,
+                httpOnly:true,
+            })
+            return ResponseHandler.sendErrorResponse({res,error:"Verifcation sent to mail",status_code:"EMAIL_REDIRECT"})
+        }   
         
         const isPasswordValid = await bcryptCompare({hashedPassword:user.password || "",password})
         if(!isPasswordValid){

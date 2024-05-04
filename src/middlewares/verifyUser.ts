@@ -19,18 +19,18 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
 
                 return next()
             }else{
-                return ResponseHandler.sendErrorResponse({res,error:"Token malformed",code:401})
+                return ResponseHandler.sendErrorResponse({res,error:"Token malformed",code:401,status_code:"LOGIN_REDIRECT"})
 
             }
             
         }catch(err){
-            return ResponseHandler.sendErrorResponse({res,error:"Token malformed",code:401})
+            return ResponseHandler.sendErrorResponse({res,error:"Token malformed",code:401,status_code:"LOGIN_REDIRECT"})
         }
 
     }
     
     if(!refreshToken){
-        return ResponseHandler.sendErrorResponse({res,error:"Session Expired 1",code:401})
+        return ResponseHandler.sendErrorResponse({res,error:"Session Expired 1",code:401,status_code:"LOGIN_REDIRECT"})
     }
     const deviceId = generateDeviceId(req)
     const isTokenValid = await prismaClient.session.findFirst({
@@ -48,12 +48,10 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     console.log(isTokenValid)
     
     if(!isTokenValid){
-        return ResponseHandler.sendErrorResponse({res,error:"Token Expired 2",code:401})
+        return ResponseHandler.sendErrorResponse({res,error:"Token Expired 2",code:401,status_code:"LOGIN_REDIRECT"})
     }
 
-
     const user =isTokenValid.user
-
 
     //create new access token
     const newAcessToken = jwt.sign(

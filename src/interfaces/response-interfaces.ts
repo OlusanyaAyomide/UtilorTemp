@@ -1,6 +1,9 @@
 import { NextFunction, Response } from 'express';
 import { IExpressRequest } from './user-interface';
 
+type ErrorResCode = "EMAIL_REDIRECT" | "LOGIN_REDIRECT" | "BAD_REQUEST" | "VERIFY_DEVICE"
+
+
 export interface IReqResNext {
     req: IExpressRequest;
     res: Response;
@@ -19,6 +22,7 @@ export interface IResponseError {
     code?: number;
     error?: string;
     custom?: boolean;
+    status_code?:ErrorResCode;
 }
 
 

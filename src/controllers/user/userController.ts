@@ -8,7 +8,7 @@ export const createConsentToken = catchDefaultAsync(async (req,res,next)=>{
     const userId = req.user?.userId
     const bodyData:{description:DESCRIPTION_TYPE}= req.body
     if(!userId){
-        return ResponseHandler.sendSuccessResponse({res,code:500,message:"server error"})
+        return ResponseHandler.sendErrorResponse({res,code:500,error:"server error"})
     }
     const futureHour = getTimeFromNow(60)
     const token=generateTransactionRef(16)
@@ -27,7 +27,7 @@ export const createConsentToken = catchDefaultAsync(async (req,res,next)=>{
 export const retrieveConsentToken = catchDefaultAsync( async(req,res,next)=>{
   const userId = req.user?.userId
   if(!userId){
-    return ResponseHandler.sendSuccessResponse({res,code:500,message:"server error"})
+    return ResponseHandler.sendErrorResponse({res,code:500,error:"server error"})
   }
 
   const userTokens = await prismaClient.consentToken.findMany({
@@ -43,7 +43,7 @@ export const getUserNotifications = catchDefaultAsync(async (req,res,next)=>{
   const userId = req.user?.userId
 
   if(!userId){
-      return ResponseHandler.sendSuccessResponse({res,code:500,message:"server error"})
+      return ResponseHandler.sendErrorResponse({res,code:500,error:"server error"})
   }
 
   const notications = await prismaClient.notification.findMany({

@@ -28,6 +28,12 @@ enum PAYMENT_METHOD {
   CARD
 }
 
+enum CABAL_STATUS {
+  ACTIVE
+  DEACTIVATED
+
+}
+
 enum TRANSACTION_TYPE {
   WITHDRAWAL
   DEPOSIT
@@ -74,10 +80,13 @@ model User {
   usaveforu           USaveForU[]
   uAndICreator        UANDI[] @relation("UAndICreator")
   uAndIPartner        UANDI[] @relation("UAndIPartner")
+  emergency           Emergency[]
+  userCabal           UserCabal[]
   
   transactions        Transaction[]
   notifications       Notification[]
   consentToken        ConsentToken[]
+    cabalAsAdmin        CabalGroup[]
 
   uWalletAccounts     UWallet[]
   referrals           User[] @relation("UserToUser")
@@ -146,15 +155,16 @@ model USaveForU {
   user                  User                   @relation(fields: [userId], references: [id])
   userId                String
   currency              CURRENCY
-  investmentCapital     Float
-  returnOfInvestment    Float
-  totalInvestment       Float
+  investmentCapital     Float                  @default(0)
+  returnOfInvestment    Float                  @default(0)
+  totalInvestment       Float                  @default(0)
   isActivated           Boolean                @default(false)
   savingsName           String
   expectedDepositDay    Int
   expectedMonthlyAmount Int
   endingDate            DateTime
   createdAt             DateTime               @default(now())
+  iconLink              String
 }
 
 
@@ -192,6 +202,7 @@ model UANDI{
   expectedMonthlyAmount Int
   endingDate            DateTime
   createdAt             DateTime               @default(now())
+  iconLink               String
 }
 
 
@@ -215,4 +226,53 @@ model ConsentToken{
   expiryTime            DateTime
   createdAt             DateTime             @default(now())
   
+}
+
+
+
+model UserCabal{
+  id        String                 @id @unique() @default(uuid())
+  user      User                   @relation(fields: [userId], references: [id])
+  userId    String
+  cabalCapital   Float            @default(0)
+  cabalRoI       Float            @default(0)
+  totalBalance   Float            @default(0)
+  createdAt       DateTime        @default(now())
+  cabelGroup      CabalGroup      @relation(fields: [cabalGroupId], references: [id])
+  cabalGroupId    String
+  status          CABAL_STATUS   @default(ACTIVE)
+} 
+
+model CabalGroup{
+  id        String                 @id @unique() @default(uuid())
+  cabalAdmin      User                   @relation(fields: [cabalAdminId], references: [id])
+  cabalAdminId    String
+  userCabals  UserCabal[]
+  createdAt   DateTime   @default(now())
+  lockedInDate DateTime  
+  groupName    String
+  hasStarted   Boolean @default(false)
+  startedAt   DateTime ?
+  currency    CURRENCY
+  iconLink   String
+  description String
+}
+
+
+// U-SAVE/FORU account model
+model Emergency {
+  id                    String                 @id @unique() @default(uuid())
+  user                  User                   @relation(fields: [userId], references: [id])
+  userId                String
+  currency              CURRENCY
+  investmentCapital     Float     @default(0)
+  returnOfInvestment    Float     @default(0)
+  totalInvestment       Float     @default(0)
+  isActivated           Boolean                @default(false)
+  savingsName           String
+  expectedDepositDay    Int
+  expectedMonthlyAmount Int
+  endingDate            DateTime
+  createdAt             DateTime               @default(now())
+  iconLink              String
 }

@@ -19,10 +19,11 @@ class ResponseHandler {
     public static sendErrorResponse({
         res,
         code=400,
+        status_code ="BAD_REQUEST",
         error = 'Operation failed',
         custom = false,
     }: IResponseError): Response<any> {
-        const response = custom ? { code: code, message: error } : { success: false, code: code, message: error };
+        const response = custom ? { code: code,status_code, message: error } : { success: false, code: code, message: error,status_code };
         return res.status(code).json(response);
     }
 
