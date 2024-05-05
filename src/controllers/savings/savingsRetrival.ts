@@ -13,6 +13,14 @@ export const getAllUserForU = catchDefaultAsync(async (req,res,next)=>{
 
     const allForU =await prismaClient.uSaveForU.findMany({
         where:{userId:userId},
+        include:{
+            promoCode:{
+                select:{
+                    name:true,
+                    percentageIncrease:true
+                }
+            }
+        }
     })
 
     return ResponseHandler.sendSuccessResponse({res,data:allForU})
@@ -26,7 +34,15 @@ export const getSingleForU = catchDefaultAsync(async (req,res,next)=>{
     }
 
     const singleForU = await prismaClient.uSaveForU.findFirst({
-        where:{id:detail}
+        where:{id:detail},
+        include:{
+            promoCode:{
+                select:{
+                    name:true,
+                    percentageIncrease:true
+                }
+            }
+        }
     })
     if(!singleForU){
         return ResponseHandler.sendErrorResponse({res,error:"For U Id is invalid"})
@@ -68,6 +84,14 @@ export const getAllUserUAndI = catchDefaultAsync(async(req,res,next)=>{
         orderBy:{
             totalCapital:"desc"
         },
+        include:{
+            promoCode:{
+                select:{
+                    name:true,
+                    percentageIncrease:true
+                }
+            }
+        }
     })
     return ResponseHandler.sendSuccessResponse({res,data:allUAndI})
 
@@ -110,6 +134,9 @@ export const getAllCabalUsers = catchDefaultAsync(async(req,res,next)=>{
 
                         }
                     }
+                },
+                orderBy:{
+                    totalBalance:"desc"
                 }
             }
         }
@@ -129,6 +156,14 @@ export const getAllUserEmergency = catchDefaultAsync(async (req,res,next)=>{
 
     const allForU =await prismaClient.emergency.findMany({
         where:{userId:userId},
+        include:{
+            promoCode:{
+                select:{
+                    name:true,
+                    percentageIncrease:true
+                }
+            }
+        }
     })
 
     return ResponseHandler.sendSuccessResponse({res,data:allForU})
@@ -143,7 +178,15 @@ export const getSingleEmergency = catchDefaultAsync(async (req,res,next)=>{
     }
 
     const singleEmergency = await prismaClient.emergency.findFirst({
-        where:{id:detail}
+        where:{id:detail},
+        include:{
+            promoCode:{
+                select:{
+                    name:true,
+                    percentageIncrease:true
+                }
+            }
+        }
     })
     if(!singleEmergency){
         return ResponseHandler.sendErrorResponse({res,error:"For U Id is invalid"})

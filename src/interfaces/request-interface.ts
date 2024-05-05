@@ -10,6 +10,7 @@ export interface ISignUpForm extends ILogInForm{
     isAgreed:boolean
     phoneNumber:string
     merchantID?:string
+    
 }
 
 
@@ -21,5 +22,5 @@ export interface IOtpVerication{
 
 
 export interface ICreateNewCabal{
-    
+
 }

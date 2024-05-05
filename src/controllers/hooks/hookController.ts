@@ -31,7 +31,6 @@ export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
             depositIntoForUSavingViaFlutterwave(dataFromWebhook, transaction)
             break;
         case "UWALLET":
-            console.log("in here")
             manageReferralBalance(transaction)
             depositIntoUWalletViaFlutterwave(dataFromWebhook, transaction)
             break;
@@ -40,8 +39,9 @@ export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
             depositIntoEmeergencySavingViaFlutterwave(dataFromWebhook,transaction)
             break
         case "UANDI":
-                manageReferralBalance(transaction)
-                depositIntoUAndISavingViaFlutterwave(dataFromWebhook,transaction)
+            manageReferralBalance(transaction)
+            depositIntoUAndISavingViaFlutterwave(dataFromWebhook,transaction)
+            break
         case "CABAL":
             depositIntoMyCabalSavingViaFlutterwave(dataFromWebhook,transaction)
             break

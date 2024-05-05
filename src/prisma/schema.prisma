@@ -165,6 +165,8 @@ model USaveForU {
   endingDate            DateTime
   createdAt             DateTime               @default(now())
   iconLink              String
+  promoCode PromoCodes[]
+
 }
 
 
@@ -188,11 +190,11 @@ model UANDI{
   partnerInvestmentReturn Float @default(0)
   totalInvestmentReturn Float @default(0)
 
-  creator   User @relation(fields: [creatorId], references: [id],name: "UAndICreator")
-  creatorId String
-  partner User @relation(fields: [partnerId], references: [id],name: "UAndIPartner")
-  partnerId String
-  isAccepted   Boolean  @default(true) //set to true for now, when user accepts u and I deposit can deposit
+  creator     User @relation(fields: [creatorId], references: [id],name: "UAndICreator")
+  creatorId   String
+  partner     User @relation(fields: [partnerId], references: [id],name: "UAndIPartner")
+  partnerId   String
+  isAccepted  Boolean  @default(true) //set to true for now, when user accepts u and I deposit can deposit
 
 
   isActivated           Boolean                @default(false)
@@ -202,7 +204,8 @@ model UANDI{
   expectedMonthlyAmount Int
   endingDate            DateTime
   createdAt             DateTime               @default(now())
-  iconLink               String
+  iconLink              String
+  promoCode             PromoCodes[]
 }
 
 
@@ -256,6 +259,7 @@ model CabalGroup{
   currency    CURRENCY
   iconLink   String
   description String
+
 }
 
 
@@ -275,4 +279,24 @@ model Emergency {
   endingDate            DateTime
   createdAt             DateTime               @default(now())
   iconLink              String
+  promoCode             PromoCodes[]
+
+}
+
+
+model PromoCodes{
+    id                  String                 @id @unique() @default(uuid())
+    percentageIncrease  Float
+    product             DESCRIPTION_TYPE
+    emergency           Emergency?            @relation(fields: [emergencyId], references: [id])
+    emergencyId         String?
+    uandi               UANDI?                @relation(fields: [uandiId], references: [id])
+    uandiId             String?
+    foru                USaveForU?            @relation(fields: [forUId], references: [id])
+    forUId              String?
+    name                String                
+    createdAt           DateTime              @default(now())
+    revokedAt           DateTime
+    expiredAt           DateTime
+
 }

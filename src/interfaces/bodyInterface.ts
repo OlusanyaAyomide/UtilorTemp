@@ -1,4 +1,4 @@
-import { CURRENCY } from "@prisma/client"
+import { CURRENCY, DESCRIPTION_TYPE } from "@prisma/client"
 export interface ICreateForU {
     currency: 'NGN' | 'USD';
     savingsName: string;
@@ -49,4 +49,18 @@ export interface ISendCabalInvitation{
 
 export interface IJoinCabal{
     cabalId :string
+}
+
+
+export interface ICreatePromoCode{
+    percentage:number,
+    name:string
+    revokedAt : string
+    expiredAt : string
+    product : DESCRIPTION_TYPE
+}
+
+export interface IPromoCodeToSaving{
+    promoCode : string
+    savingsId : string
 }

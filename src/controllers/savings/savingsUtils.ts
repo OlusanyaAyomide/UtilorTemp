@@ -1,4 +1,4 @@
-import { IJoinCabal, ISendCabalInvitation } from "../../interfaces/bodyInterface"
+import {  ISendCabalInvitation, IPromoCodeToSaving } from "../../interfaces/bodyInterface"
 import prismaClient from "../../prisma/pris-client"
 import catchDefaultAsync from "../../utils/catch-async"
 import ResponseHandler from "../../utils/response-handler"
@@ -49,6 +49,9 @@ export const JoinMyCabal = catchDefaultAsync(async(req,res,next)=>{
             id:cabalId
         }
     })
+    if(!cabalGroup){
+        return ResponseHandler.sendErrorResponse({res,error:"Cabal Id is Invalid"})
+    }
     const isAlreadyInGroup = await prismaClient.userCabal.findFirst({
         where:{
             cabalGroupId:cabalGroup?.id,
@@ -83,4 +86,142 @@ export const JoinMyCabal = catchDefaultAsync(async(req,res,next)=>{
 
     return ResponseHandler.sendSuccessResponse({res,message:`Succesfully Joined Cabal ${updatedCabal.groupName}`})
 
+})
+
+
+
+export const startCabalGroup =catchDefaultAsync(async (req,res,next)=>{
+    const {cabalId}:{cabalId:string} = req.body
+
+    const cabalGroup = await prismaClient.cabalGroup.findFirst({
+        where:{id:cabalId}
+    })
+ 
+    if(!cabalGroup){
+        return ResponseHandler.sendErrorResponse({res,error:"Cabal Id is invalid"})
+    }
+
+    if(cabalGroup.cabalAdminId !== req.user?.userId){
+        return ResponseHandler.sendErrorResponse({res,error:"Only Cabal Admins can start a cabal"})
+    }
+    const updatedCabal = await prismaClient.cabalGroup.update({
+        where:{id:cabalGroup.id},
+        data:{hasStarted:true},
+    })
+    
+    return ResponseHandler.sendSuccessResponse({res,message:`${updatedCabal.groupName} has now started`})
+    
+})
+
+
+export const addPromoCodeToUsave = catchDefaultAsync(async(req,res,next)=>{
+    const bodyData:IPromoCodeToSaving = req.body
+
+    const foru = await prismaClient.uSaveForU.findFirst({
+        where:{
+            id:bodyData.savingsId
+        }
+    })
+    if(!foru){
+        return ResponseHandler.sendErrorResponse({res,error:"Savings Id is invalid"})
+    }
+
+    const promoCode = await prismaClient.promoCodes.findFirst({
+        where:{
+            name:bodyData.promoCode,
+            product:"FORU",
+            //expiry will be added later but has been skipped for development purposes
+        }
+    })
+    if(!promoCode){
+        return ResponseHandler.sendErrorResponse({res,error:"Promo Code invalid or has expired"})
+    }
+
+    await prismaClient.promoCodes.update({
+        where:{id:promoCode.id},
+        data:{
+            foru:{
+                connect:{
+                    id:foru.id
+                }
+            }
+        }
+    })
+
+    return ResponseHandler.sendSuccessResponse({res,message:"Promo Code has been addeed to U savings"})
+})
+
+
+export const addPromoCodeToEmergency = catchDefaultAsync(async(req,res,next)=>{
+    const bodyData:IPromoCodeToSaving = req.body
+
+    const emergency = await prismaClient.emergency.findFirst({
+        where:{
+            id:bodyData.savingsId
+        }
+    })
+    if(!emergency){
+        return ResponseHandler.sendErrorResponse({res,error:"Savings Id is invalid"})
+    }
+
+    const promoCode = await prismaClient.promoCodes.findFirst({
+        where:{
+            name:bodyData.promoCode,
+            product:"EMERGENCY",
+            //expiry will be added later but has been skipped for development purposes
+        }
+    })
+    if(!promoCode){
+        return ResponseHandler.sendErrorResponse({res,error:"Promo Code invalid or has expired"})
+    }
+
+    await prismaClient.promoCodes.update({
+        where:{id:promoCode.id},
+        data:{
+            emergency:{
+                connect:{
+                    id:emergency.id
+                }
+            }
+        }
+    })
+
+    return ResponseHandler.sendSuccessResponse({res,message:"Promo Code has been addeed to Emergency savings"})
+})
+
+export const addPromoCodeToUAndI = catchDefaultAsync(async(req,res,next)=>{
+    const bodyData:IPromoCodeToSaving = req.body
+
+    const uandi = await prismaClient.uANDI.findFirst({
+        where:{
+            id:bodyData.savingsId
+        }
+    })
+    if(!uandi){
+        return ResponseHandler.sendErrorResponse({res,error:"Savings Id is invalid"})
+    }
+
+    const promoCode = await prismaClient.promoCodes.findFirst({
+        where:{
+            name:bodyData.promoCode,
+            product:"UANDI",
+            //expiry will be added later but has been skipped for development purposes
+        }
+    })
+    if(!promoCode){
+        return ResponseHandler.sendErrorResponse({res,error:"Promo Code invalid or has expired"})
+    }
+
+    await prismaClient.promoCodes.update({
+        where:{id:promoCode.id},
+        data:{
+            uandi:{
+                connect:{
+                    id:uandi.id
+                }
+            }
+        }
+    })
+
+    return ResponseHandler.sendSuccessResponse({res,message:"Promo Code has been addeed to UAndI savings"})
 })

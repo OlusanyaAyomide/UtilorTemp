@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
 import ResponseHandler from '../utils/response-handler';
-import { CURRENCY } from '@prisma/client';
+import { CURRENCY, DESCRIPTION_TYPE } from '@prisma/client';
 
 
 export async function createForUValidation(
@@ -160,3 +160,43 @@ export async function sendCabalInvitationValidation(
 }
 
 
+export async function startCabalValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+
+    const investmentSchema = Joi.object({
+        cabalId : Joi.string().required()
+    });
+
+    const validation = investmentSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}
+
+export async function addPromoCodeValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+
+    const investmentSchema = Joi.object({
+        savingsId : Joi.string().required(),
+        promoCode : Joi.string().required()
+    });
+
+    const validation = investmentSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}

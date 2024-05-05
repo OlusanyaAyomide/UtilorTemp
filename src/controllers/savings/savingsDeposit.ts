@@ -55,9 +55,10 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
         //get depositAmount
         const depositAmount = getConvertedRate({amount,from:uWallet.currency,to:forUAccount.currency})
 
+
         // Respond with error if valid wallet has insufficient balance
        
-        if (uWallet.balance < depositAmount) {
+        if (uWallet.balance < depositData.amount) {
             return ResponseHandler.sendErrorResponse({res, error: "Insufficient funds in U-Wallet", code: 400})
         }
 
@@ -227,7 +228,7 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
         const depositAmount = getConvertedRate({amount,from:uWallet.currency,to:uAndISaving.currency})
 
         // Respond with error if valid wallet has insufficient balance
-        if (uWallet.balance < depositAmount) {
+        if (uWallet.balance < depositData.amount) {
             return ResponseHandler.sendErrorResponse({res, error: "Insufficient funds in U-Wallet", code: 400})
         }
 
@@ -322,7 +323,7 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
         return ResponseHandler.sendSuccessResponse({
             res,
             code: 200,
-            message: `For-U account "${uAndISaving.Savingsname}" successfully funded from U-Wallet`,
+            message: `U And I account "${uAndISaving.Savingsname}" successfully funded from U-Wallet`,
             data: {
                 uWalletBalance: updateUWallet.balance,
                 UAndIBalance: updatedUAndI.totalCapital
@@ -389,9 +390,12 @@ export const depositIntoMyCabalSaving = catchDefaultAsync(async(req, res, next) 
 
 
     if (!cabalGroup) {
-        return ResponseHandler.sendErrorResponse({res, code: 404, error: "U And I savings account not found"});
+        return ResponseHandler.sendErrorResponse({res, code: 404, error: "My Cabal Group savings account not found"});
     }
 
+    if(!cabalGroup.hasStarted){
+        return ResponseHandler.sendErrorResponse({res,error:"Cabal Group has not started yet"})
+    }
     //confirm user is valid to make deposit
     const userCabal =await  prismaClient.userCabal.findFirst({
         where:{
@@ -425,7 +429,7 @@ export const depositIntoMyCabalSaving = catchDefaultAsync(async(req, res, next) 
         const depositAmount = getConvertedRate({amount,from:uWallet.currency,to:cabalGroup.currency})
 
         // Respond with error if valid wallet has insufficient balance
-        if (uWallet.balance < depositAmount) {
+        if (uWallet.balance < depositData.amount) {
             return ResponseHandler.sendErrorResponse({res, error: "Insufficient funds in U-Wallet", code: 400})
         }
 
@@ -603,7 +607,7 @@ export const depositIntoEmergencySavings = catchDefaultAsync(async(req, res, nex
 
         // Respond with error if valid wallet has insufficient balance
        
-        if (uWallet.balance < depositAmount) {
+        if (uWallet.balance < depositData.amount) {
             return ResponseHandler.sendErrorResponse({res, error: "Insufficient funds in U-Wallet", code: 400})
         }
 

@@ -8,6 +8,7 @@ import savingRoutes from "./routes/savingsRoutes"
 import hookRoutes from "./routes/webhooks"
 import userRoutes from "./routes/userRoutes"
 import walletRoutes from "./routes/walletRoutes"
+import adminRoutes from "./routes/adminRoutes"
 
 const app  = express()
 app.use(cors())
@@ -20,6 +21,7 @@ app.use('/savings',savingRoutes)
 app.use('/hooks',hookRoutes)
 app.use('/user',userRoutes)
 app.use('/wallet',walletRoutes)
+app.use('/admin',adminRoutes)
 
 
 app.all('*', (req, res) => {
