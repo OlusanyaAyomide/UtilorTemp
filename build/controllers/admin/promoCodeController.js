@@ -39,56 +39,44 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.channelWebHookData = void 0;
+exports.createPromoCode = void 0;
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
-var hookUtility_1 = require("./hookUtility");
-var hookDeposits_1 = require("../savings/hookDeposits");
-var walletController_1 = require("../wallet/walletController");
-var channelWebHookData = function (dataFromWebhook) { return __awaiter(void 0, void 0, void 0, function () {
-    var txRef, transaction;
+var catch_async_1 = __importDefault(require("../../utils/catch-async"));
+var response_handler_1 = __importDefault(require("../../utils/response-handler"));
+exports.createPromoCode = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var bodyData, isExisting, newCode;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
-                console.log("channeled after response");
-                txRef = dataFromWebhook.txRef;
-                return [4 /*yield*/, pris_client_1.default.transaction.findFirst({
-                        where: { transactionReference: txRef }
-                    })
-                    // If none, just return
-                ];
+                bodyData = req.body;
+                return [4 /*yield*/, pris_client_1.default.promoCodes.findFirst({
+                        where: { name: bodyData.name }
+                    })];
             case 1:
-                transaction = _a.sent();
-                // If none, just return
-                if (!transaction) {
-                    throw new Error("Transaction not found in the database");
+                isExisting = _a.sent();
+                if (isExisting) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "promo Code already existing" })];
                 }
-                //? Now run different transactions depending on transaction type/description
-                switch (transaction.description) {
-                    case "FORU":
-                        (0, hookUtility_1.manageReferralBalance)(transaction);
-                        (0, hookDeposits_1.depositIntoForUSavingViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    case "UWALLET":
-                        (0, hookUtility_1.manageReferralBalance)(transaction);
-                        (0, walletController_1.depositIntoUWalletViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    case "EMERGENCY":
-                        (0, hookUtility_1.manageReferralBalance)(transaction);
-                        (0, hookDeposits_1.depositIntoEmeergencySavingViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    case "UANDI":
-                        (0, hookUtility_1.manageReferralBalance)(transaction);
-                        (0, hookDeposits_1.depositIntoUAndISavingViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    case "CABAL":
-                        (0, hookDeposits_1.depositIntoMyCabalSavingViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    default:
-                        break;
-                }
-                return [2 /*return*/];
+                return [4 /*yield*/, pris_client_1.default.promoCodes.create({
+                        data: {
+                            percentageIncrease: bodyData.percentage,
+                            name: bodyData.name,
+                            product: bodyData.product,
+                            expiredAt: bodyData.expiredAt,
+                            revokedAt: bodyData.revokedAt
+                        },
+                        select: {
+                            name: true,
+                            percentageIncrease: true,
+                            product: true,
+                            createdAt: true,
+                            expiredAt: true,
+                            revokedAt: true
+                        }
+                    })];
+            case 2:
+                newCode = _a.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "promo code created succesfully", data: newCode })];
         }
     });
-}); };
-exports.channelWebHookData = channelWebHookData;
+}); });

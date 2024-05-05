@@ -39,7 +39,7 @@ export async function otpvalidation (req:Request,
     console.log(req.cookies)
     const verificationId = req.cookies["MAILVERIFICATION"]
     if(!verificationId){
-        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired"})
+        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired",status_code:"LOGIN_REDIRECT"})
     }
     return next()
 }
@@ -49,13 +49,11 @@ export async function basicSetUpValidation (req:Request,
     res:Response,
     next:NextFunction):Promise<Response | void>{
     const passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
-    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
     const signUpSchema = Joi.object({
         firstName: Joi.string().required(),
-        email: Joi.string().required().regex(emailRegex).message('Email is not valid'),
         lastName: Joi.string().required().allow(''),
         password: Joi.string().required().regex(passwordRegex).message('Password is not strong enough'),
-        referralId: Joi.string().optional().allow(""),
         confirmPassword: Joi.string().required().valid(Joi.ref('password')).error(new Error('Password mismatch')),
         phoneNumber:Joi.string().max(11).required(),
         merchantID:Joi.string().optional()
@@ -67,7 +65,10 @@ export async function basicSetUpValidation (req:Request,
 
         return ResponseHandler.sendErrorResponse({ res, code: 400, error });
     }
-
+    const clientEmail = req.cookies["CLIENTEMAIL"]
+    if(!clientEmail){
+        return ResponseHandler.sendErrorResponse({res,error:"Sign Up session expired",status_code:"LOGIN_REDIRECT"})
+    }
     return next()
 }   
 

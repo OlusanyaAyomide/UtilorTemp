@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createUAndIValidation = exports.depositUWalletValidation = exports.depositForUValidation = exports.createForUValidation = void 0;
+exports.addPromoCodeValidation = exports.startCabalValidation = exports.sendCabalInvitationValidation = exports.createCabalValidation = exports.createUAndIValidation = exports.depositUWalletValidation = exports.depositForUValidation = exports.createForUValidation = void 0;
 var joi_1 = __importDefault(require("joi"));
 var response_handler_1 = __importDefault(require("../utils/response-handler"));
 var client_1 = require("@prisma/client");
@@ -55,6 +55,7 @@ function createForUValidation(req, res, next) {
                 expectedMonthlyAmount: joi_1.default.number().integer().required(),
                 // amount:Joi.number().required().min(5000),
                 endingDate: joi_1.default.date().iso().required(),
+                iconLink: joi_1.default.string().required()
             });
             validation = investmentSchema.validate(req.body);
             if (validation.error) {
@@ -120,7 +121,8 @@ function createUAndIValidation(req, res, next) {
                 expectedMonthlyAmount: joi_1.default.number().integer().required(),
                 // amount:Joi.number().required().min(5000),
                 endingDate: joi_1.default.date().iso().required(),
-                consentToken: joi_1.default.string().min(9).required()
+                consentToken: joi_1.default.string().min(9).required(),
+                iconLink: joi_1.default.string().required(),
             });
             validation = investmentSchema.validate(req.body);
             if (validation.error) {
@@ -132,3 +134,78 @@ function createUAndIValidation(req, res, next) {
     });
 }
 exports.createUAndIValidation = createUAndIValidation;
+function createCabalValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var investmentSchema, validation, error;
+        var _a;
+        return __generator(this, function (_b) {
+            investmentSchema = joi_1.default.object({
+                lockedInDate: joi_1.default.date().iso().required(),
+                groupName: joi_1.default.string(),
+                currency: (_a = joi_1.default.string()).valid.apply(_a, Object.values(client_1.CURRENCY)).required(),
+                iconLink: joi_1.default.string().required(),
+                description: joi_1.default.string().required()
+            });
+            validation = investmentSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.createCabalValidation = createCabalValidation;
+function sendCabalInvitationValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var investmentSchema, validation, error;
+        return __generator(this, function (_a) {
+            investmentSchema = joi_1.default.object({
+                merchantId: joi_1.default.string().required(),
+                cabalId: joi_1.default.string().required()
+            });
+            validation = investmentSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.sendCabalInvitationValidation = sendCabalInvitationValidation;
+function startCabalValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var investmentSchema, validation, error;
+        return __generator(this, function (_a) {
+            investmentSchema = joi_1.default.object({
+                cabalId: joi_1.default.string().required()
+            });
+            validation = investmentSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.startCabalValidation = startCabalValidation;
+function addPromoCodeValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var investmentSchema, validation, error;
+        return __generator(this, function (_a) {
+            investmentSchema = joi_1.default.object({
+                savingsId: joi_1.default.string().required(),
+                promoCode: joi_1.default.string().required()
+            });
+            validation = investmentSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.addPromoCodeValidation = addPromoCodeValidation;

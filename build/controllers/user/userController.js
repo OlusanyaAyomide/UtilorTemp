@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.retrieveConsentToken = exports.createConsentToken = void 0;
+exports.getUserNotifications = exports.retrieveConsentToken = exports.createConsentToken = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var util_1 = require("../../utils/util");
@@ -53,7 +53,7 @@ exports.createConsentToken = (0, catch_async_1.default)(function (req, res, next
                 userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
                 bodyData = req.body;
                 if (!userId) {
-                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, code: 500, message: "server error" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "server error" })];
                 }
                 futureHour = (0, util_1.getTimeFromNow)(60);
                 token = (0, util_1.generateTransactionRef)(16);
@@ -80,7 +80,7 @@ exports.retrieveConsentToken = (0, catch_async_1.default)(function (req, res, ne
             case 0:
                 userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
                 if (!userId) {
-                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, code: 500, message: "server error" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "server error" })];
                 }
                 return [4 /*yield*/, pris_client_1.default.consentToken.findMany({
                         where: { userId: userId }
@@ -88,6 +88,26 @@ exports.retrieveConsentToken = (0, catch_async_1.default)(function (req, res, ne
             case 1:
                 userTokens = _b.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: userTokens })];
+        }
+    });
+}); });
+exports.getUserNotifications = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, notications;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "server error" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.notification.findMany({
+                        where: { userId: userId },
+                        orderBy: { createdAt: "desc" }
+                    })];
+            case 1:
+                notications = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: notications })];
         }
     });
 }); });

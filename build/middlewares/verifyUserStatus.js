@@ -116,7 +116,7 @@ function verifyUserStats(req, res, next) {
                         httpOnly: true,
                         // signed:true,
                     });
-                    return [2 /*return*/, response_handler_1.default.sendUnauthorizedResponse({ res: res, error: "Verify device" })];
+                    return [2 /*return*/, response_handler_1.default.sendUnauthorizedResponse({ res: res, error: "Verify device", status_code: "VERIFY_DEVICE" })];
                 case 7: return [2 /*return*/, next()];
             }
         });

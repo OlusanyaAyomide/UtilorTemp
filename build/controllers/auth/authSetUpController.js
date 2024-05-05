@@ -117,7 +117,7 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 });
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verify device", code: 403 })];
             case 7:
-                acessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified }, process.env.JWT_SECRET, { expiresIn: "4m" });
+                acessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "4m" });
                 refreshToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId }, process.env.JWT_SECRET, { expiresIn: "62m" });
                 return [4 /*yield*/, pris_client_1.default.session.findFirst({
                         where: {

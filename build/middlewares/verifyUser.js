@@ -44,9 +44,10 @@ var response_handler_1 = __importDefault(require("../utils/response-handler"));
 var clientDevice_1 = require("../utils/clientDevice");
 var pris_client_1 = __importDefault(require("../prisma/pris-client"));
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+var util_1 = require("../utils/util");
 function verifyUsers(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var refreshToken, accessToken, decoded, deviceId, isTokenValid, user, newAcessToken;
+        var refreshToken, accessToken, decoded, deviceId, isTokenValid, user, newAcessToken, newRefreshToken;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -60,21 +61,24 @@ function verifyUsers(req, res, next) {
                                 return [2 /*return*/, next()];
                             }
                             else {
-                                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token malformed", code: 401 })];
+                                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token malformed", code: 401, status_code: "LOGIN_REDIRECT" })];
                             }
                         }
                         catch (err) {
-                            return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token malformed", code: 401 })];
+                            return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token malformed", code: 401, status_code: "LOGIN_REDIRECT" })];
                         }
                     }
                     if (!refreshToken) {
-                        return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Session Expired 1", code: 401 })];
+                        return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Session Expired 1", code: 401, status_code: "LOGIN_REDIRECT" })];
                     }
                     deviceId = (0, clientDevice_1.generateDeviceId)(req);
                     return [4 /*yield*/, pris_client_1.default.session.findFirst({
                             where: {
                                 deviceId: deviceId,
                                 token: refreshToken,
+                                expiredAt: {
+                                    gt: new Date()
+                                }
                             },
                             include: {
                                 user: true
@@ -84,10 +88,30 @@ function verifyUsers(req, res, next) {
                     isTokenValid = _a.sent();
                     console.log(isTokenValid);
                     if (!isTokenValid) {
-                        return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token Expired 2", code: 401 })];
+                        return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token Expired 2", code: 401, status_code: "LOGIN_REDIRECT" })];
                     }
                     user = isTokenValid.user;
-                    newAcessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.id, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified }, process.env.JWT_SECRET, { expiresIn: "4m" });
+                    newAcessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "4m" });
+                    newRefreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+                    return [4 /*yield*/, pris_client_1.default.session.update({
+                            where: { id: isTokenValid.id },
+                            data: {
+                                token: newRefreshToken,
+                                expiredAt: (0, util_1.getTimeFromNow)(60)
+                            }
+                        })
+                        //set  refresh token to cookie
+                    ];
+                case 2:
+                    _a.sent();
+                    //set  refresh token to cookie
+                    res.cookie("refreshToken", newRefreshToken, {
+                        maxAge: 60 * 60 * 1000,
+                        secure: true,
+                        httpOnly: true,
+                        // signed:true,
+                    });
+                    //set accesss token to cookie
                     res.cookie("acessToken", newAcessToken, {
                         maxAge: 3 * 60 * 1000,
                         secure: true,

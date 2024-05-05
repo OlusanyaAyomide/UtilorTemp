@@ -61,7 +61,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createNewUAndISavings = exports.createNewForUplan = void 0;
+exports.createNewEmergency = exports.createMyCabal = exports.createNewUAndISavings = exports.createNewForUplan = void 0;
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
@@ -83,7 +83,7 @@ exports.createNewForUplan = (0, catch_async_1.default)(function (req, res, next)
                 }
                 rest = __rest(forUData, []);
                 return [4 /*yield*/, pris_client_1.default.uSaveForU.create({
-                        data: __assign({ userId: user.userId, investmentCapital: 0, totalInvestment: 0, returnOfInvestment: 0 }, rest)
+                        data: __assign({ userId: user.userId }, rest)
                     })];
             case 1:
                 newSaving = _a.sent();
@@ -137,7 +137,8 @@ exports.createNewUAndISavings = (0, catch_async_1.default)(function (req, res, n
                             currency: uAndIData.currency,
                             expectedDepositDay: uAndIData.expectedDepositDay,
                             expectedMonthlyAmount: uAndIData.expectedMonthlyAmount,
-                            endingDate: uAndIData.endingDate
+                            endingDate: uAndIData.endingDate,
+                            iconLink: uAndIData.iconLink
                         }
                     })];
             case 2:
@@ -148,6 +149,69 @@ exports.createNewUAndISavings = (0, catch_async_1.default)(function (req, res, n
                     currency: newUandISaving.currency
                 };
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, code: 200, message: "You And I savings \"".concat(newUandISaving.Savingsname, "\" created successfully"), data: data })];
+        }
+    });
+}); });
+exports.createMyCabal = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var user, cabalData, ending, newCabal;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                user = req.user;
+                if (!user) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                cabalData = req.body;
+                ending = new Date(cabalData.lockedInDate);
+                return [4 /*yield*/, pris_client_1.default.cabalGroup.create({
+                        data: {
+                            groupName: cabalData.groupName,
+                            lockedInDate: ending,
+                            cabalAdminId: user.userId,
+                            currency: cabalData.currency,
+                            iconLink: cabalData.iconLink,
+                            description: cabalData.description,
+                            userCabals: {
+                                create: {
+                                    userId: user.userId
+                                }
+                            }
+                        }
+                    })];
+            case 1:
+                newCabal = _a.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "New My Cabal Savings ".concat(newCabal.groupName, " has succesfully been created"), data: { cabalId: newCabal.id } })];
+        }
+    });
+}); });
+exports.createNewEmergency = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var user, forUData, now, ending, rest, newSaving, data;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                user = req.user;
+                forUData = req.body;
+                now = new Date();
+                ending = new Date(forUData.endingDate);
+                // Prevent from setting ending date in the past;
+                if (now >= ending) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Ending date must be in the future", code: 400 })];
+                }
+                if (!user) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                rest = __rest(forUData, []);
+                return [4 /*yield*/, pris_client_1.default.emergency.create({
+                        data: __assign({ userId: user.userId }, rest)
+                    })];
+            case 1:
+                newSaving = _a.sent();
+                data = {
+                    savingId: newSaving.id,
+                    savingName: newSaving.savingsName,
+                    currency: newSaving.currency
+                };
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, code: 200, message: "Emergency savings \"".concat(forUData.savingsName, "\" created successfully"), data: data })];
         }
     });
 }); });

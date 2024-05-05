@@ -53,7 +53,7 @@ function setAuthCredentials(_a) {
             switch (_c.label) {
                 case 0:
                     acessToken = jsonwebtoken_1.default.sign({ id: id, email: email }, process.env.JWT_SECRET, { expiresIn: "2m" });
-                    refreshToken = jsonwebtoken_1.default.sign({ id: id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+                    refreshToken = jsonwebtoken_1.default.sign({ userid: id }, process.env.JWT_SECRET, { expiresIn: "1h" });
                     deviceId = (0, clientDevice_1.generateDeviceId)(req);
                     return [4 /*yield*/, pris_client_1.default.userDevices.findFirst({
                             where: {

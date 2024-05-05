@@ -105,6 +105,11 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
     //delete verifcation token from cookie
 
     res.clearCookie("MAILVERIFICATION")
+    res.cookie("CLIENTEMAIL",otpVerification.user.email,{
+        maxAge:30*60*1000,
+        secure:true,
+        httpOnly:true,
+    })
 
     //delete all OTp associated with user
     await prismaClient.verificationOTp.deleteMany({
@@ -119,8 +124,8 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
 
 
 export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
-    const {firstName,lastName,password,email,phoneNumber,merchantID}:ISignUpForm = req.body
-    //check i
+    const {firstName,lastName,password,phoneNumber,merchantID}:ISignUpForm = req.body
+    const email = req.cookies["CLIENTEMAIL"]
     const existingUser = await prismaClient.user.findFirst({
         where:{
             email:email
@@ -220,6 +225,7 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
         email,
         isMailVerified:user.isMailVerified
     }
+    res.clearCookie("CLIENTEMAIL")
 
 
     return next()

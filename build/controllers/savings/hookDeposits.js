@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.depositIntoUAndISavingViaFlutterwave = exports.depositIntoForUSavingViaFlutterwave = void 0;
+exports.depositIntoEmeergencySavingViaFlutterwave = exports.depositIntoMyCabalSavingViaFlutterwave = exports.depositIntoUAndISavingViaFlutterwave = exports.depositIntoForUSavingViaFlutterwave = void 0;
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var transactions_util_1 = require("../../utils/transactions.util");
 var depositIntoForUSavingViaFlutterwave = function (dataFromWebhook, transaction) { return __awaiter(void 0, void 0, void 0, function () {
@@ -90,15 +90,6 @@ var depositIntoForUSavingViaFlutterwave = function (dataFromWebhook, transaction
                 }
                 depositAmount = (0, transactions_util_1.getConvertedRate)({ amount: transaction.amount, from: dataFromWebhook.currency, to: uSaveForUAccount.currency });
                 // let convertedAmount = 0;
-                // if (uSaveForUAccount.currency === "USD" && transaction.transactionCurrency == "NGN") {
-                //     let dollarRate = getCurrentDollarRate();
-                //     convertedAmount = transaction.amount / dollarRate
-                // } else if (uSaveForUAccount.currency === "NGN" && transaction.transactionCurrency == "USD") {
-                //     let dollarRate = getCurrentDollarRate();
-                //     convertedAmount = transaction.amount * dollarRate
-                // } else {
-                //     convertedAmount = transaction.amount
-                // }
                 return [4 /*yield*/, pris_client_1.default.uSaveForU.update({
                         where: { id: transaction.featureId },
                         data: {
@@ -108,15 +99,6 @@ var depositIntoForUSavingViaFlutterwave = function (dataFromWebhook, transaction
                     })];
             case 5:
                 // let convertedAmount = 0;
-                // if (uSaveForUAccount.currency === "USD" && transaction.transactionCurrency == "NGN") {
-                //     let dollarRate = getCurrentDollarRate();
-                //     convertedAmount = transaction.amount / dollarRate
-                // } else if (uSaveForUAccount.currency === "NGN" && transaction.transactionCurrency == "USD") {
-                //     let dollarRate = getCurrentDollarRate();
-                //     convertedAmount = transaction.amount * dollarRate
-                // } else {
-                //     convertedAmount = transaction.amount
-                // }
                 _a.sent();
                 _a.label = 6;
             case 6: return [2 /*return*/];
@@ -125,7 +107,7 @@ var depositIntoForUSavingViaFlutterwave = function (dataFromWebhook, transaction
 }); };
 exports.depositIntoForUSavingViaFlutterwave = depositIntoForUSavingViaFlutterwave;
 var depositIntoUAndISavingViaFlutterwave = function (dataFromWebhook, transaction) { return __awaiter(void 0, void 0, void 0, function () {
-    var status, uAndISaving, depositAmount, isCreator;
+    var status, uAndISaving, depositAmount, isCreator, depositUserInfo;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -156,7 +138,7 @@ var depositIntoUAndISavingViaFlutterwave = function (dataFromWebhook, transactio
                         transactionStatus: "SUCCESS"
                     }
                 })
-                // Modify the USaveForUAccount as needed
+                // Modify the CABAL ACCOUNT as needed
             ];
             case 3:
                 //* Transaction status successful and not modified. We can safely deposit the money
@@ -195,8 +177,174 @@ var depositIntoUAndISavingViaFlutterwave = function (dataFromWebhook, transactio
             case 7:
                 _a.sent();
                 _a.label = 8;
-            case 8: return [2 /*return*/];
+            case 8: return [4 /*yield*/, pris_client_1.default.user.findFirst({ where: { id: transaction.userId } })];
+            case 9:
+                depositUserInfo = _a.sent();
+                return [4 /*yield*/, pris_client_1.default.notification.createMany({
+                        data: [
+                            { userId: uAndISaving.creatorId, description: "".concat(depositUserInfo === null || depositUserInfo === void 0 ? void 0 : depositUserInfo.firstName, " ").concat(depositUserInfo === null || depositUserInfo === void 0 ? void 0 : depositUserInfo.lastName, " Deposited ").concat(uAndISaving.currency, " ").concat(depositAmount, " into ").concat(uAndISaving.Savingsname) },
+                            { userId: uAndISaving.partnerId, description: "".concat(depositUserInfo === null || depositUserInfo === void 0 ? void 0 : depositUserInfo.firstName, " ").concat(depositUserInfo === null || depositUserInfo === void 0 ? void 0 : depositUserInfo.lastName, " Deposited ").concat(uAndISaving.currency, " ").concat(depositAmount, " into ").concat(uAndISaving.Savingsname) }
+                        ]
+                    })];
+            case 10:
+                _a.sent();
+                _a.label = 11;
+            case 11: return [2 /*return*/];
         }
     });
 }); };
 exports.depositIntoUAndISavingViaFlutterwave = depositIntoUAndISavingViaFlutterwave;
+var depositIntoMyCabalSavingViaFlutterwave = function (dataFromWebhook, transaction) { return __awaiter(void 0, void 0, void 0, function () {
+    var status, userCabal_1, depositAmount_1, allUsers;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                status = dataFromWebhook.status;
+                if (transaction.transactionStatus !== "PENDING") {
+                    throw new Error("Transaction status has already been modified");
+                }
+                if (!(status !== "successful")) return [3 /*break*/, 2];
+                // If failed, update and return
+                return [4 /*yield*/, pris_client_1.default.transaction.update({
+                        where: { id: transaction.id },
+                        data: {
+                            transactionStatus: "FAIL"
+                        }
+                    })];
+            case 1:
+                // If failed, update and return
+                _b.sent();
+                throw new Error("Flutterwave transaction unsuccessful");
+            case 2: 
+            //* Transaction status successful and not modified. We can safely deposit the money
+            // Update USaveForUTransaction to be successful
+            return [4 /*yield*/, pris_client_1.default.transaction.update({
+                    where: {
+                        id: transaction.id
+                    },
+                    data: {
+                        transactionStatus: "SUCCESS"
+                    }
+                })
+                // Modify the USaveForUAccount as needed
+            ];
+            case 3:
+                //* Transaction status successful and not modified. We can safely deposit the money
+                // Update USaveForUTransaction to be successful
+                _b.sent();
+                return [4 /*yield*/, pris_client_1.default.userCabal.findFirst({
+                        where: { id: transaction.featureId },
+                        include: {
+                            cabelGroup: true,
+                            user: {
+                                select: {
+                                    firstName: true,
+                                    lastName: true
+                                }
+                            }
+                        }
+                    })];
+            case 4:
+                userCabal_1 = _b.sent();
+                if (!userCabal_1) {
+                    throw new Error("Cabal Account not found");
+                }
+                depositAmount_1 = (0, transactions_util_1.getConvertedRate)({ amount: transaction.amount, from: dataFromWebhook.currency, to: userCabal_1.cabelGroup.currency });
+                return [4 /*yield*/, pris_client_1.default.userCabal.update({
+                        where: { id: transaction.featureId },
+                        data: {
+                            cabalCapital: { increment: depositAmount_1 },
+                            totalBalance: { increment: depositAmount_1 },
+                        }
+                    })
+                    //create notifications for all cabal users
+                ];
+            case 5:
+                _b.sent();
+                return [4 /*yield*/, pris_client_1.default.userCabal.findMany({
+                        where: { cabalGroupId: (_a = userCabal_1.cabelGroup) === null || _a === void 0 ? void 0 : _a.id }
+                    })
+                    //create a dashboard notifcation for all user in cabal
+                ];
+            case 6:
+                allUsers = _b.sent();
+                //create a dashboard notifcation for all user in cabal
+                return [4 /*yield*/, pris_client_1.default.notification.createMany({
+                        data: allUsers.map(function (item) {
+                            return { userId: item.userId, description: "".concat(userCabal_1.user.firstName, " ").concat(userCabal_1.user.lastName, " Deposited ").concat(userCabal_1.cabelGroup.currency, " ").concat(depositAmount_1, " into ").concat(userCabal_1.cabelGroup.groupName) };
+                        })
+                    })];
+            case 7:
+                //create a dashboard notifcation for all user in cabal
+                _b.sent();
+                _b.label = 8;
+            case 8: return [2 /*return*/];
+        }
+    });
+}); };
+exports.depositIntoMyCabalSavingViaFlutterwave = depositIntoMyCabalSavingViaFlutterwave;
+var depositIntoEmeergencySavingViaFlutterwave = function (dataFromWebhook, transaction) { return __awaiter(void 0, void 0, void 0, function () {
+    var status, emergecyAccount, depositAmount;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                status = dataFromWebhook.status;
+                if (transaction.transactionStatus !== "PENDING") {
+                    throw new Error("Transaction status has already been modified");
+                }
+                if (!(status !== "successful")) return [3 /*break*/, 2];
+                // If failed, update and return
+                return [4 /*yield*/, pris_client_1.default.transaction.update({
+                        where: { id: transaction.id },
+                        data: {
+                            transactionStatus: "FAIL"
+                        }
+                    })];
+            case 1:
+                // If failed, update and return
+                _a.sent();
+                throw new Error("Flutterwave transaction unsuccessful");
+            case 2: 
+            //* Transaction status successful and not modified. We can safely deposit the money
+            // Update USaveForUTransaction to be successful
+            return [4 /*yield*/, pris_client_1.default.transaction.update({
+                    where: {
+                        id: transaction.id
+                    },
+                    data: {
+                        transactionStatus: "SUCCESS"
+                    }
+                })
+                // Modify the EmergencyAccount as needed
+            ];
+            case 3:
+                //* Transaction status successful and not modified. We can safely deposit the money
+                // Update USaveForUTransaction to be successful
+                _a.sent();
+                return [4 /*yield*/, pris_client_1.default.emergency.findFirst({
+                        where: { id: transaction.featureId }
+                    })];
+            case 4:
+                emergecyAccount = _a.sent();
+                if (!emergecyAccount) {
+                    throw new Error("For-U account not found");
+                }
+                depositAmount = (0, transactions_util_1.getConvertedRate)({ amount: transaction.amount, from: dataFromWebhook.currency, to: emergecyAccount.currency });
+                // let convertedAmount = 0;
+                return [4 /*yield*/, pris_client_1.default.emergency.update({
+                        where: { id: transaction.featureId },
+                        data: {
+                            investmentCapital: { increment: depositAmount },
+                            totalInvestment: { increment: depositAmount },
+                        }
+                    })];
+            case 5:
+                // let convertedAmount = 0;
+                _a.sent();
+                _a.label = 6;
+            case 6: return [2 /*return*/];
+        }
+    });
+}); };
+exports.depositIntoEmeergencySavingViaFlutterwave = depositIntoEmeergencySavingViaFlutterwave;

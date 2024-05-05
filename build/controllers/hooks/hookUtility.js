@@ -80,7 +80,7 @@ var manageReferralBalance = function (transaction) { return __awaiter(void 0, vo
             case 3:
                 referredByUserWallet = _a.sent();
                 if (!referredByUserWallet) {
-                    throw new Error("Referral user could not be found");
+                    throw new Error("Referral user wallet could not be found");
                 }
                 return [4 /*yield*/, pris_client_1.default.user.update({
                         where: { id: depositUser.id },

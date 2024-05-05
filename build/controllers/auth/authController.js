@@ -154,6 +154,11 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                 _a.sent();
                 //delete verifcation token from cookie
                 res.clearCookie("MAILVERIFICATION");
+                res.cookie("CLIENTEMAIL", otpVerification.user.email, {
+                    maxAge: 30 * 60 * 1000,
+                    secure: true,
+                    httpOnly: true,
+                });
                 //delete all OTp associated with user
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.deleteMany({
                         where: {
@@ -168,11 +173,12 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
     });
 }); });
 exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, firstName, lastName, password, email, phoneNumber, merchantID, existingUser, referredByUser, hashedPassword, user, newuserWallet, referalUserWallet, deviceId;
+    var _a, firstName, lastName, password, phoneNumber, merchantID, email, existingUser, referredByUser, hashedPassword, user, newuserWallet, referalUserWallet, deviceId;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, firstName = _a.firstName, lastName = _a.lastName, password = _a.password, email = _a.email, phoneNumber = _a.phoneNumber, merchantID = _a.merchantID;
+                _a = req.body, firstName = _a.firstName, lastName = _a.lastName, password = _a.password, phoneNumber = _a.phoneNumber, merchantID = _a.merchantID;
+                email = req.cookies["CLIENTEMAIL"];
                 return [4 /*yield*/, pris_client_1.default.user.findFirst({
                         where: {
                             email: email
@@ -287,6 +293,7 @@ exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, nex
                     email: email,
                     isMailVerified: user.isMailVerified
                 };
+                res.clearCookie("CLIENTEMAIL");
                 return [2 /*return*/, next()];
         }
     });

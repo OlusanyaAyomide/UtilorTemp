@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.depositIntoUWallet = exports.depositIntoUANDISavings = exports.depositIntoForUSavings = void 0;
+exports.depositIntoEmergencySavings = exports.depositIntoMyCabalSaving = exports.depositIntoUANDISavings = exports.depositIntoForUSavings = void 0;
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
@@ -87,7 +87,7 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                 }
                 depositAmount = (0, transactions_util_1.getConvertedRate)({ amount: amount, from: uWallet.currency, to: forUAccount.currency });
                 // Respond with error if valid wallet has insufficient balance
-                if (uWallet.balance < depositAmount) {
+                if (uWallet.balance < depositData.amount) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Insufficient funds in U-Wallet", code: 400 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
@@ -150,41 +150,9 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                 })];
             case 9:
                 updateForU = _b.sent();
-                // If for-U update failed
-                // i feel this is not needed, tempoary comment for review 
-                // if (!updateForU) {
-                //     // Update Generic Transactions status to failed
-                //     await updateTransactionStatus(newUWalletWithdrawalTransaction.id, "FAIL");
-                //     await updateTransactionStatus(newForUDepositTransaction.id, "FAIL");
-                //     // Reimburse U-Wallet
-                //     await prismaClient.uWallet.update({
-                //         where: {id: uWallet.id},
-                //         data: {
-                //             balance: {increment: amount}
-                //         }
-                //     });
-                //     // Send error response
-                //     return ResponseHandler.sendErrorResponse({res, code: 500, error: "Could not credit for-U"});
-                // }
                 // Update Generic Transactions status to successful
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "SUCCESS")];
             case 10:
-                // If for-U update failed
-                // i feel this is not needed, tempoary comment for review 
-                // if (!updateForU) {
-                //     // Update Generic Transactions status to failed
-                //     await updateTransactionStatus(newUWalletWithdrawalTransaction.id, "FAIL");
-                //     await updateTransactionStatus(newForUDepositTransaction.id, "FAIL");
-                //     // Reimburse U-Wallet
-                //     await prismaClient.uWallet.update({
-                //         where: {id: uWallet.id},
-                //         data: {
-                //             balance: {increment: amount}
-                //         }
-                //     });
-                //     // Send error response
-                //     return ResponseHandler.sendErrorResponse({res, code: 500, error: "Could not credit for-U"});
-                // }
                 // Update Generic Transactions status to successful
                 _b.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newForUDepositTransaction.id, "SUCCESS")];
@@ -227,6 +195,7 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                     })];
             case 14:
                 newTransaction = _b.sent();
+                console.log("_____________ ".concat(newTransaction.transactionReference, "___________"));
                 if (!newTransaction) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Transaction could not be initialized", code: 500 })];
                 }
@@ -261,7 +230,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not permitted to make deposit" })];
                 }
                 amount = depositData.amount;
-                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 15];
+                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 16];
                 return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
                         where: {
                             userId: user.userId,
@@ -276,7 +245,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                 }
                 depositAmount = (0, transactions_util_1.getConvertedRate)({ amount: amount, from: uWallet.currency, to: uAndISaving.currency });
                 // Respond with error if valid wallet has insufficient balance
-                if (uWallet.balance < depositAmount) {
+                if (uWallet.balance < depositData.amount) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Insufficient funds in U-Wallet", code: 400 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
@@ -364,17 +333,29 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUandITransaction.id, "SUCCESS")];
             case 14:
                 _d.sent();
+                //create notification for both users
+                return [4 /*yield*/, pris_client_1.default.notification.createMany({
+                        data: [
+                            { userId: updatedUAndI.creatorId, description: "".concat(req.user.firstName, " ").concat(req.user.lastName, " Deposited ").concat(updatedUAndI.currency, " ").concat(depositAmount, " into ").concat(updatedUAndI.Savingsname, " ") },
+                            { userId: updatedUAndI.partnerId, description: "".concat(req.user.firstName, " ").concat(req.user.lastName, " Deposited ").concat(updatedUAndI.currency, " ").concat(depositAmount, " into ").concat(updatedUAndI.Savingsname, " ") }
+                        ]
+                    })
+                    // Return success response
+                ];
+            case 15:
+                //create notification for both users
+                _d.sent();
                 // Return success response
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({
                         res: res,
                         code: 200,
-                        message: "For-U account \"".concat(uAndISaving.Savingsname, "\" successfully funded from U-Wallet"),
+                        message: "U And I account \"".concat(uAndISaving.Savingsname, "\" successfully funded from U-Wallet"),
                         data: {
                             uWalletBalance: updateUWallet.balance,
                             UAndIBalance: updatedUAndI.totalCapital
                         }
                     })];
-            case 15:
+            case 16:
                 paymentInformation = {
                     user: user,
                     tx_ref: tx_ref,
@@ -384,9 +365,9 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     productId: depositData.id
                 };
                 return [4 /*yield*/, (0, requests_1.generatePaymentLink)(paymentInformation)];
-            case 16:
+            case 17:
                 paymentLink = _d.sent();
-                if (!paymentLink) return [3 /*break*/, 18];
+                if (!paymentLink) return [3 /*break*/, 19];
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
                             userId: user.userId,
@@ -399,8 +380,191 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                             featureId: uAndISaving.id
                         }
                     })];
-            case 17:
+            case 18:
                 newTransaction = _d.sent();
+                console.log("_____________ ".concat(newTransaction.transactionReference, "___________"));
+                if (!newTransaction) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Transaction could not be initialized", code: 500 })];
+                }
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: paymentLink })];
+            case 19: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated" })];
+        }
+    });
+}); });
+exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var tx_ref, depositData, user, cabalGroup, userCabal, amount, uWallet, depositAmount_1, newUandITransaction, newUWalletWithdrawalTransaction, updateUWallet, upddatedUserCabal, allUsers, paymentInformation, paymentLink, newTransaction;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                tx_ref = (0, util_1.generateTransactionRef)();
+                depositData = req.body;
+                user = req.user;
+                // Verify there is indeed a valid user
+                if (!user) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.cabalGroup.findFirst({
+                        where: { id: depositData.id }
+                    })];
+            case 1:
+                cabalGroup = _a.sent();
+                if (!cabalGroup) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 404, error: "My Cabal Group savings account not found" })];
+                }
+                if (!cabalGroup.hasStarted) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Cabal Group has not started yet" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.userCabal.findFirst({
+                        where: {
+                            cabalGroupId: cabalGroup.id,
+                            userId: user.userId
+                        }
+                    })];
+            case 2:
+                userCabal = _a.sent();
+                if (!userCabal) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "User not prsent in Cabal Group" })];
+                }
+                amount = depositData.amount;
+                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 15];
+                return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
+                        where: {
+                            userId: user.userId,
+                            currency: "NGN" // user can only pay in NGN
+                        }
+                    })];
+            case 3:
+                uWallet = _a.sent();
+                // Respond with error if no valid wallet
+                if (!uWallet) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "No U-Wallet found", code: 400 })];
+                }
+                depositAmount_1 = (0, transactions_util_1.getConvertedRate)({ amount: amount, from: uWallet.currency, to: cabalGroup.currency });
+                // Respond with error if valid wallet has insufficient balance
+                if (uWallet.balance < depositData.amount) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Insufficient funds in U-Wallet", code: 400 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.transaction.create({
+                        data: {
+                            userId: user.userId,
+                            transactionReference: tx_ref,
+                            amount: depositData.amount,
+                            transactionCurrency: uWallet.currency,
+                            description: "CABAL",
+                            paymentMethod: depositData.paymentMethod,
+                            transactionType: "DEPOSIT",
+                            featureId: userCabal.id
+                        }
+                    })
+                    //create a withdrawal transaction in the wallet
+                ];
+            case 4:
+                newUandITransaction = _a.sent();
+                return [4 /*yield*/, pris_client_1.default.transaction.create({
+                        data: {
+                            userId: user.userId,
+                            transactionReference: tx_ref,
+                            amount: depositData.amount,
+                            transactionCurrency: uWallet.currency,
+                            description: "UWALLET",
+                            paymentMethod: depositData.paymentMethod,
+                            transactionType: "WITHDRAWAL",
+                            featureId: uWallet.id
+                        }
+                    })
+                    // Remove actual value  from wallet
+                ];
+            case 5:
+                newUWalletWithdrawalTransaction = _a.sent();
+                return [4 /*yield*/, pris_client_1.default.uWallet.update({
+                        where: { id: uWallet.id },
+                        data: {
+                            balance: { decrement: depositData.amount }
+                        }
+                    })];
+            case 6:
+                updateUWallet = _a.sent();
+                if (!!updateUWallet) return [3 /*break*/, 9];
+                // Update Transactions status to failed
+                return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUandITransaction.id, "FAIL")];
+            case 7:
+                // Update Transactions status to failed
+                _a.sent();
+                return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "FAIL")];
+            case 8:
+                _a.sent();
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Could not debit from U-Wallet" })];
+            case 9: return [4 /*yield*/, pris_client_1.default.userCabal.update({
+                    where: { id: userCabal.id },
+                    data: {
+                        totalBalance: { increment: depositAmount_1 },
+                        cabalCapital: { increment: depositAmount_1 },
+                    }
+                })];
+            case 10:
+                upddatedUserCabal = _a.sent();
+                return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "SUCCESS")];
+            case 11:
+                _a.sent();
+                return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUandITransaction.id, "SUCCESS")];
+            case 12:
+                _a.sent();
+                return [4 /*yield*/, pris_client_1.default.userCabal.findMany({
+                        where: { cabalGroupId: cabalGroup === null || cabalGroup === void 0 ? void 0 : cabalGroup.id }
+                    })
+                    //create a dashboard notifcation for all user in cabal
+                ];
+            case 13:
+                allUsers = _a.sent();
+                //create a dashboard notifcation for all user in cabal
+                return [4 /*yield*/, pris_client_1.default.notification.createMany({
+                        data: allUsers.map(function (item) {
+                            var _a, _b;
+                            return { userId: item.userId, description: "".concat((_a = req.user) === null || _a === void 0 ? void 0 : _a.firstName, " ").concat((_b = req.user) === null || _b === void 0 ? void 0 : _b.lastName, " Deposited ").concat(cabalGroup.currency, " ").concat(depositAmount_1, " into ").concat(cabalGroup.groupName) };
+                        })
+                    })
+                    // Return success response
+                ];
+            case 14:
+                //create a dashboard notifcation for all user in cabal
+                _a.sent();
+                // Return success response
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({
+                        res: res,
+                        code: 200,
+                        message: "CABAL Group \"".concat(cabalGroup.groupName, "\" has been  successfully funded from U-Wallet"),
+                        data: {
+                            uWalletBalance: updateUWallet.balance,
+                            userCabalBalamce: upddatedUserCabal.totalBalance
+                        }
+                    })];
+            case 15:
+                paymentInformation = {
+                    user: user,
+                    tx_ref: tx_ref,
+                    amount: depositData.amount,
+                    currency: "NGN", // Users can only deposit in NGN
+                    product: "CABAL",
+                    productId: depositData.id
+                };
+                return [4 /*yield*/, (0, requests_1.generatePaymentLink)(paymentInformation)];
+            case 16:
+                paymentLink = _a.sent();
+                if (!paymentLink) return [3 /*break*/, 18];
+                return [4 /*yield*/, pris_client_1.default.transaction.create({
+                        data: {
+                            userId: user.userId,
+                            amount: paymentInformation.amount,
+                            transactionReference: tx_ref,
+                            transactionCurrency: paymentInformation.currency,
+                            description: "CABAL",
+                            paymentMethod: depositData.paymentMethod,
+                            transactionType: "DEPOSIT",
+                            featureId: userCabal.id
+                        }
+                    })];
+            case 17:
+                newTransaction = _a.sent();
                 console.log("_____________ ".concat(newTransaction.transactionReference, "___________"));
                 if (!newTransaction) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Transaction could not be initialized", code: 500 })];
@@ -410,59 +574,161 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
         }
     });
 }); });
-//shoud be moved into seperate u wallet controller
-exports.depositIntoUWallet = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var depositData, tx_ref, user, uWallet, paymentInformation, paymentLink, newTransaction;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var tx_ref, depositData, user, emergencyAccount, amount, uWallet, depositAmount, newForUDepositTransaction, newUWalletWithdrawalTransaction, updateUWallet, updateEmergency, paymentInformation, paymentLink, newTransaction;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                depositData = req.body;
                 tx_ref = (0, util_1.generateTransactionRef)();
+                depositData = req.body;
                 user = req.user;
-                return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
+                // Verify there is indeed a valid user
+                if (!user) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.emergency.findFirst({
                         where: { id: depositData.id }
                     })];
             case 1:
-                uWallet = _a.sent();
+                emergencyAccount = _b.sent();
+                if (!emergencyAccount) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 404, error: "ForU savings account not found" })];
+                }
+                //confirm user is allowed to make deposit
+                if (emergencyAccount.userId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not allowed to make this forUDeposit" })];
+                }
+                amount = depositData.amount;
+                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 12];
+                return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
+                        where: {
+                            userId: user.userId,
+                            currency: "NGN" // user can only pay in NGN
+                        }
+                    })];
+            case 2:
+                uWallet = _b.sent();
+                // Respond with error if no valid wallet
                 if (!uWallet) {
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: "Specified U-Wallet not found" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "No U-Wallet found", code: 400 })];
                 }
-                if (!user) {
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Something went wrong" })];
+                depositAmount = (0, transactions_util_1.getConvertedRate)({ amount: amount, from: uWallet.currency, to: emergencyAccount.currency });
+                // Respond with error if valid wallet has insufficient balance
+                if (uWallet.balance < depositData.amount) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Insufficient funds in U-Wallet", code: 400 })];
                 }
-                console.log("\n        ------------".concat(tx_ref, "---------------\n    "));
+                return [4 /*yield*/, pris_client_1.default.transaction.create({
+                        data: {
+                            userId: user.userId,
+                            transactionReference: tx_ref,
+                            amount: depositData.amount,
+                            transactionCurrency: uWallet.currency,
+                            description: "EMERGENCY",
+                            paymentMethod: depositData.paymentMethod,
+                            transactionType: "DEPOSIT",
+                            featureId: emergencyAccount.id
+                        }
+                    })
+                    //create a withdrawal transaction in the wallet
+                ];
+            case 3:
+                newForUDepositTransaction = _b.sent();
+                return [4 /*yield*/, pris_client_1.default.transaction.create({
+                        data: {
+                            userId: user.userId,
+                            transactionReference: tx_ref,
+                            amount: depositData.amount,
+                            transactionCurrency: uWallet.currency,
+                            description: "UWALLET",
+                            paymentMethod: depositData.paymentMethod,
+                            transactionType: "WITHDRAWAL",
+                            featureId: uWallet.id
+                        }
+                    })
+                    // Remove from wallet
+                ];
+            case 4:
+                newUWalletWithdrawalTransaction = _b.sent();
+                return [4 /*yield*/, pris_client_1.default.uWallet.update({
+                        where: { id: uWallet.id },
+                        data: {
+                            balance: { decrement: depositData.amount }
+                        }
+                    })];
+            case 5:
+                updateUWallet = _b.sent();
+                if (!!updateUWallet) return [3 /*break*/, 8];
+                // Update Transactions status to failed
+                return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "FAIL")];
+            case 6:
+                // Update Transactions status to failed
+                _b.sent();
+                return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newForUDepositTransaction.id, "FAIL")];
+            case 7:
+                _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Could not debit from U-Wallet" })];
+            case 8: return [4 /*yield*/, pris_client_1.default.emergency.update({
+                    where: { id: emergencyAccount.id },
+                    data: {
+                        investmentCapital: { increment: depositAmount },
+                        totalInvestment: { increment: depositAmount },
+                        isActivated: true
+                    }
+                })];
+            case 9:
+                updateEmergency = _b.sent();
+                // Update Generic Transactions status to successful
+                return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "SUCCESS")];
+            case 10:
+                // Update Generic Transactions status to successful
+                _b.sent();
+                return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newForUDepositTransaction.id, "SUCCESS")];
+            case 11:
+                _b.sent();
+                // Return success response
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({
+                        res: res,
+                        code: 200,
+                        message: "Emergency account \"".concat(emergencyAccount.savingsName, "\" successfully funded from U-Wallet"),
+                        data: {
+                            uWalletBalance: updateUWallet.balance,
+                            forUBalance: updateEmergency.totalInvestment
+                        }
+                    })];
+            case 12:
                 paymentInformation = {
                     user: user,
                     tx_ref: tx_ref,
                     amount: depositData.amount,
-                    //? Might remove or add this later, currency: "NGN", // Users can only deposit in NGN
-                    currency: depositData.currency,
-                    product: "FORU",
-                    productId: uWallet.id
+                    currency: "NGN", // Users can only deposit in NGN
+                    product: "EMERGENCY",
+                    productId: depositData.id
                 };
                 return [4 /*yield*/, (0, requests_1.generatePaymentLink)(paymentInformation)];
-            case 2:
-                paymentLink = _a.sent();
-                if (!paymentLink) return [3 /*break*/, 4];
+            case 13:
+                paymentLink = _b.sent();
+                if (!paymentLink) return [3 /*break*/, 15];
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
                             userId: user.userId,
                             amount: paymentInformation.amount,
                             transactionReference: tx_ref,
                             transactionCurrency: paymentInformation.currency,
-                            description: "UWALLET",
+                            description: "EMERGENCY",
                             paymentMethod: depositData.paymentMethod,
                             transactionType: "DEPOSIT",
-                            featureId: uWallet.id
+                            featureId: emergencyAccount.id
                         }
                     })];
-            case 3:
-                newTransaction = _a.sent();
+            case 14:
+                newTransaction = _b.sent();
+                console.log("_______EMERGENCY______ ".concat(newTransaction.transactionReference, "___________"));
                 if (!newTransaction) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Transaction could not be initialized", code: 500 })];
                 }
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: paymentLink })];
-            case 4: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated" })];
+            case 15: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated, Try Again" })];
         }
     });
 }); });

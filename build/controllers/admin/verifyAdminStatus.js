@@ -39,56 +39,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.channelWebHookData = void 0;
-var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
-var hookUtility_1 = require("./hookUtility");
-var hookDeposits_1 = require("../savings/hookDeposits");
-var walletController_1 = require("../wallet/walletController");
-var channelWebHookData = function (dataFromWebhook) { return __awaiter(void 0, void 0, void 0, function () {
-    var txRef, transaction;
+exports.verifyAdminStatus = void 0;
+var catch_async_1 = __importDefault(require("../../utils/catch-async"));
+exports.verifyAdminStatus = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
-                console.log("channeled after response");
-                txRef = dataFromWebhook.txRef;
-                return [4 /*yield*/, pris_client_1.default.transaction.findFirst({
-                        where: { transactionReference: txRef }
-                    })
-                    // If none, just return
-                ];
-            case 1:
-                transaction = _a.sent();
-                // If none, just return
-                if (!transaction) {
-                    throw new Error("Transaction not found in the database");
-                }
-                //? Now run different transactions depending on transaction type/description
-                switch (transaction.description) {
-                    case "FORU":
-                        (0, hookUtility_1.manageReferralBalance)(transaction);
-                        (0, hookDeposits_1.depositIntoForUSavingViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    case "UWALLET":
-                        (0, hookUtility_1.manageReferralBalance)(transaction);
-                        (0, walletController_1.depositIntoUWalletViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    case "EMERGENCY":
-                        (0, hookUtility_1.manageReferralBalance)(transaction);
-                        (0, hookDeposits_1.depositIntoEmeergencySavingViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    case "UANDI":
-                        (0, hookUtility_1.manageReferralBalance)(transaction);
-                        (0, hookDeposits_1.depositIntoUAndISavingViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    case "CABAL":
-                        (0, hookDeposits_1.depositIntoMyCabalSavingViaFlutterwave)(dataFromWebhook, transaction);
-                        break;
-                    default:
-                        break;
-                }
-                return [2 /*return*/];
-        }
+        //verify admin credentials 
+        return [2 /*return*/, next()];
     });
-}); };
-exports.channelWebHookData = channelWebHookData;
+}); });

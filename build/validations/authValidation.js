@@ -75,7 +75,7 @@ function otpvalidation(req, res, next) {
             console.log(req.cookies);
             verificationId = req.cookies["MAILVERIFICATION"];
             if (!verificationId) {
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired" })];
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired", status_code: "LOGIN_REDIRECT" })];
             }
             return [2 /*return*/, next()];
         });
@@ -84,16 +84,13 @@ function otpvalidation(req, res, next) {
 exports.otpvalidation = otpvalidation;
 function basicSetUpValidation(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var passwordRegex, emailRegex, signUpSchema, validation, error;
+        var passwordRegex, signUpSchema, validation, error, clientEmail;
         return __generator(this, function (_a) {
             passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
-            emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
             signUpSchema = joi_1.default.object({
                 firstName: joi_1.default.string().required(),
-                email: joi_1.default.string().required().regex(emailRegex).message('Email is not valid'),
                 lastName: joi_1.default.string().required().allow(''),
                 password: joi_1.default.string().required().regex(passwordRegex).message('Password is not strong enough'),
-                referralId: joi_1.default.string().optional().allow(""),
                 confirmPassword: joi_1.default.string().required().valid(joi_1.default.ref('password')).error(new Error('Password mismatch')),
                 phoneNumber: joi_1.default.string().max(11).required(),
                 merchantID: joi_1.default.string().optional()
@@ -102,6 +99,10 @@ function basicSetUpValidation(req, res, next) {
             if (validation.error) {
                 error = validation.error.message ? validation.error.message : validation.error.details[0].message;
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
+            }
+            clientEmail = req.cookies["CLIENTEMAIL"];
+            if (!clientEmail) {
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Sign Up session expired", status_code: "LOGIN_REDIRECT" })];
             }
             return [2 /*return*/, next()];
         });

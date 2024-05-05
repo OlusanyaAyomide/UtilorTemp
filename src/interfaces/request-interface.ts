@@ -3,7 +3,7 @@ export interface ILogInForm{
     password:string   
 }
 
-export interface ISignUpForm extends ILogInForm{
+export interface ISignUpForm{
     firstName:string
     lastName:string
     password:string

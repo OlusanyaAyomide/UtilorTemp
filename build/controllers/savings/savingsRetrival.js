@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
+exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
@@ -58,14 +58,27 @@ exports.getAllUserForU = (0, catch_async_1.default)(function (req, res, next) { 
     var userId, allForU;
     var _a;
     return __generator(this, function (_b) {
-        userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
-        if (!userId) {
-            return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.uSaveForU.findMany({
+                        where: { userId: userId },
+                        include: {
+                            promoCode: {
+                                select: {
+                                    name: true,
+                                    percentageIncrease: true
+                                }
+                            }
+                        }
+                    })];
+            case 1:
+                allForU = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: allForU })];
         }
-        allForU = pris_client_1.default.uSaveForU.findMany({
-            where: { userId: userId },
-        });
-        return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: allForU })];
     });
 }); });
 exports.getSingleForU = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
@@ -79,7 +92,15 @@ exports.getSingleForU = (0, catch_async_1.default)(function (req, res, next) { r
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Id is required" })];
                 }
                 return [4 /*yield*/, pris_client_1.default.uSaveForU.findFirst({
-                        where: { id: detail }
+                        where: { id: detail },
+                        include: {
+                            promoCode: {
+                                select: {
+                                    name: true,
+                                    percentageIncrease: true
+                                }
+                            }
+                        }
                     })];
             case 1:
                 singleForU = _b.sent();
@@ -125,11 +146,140 @@ exports.getAllUserUAndI = (0, catch_async_1.default)(function (req, res, next) {
                         },
                         orderBy: {
                             totalCapital: "desc"
+                        },
+                        include: {
+                            promoCode: {
+                                select: {
+                                    name: true,
+                                    percentageIncrease: true
+                                }
+                            }
                         }
                     })];
             case 1:
                 allUAndI = _b.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: allUAndI })];
+        }
+    });
+}); });
+//returns all user in a cabal
+exports.getAllCabalUsers = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, cabalId, isAMember, allUsers;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                cabalId = req.params.id;
+                if (!cabalId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Cabal Id is required", code: 500 })];
+                }
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.userCabal.findFirst({
+                        where: {
+                            cabalGroupId: cabalId,
+                            userId: userId
+                        }
+                    })
+                    //only allow members to read cabal data
+                ];
+            case 1:
+                isAMember = _b.sent();
+                //only allow members to read cabal data
+                if (!isAMember) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Unauthorized to view this information" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.cabalGroup.findFirst({ where: { id: cabalId },
+                        include: {
+                            userCabals: {
+                                include: {
+                                    user: {
+                                        select: {
+                                            firstName: true,
+                                            email: true,
+                                            lastName: true,
+                                        }
+                                    }
+                                },
+                                orderBy: {
+                                    totalBalance: "desc"
+                                }
+                            }
+                        }
+                    })];
+            case 2:
+                allUsers = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: allUsers })];
+        }
+    });
+}); });
+exports.getAllUserEmergency = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, allForU;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.emergency.findMany({
+                        where: { userId: userId },
+                        include: {
+                            promoCode: {
+                                select: {
+                                    name: true,
+                                    percentageIncrease: true
+                                }
+                            }
+                        }
+                    })];
+            case 1:
+                allForU = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: allForU })];
+        }
+    });
+}); });
+exports.getSingleEmergency = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var detail, singleEmergency, transactions, data;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                detail = req.params.id;
+                if (!detail) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Id is required" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.emergency.findFirst({
+                        where: { id: detail },
+                        include: {
+                            promoCode: {
+                                select: {
+                                    name: true,
+                                    percentageIncrease: true
+                                }
+                            }
+                        }
+                    })];
+            case 1:
+                singleEmergency = _b.sent();
+                if (!singleEmergency) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "For U Id is invalid" })];
+                }
+                if (singleEmergency.userId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not permitted to view this savings" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.transaction.findMany({
+                        where: {
+                            featureId: singleEmergency.id
+                        }
+                    })];
+            case 2:
+                transactions = _b.sent();
+                data = __assign(__assign({}, singleEmergency), { transactions: transactions });
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: data })];
         }
     });
 }); });
