@@ -11,7 +11,10 @@ import walletRoutes from "./routes/walletRoutes"
 import adminRoutes from "./routes/adminRoutes"
 
 const app  = express()
-app.use(cors())
+app.use(cors({
+    origin:['http://localhost:3000','https://utilourapp-z36b.vercel.app',"*"],
+    credentials: true
+}))
 app.use(morgan("dev"))
 app.use(express.json())
 app.use(cookieParser())
