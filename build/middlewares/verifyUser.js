@@ -45,6 +45,7 @@ var clientDevice_1 = require("../utils/clientDevice");
 var pris_client_1 = __importDefault(require("../prisma/pris-client"));
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var util_1 = require("../utils/util");
+var CookieService_1 = require("../utils/CookieService");
 function verifyUsers(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
         var refreshToken, accessToken, decoded, deviceId, isTokenValid, user, newAcessToken, newRefreshToken;
@@ -105,19 +106,8 @@ function verifyUsers(req, res, next) {
                 case 2:
                     _a.sent();
                     //set  refresh token to cookie
-                    res.cookie("refreshToken", newRefreshToken, {
-                        maxAge: 60 * 60 * 1000,
-                        secure: true,
-                        httpOnly: true,
-                        // signed:true,
-                    });
-                    //set accesss token to cookie
-                    res.cookie("acessToken", newAcessToken, {
-                        maxAge: 3 * 60 * 1000,
-                        secure: true,
-                        httpOnly: true,
-                        // signed:true,
-                    });
+                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: newRefreshToken });
+                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: newAcessToken });
                     req.user = {
                         userId: user.id,
                         firstName: (user === null || user === void 0 ? void 0 : user.firstName) || "", lastName: (user === null || user === void 0 ? void 0 : user.lastName) || "",

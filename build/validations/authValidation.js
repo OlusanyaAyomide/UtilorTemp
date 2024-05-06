@@ -74,6 +74,7 @@ function otpvalidation(req, res, next) {
             }
             console.log(req.cookies);
             verificationId = req.cookies["MAILVERIFICATION"];
+            console.log(verificationId);
             if (!verificationId) {
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired", status_code: "LOGIN_REDIRECT" })];
             }

@@ -48,6 +48,7 @@ var send_mail_1 = require("../../utils/send-mail");
 var util_1 = require("../../utils/util");
 var util_2 = require("../../utils/util");
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
+var CookieService_1 = require("../../utils/CookieService");
 //in charge of asigning token and signing in users
 exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var user, otpCode, newOtpObject, deviceId, isDeviceActive, otpCode, newDeviceOtp, acessToken, refreshToken, isSessionExisting, currentDate;
@@ -73,12 +74,7 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
             case 2:
                 _a.sent();
                 //set otpId to user response cookie 
-                res.cookie("MAILVERIFICATION", newOtpObject.id, {
-                    maxAge: 30 * 60 * 1000,
-                    secure: true,
-                    httpOnly: true,
-                    // signed:true,
-                });
+                (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: newOtpObject.id });
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code" })];
             case 3:
                 deviceId = (0, clientDevice_1.generateDeviceId)(req);
@@ -109,12 +105,7 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: (user === null || user === void 0 ? void 0 : user.email) || "", subject: "Utilor Sign In Identification", body: otpCode, name: "Confirm Identiy" })];
             case 6:
                 _a.sent();
-                res.cookie("identityToken", newDeviceOtp.id, {
-                    maxAge: 30 * 60 * 1000,
-                    secure: true,
-                    httpOnly: true,
-                    // signed:true,
-                });
+                (0, CookieService_1.setCookie)({ res: res, name: "identityToken", value: newDeviceOtp.id });
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verify device", code: 403 })];
             case 7:
                 acessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "4m" });
@@ -155,18 +146,8 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 _a.sent();
                 _a.label = 12;
             case 12:
-                res.cookie("acessToken", acessToken, {
-                    maxAge: 3 * 60 * 1000,
-                    secure: true,
-                    httpOnly: true,
-                    // signed:true,
-                });
-                res.cookie("refreshToken", refreshToken, {
-                    maxAge: 60 * 60 * 1000,
-                    secure: true,
-                    httpOnly: true,
-                    // signed:true,
-                });
+                (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken });
+                (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
                             user: {
                                 id: user === null || user === void 0 ? void 0 : user.userId,

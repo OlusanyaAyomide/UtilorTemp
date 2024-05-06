@@ -45,6 +45,7 @@ var util_1 = require("../utils/util");
 var send_mail_1 = require("../utils/send-mail");
 var response_handler_1 = __importDefault(require("../utils/response-handler"));
 var clientDevice_1 = require("../utils/clientDevice");
+var CookieService_1 = require("../utils/CookieService");
 function verifyUserStats(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
         var user, otpCode, newOtpObject, deviceId, isDeviceActive, otpCode, newDeviceOtp;
@@ -74,12 +75,7 @@ function verifyUserStats(req, res, next) {
                 case 2:
                     _a.sent();
                     //set otpId to user response cookie 
-                    res.cookie("MAILVERIFICATION", newOtpObject.id, {
-                        maxAge: 30 * 60 * 1000,
-                        secure: true,
-                        httpOnly: true,
-                        // signed:true,
-                    });
+                    (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: newOtpObject.id });
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code" })];
                 case 3:
                     deviceId = (0, clientDevice_1.generateDeviceId)(req);
@@ -110,12 +106,7 @@ function verifyUserStats(req, res, next) {
                     return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: (user === null || user === void 0 ? void 0 : user.email) || "", subject: "Utilor Sign In Identification", body: otpCode, name: "Confirm Identiy" })];
                 case 6:
                     _a.sent();
-                    res.cookie("identityToken", newDeviceOtp.id, {
-                        maxAge: 30 * 60 * 1000,
-                        secure: true,
-                        httpOnly: true,
-                        // signed:true,
-                    });
+                    (0, CookieService_1.setCookie)({ res: res, name: "identityToken", value: newDeviceOtp.id });
                     return [2 /*return*/, response_handler_1.default.sendUnauthorizedResponse({ res: res, error: "Verify device", status_code: "VERIFY_DEVICE" })];
                 case 7: return [2 /*return*/, next()];
             }

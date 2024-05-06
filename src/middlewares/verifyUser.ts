@@ -5,6 +5,7 @@ import prismaClient from '../prisma/pris-client';
 import jwt from "jsonwebtoken";
 import { IExpressRequest, IUserDetail } from '../interfaces/user-interface';
 import { getTimeFromNow } from '../utils/util';
+import { setCookie } from '../utils/CookieService';
 
 
 export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFunction):Promise<Response | void>{
@@ -77,20 +78,9 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     })
 
     //set  refresh token to cookie
-    res.cookie("refreshToken",newRefreshToken,{
-        maxAge:60*60*1000,
-        secure:true,
-        httpOnly:true,
-        // signed:true,
-    })
+    setCookie({res,name:"refreshToken",value:newRefreshToken})
+    setCookie({res,name:"acessToken",value:newAcessToken})
 
-    //set accesss token to cookie
-    res.cookie("acessToken",newAcessToken,{
-        maxAge:3*60*1000,
-        secure:true,
-        httpOnly:true,
-        // signed:true,
-    })
     req.user={
         userId:user.id,
         firstName:user?.firstName || "",lastName:user?.lastName || "",

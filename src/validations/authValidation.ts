@@ -38,6 +38,7 @@ export async function otpvalidation (req:Request,
     }
     console.log(req.cookies)
     const verificationId = req.cookies["MAILVERIFICATION"]
+    console.log(verificationId)
     if(!verificationId){
         return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired",status_code:"LOGIN_REDIRECT"})
     }

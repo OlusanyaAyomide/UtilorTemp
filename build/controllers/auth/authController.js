@@ -50,6 +50,7 @@ var util_2 = require("../../utils/util");
 var credentials_setup_1 = require("../../utils/credentials-setup");
 var clientDevice_1 = require("../../utils/clientDevice");
 var TempRates_1 = require("../../utils/TempRates");
+var CookieService_1 = require("../../utils/CookieService");
 exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var email, existingUser, newUserId, merchantID, newUser, otpCode, otpObject;
     return __generator(this, function (_a) {
@@ -103,11 +104,7 @@ exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { r
                     })];
             case 6:
                 otpObject = _a.sent();
-                res.cookie("MAILVERIFICATION", otpObject.id, {
-                    maxAge: 30 * 60 * 1000,
-                    secure: true,
-                    httpOnly: true,
-                });
+                (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: otpObject.id });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verifcation sent to email" })];
         }
     });
@@ -154,11 +151,7 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                 _a.sent();
                 //delete verifcation token from cookie
                 res.clearCookie("MAILVERIFICATION");
-                res.cookie("CLIENTEMAIL", otpVerification.user.email, {
-                    maxAge: 30 * 60 * 1000,
-                    secure: true,
-                    httpOnly: true,
-                });
+                (0, CookieService_1.setCookie)({ res: res, name: "CLIENTEMAIL", value: otpVerification.user.email });
                 //delete all OTp associated with user
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.deleteMany({
                         where: {
@@ -382,11 +375,7 @@ exports.reverifyToken = (0, catch_async_1.default)(function (req, res, next) { r
             case 4:
                 _a.sent();
                 //set id to cookie
-                res.cookie("MAILVERIFICATION", otpObject.id, {
-                    maxAge: 30 * 60 * 1000,
-                    secure: true,
-                    httpOnly: true,
-                });
+                (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: otpObject.id });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: { verifyToken: otpObject.id } })];
         }
     });
@@ -485,12 +474,7 @@ exports.forgotPassword = (0, catch_async_1.default)(function (req, res, next) { 
             case 3:
                 _a.sent();
                 //set resetObjectId in response cookies
-                res.cookie("resetToken", resetObject.id, {
-                    maxAge: 30 * 60 * 1000,
-                    secure: true,
-                    httpOnly: true,
-                    // signed:true,
-                });
+                (0, CookieService_1.setCookie)({ res: res, name: "resetToken", value: resetObject.id });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verification mail sent" })];
         }
     });

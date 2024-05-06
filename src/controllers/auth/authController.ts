@@ -10,6 +10,7 @@ import { setAuthCredentials } from "../../utils/credentials-setup";
 import { generateDeviceId } from "../../utils/clientDevice";
 import type { User } from "@prisma/client";
 import { referralAmount } from "../../utils/TempRates";
+import { setCookie } from "../../utils/CookieService";
 
 export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
     const {email}:{email:string} = req.body
@@ -55,12 +56,7 @@ export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
             expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE))
         }
     })
-
-    res.cookie("MAILVERIFICATION",otpObject.id,{
-        maxAge:30*60*1000,
-        secure:true,
-        httpOnly:true,
-    })
+    setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
 
     return ResponseHandler.sendSuccessResponse({res,message:"Verifcation sent to email"})
 
@@ -105,11 +101,7 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
     //delete verifcation token from cookie
 
     res.clearCookie("MAILVERIFICATION")
-    res.cookie("CLIENTEMAIL",otpVerification.user.email,{
-        maxAge:30*60*1000,
-        secure:true,
-        httpOnly:true,
-    })
+    setCookie({res,name:"CLIENTEMAIL",value:otpVerification.user.email})
 
     //delete all OTp associated with user
     await prismaClient.verificationOTp.deleteMany({
@@ -306,11 +298,7 @@ export const reverifyToken=catchDefaultAsync(async(req,res,next)=>{
     await mailSender({to:token.user.email,subject:"Utilor SignInOTp",body:otpObject.otpCode,name:`${token.user.firstName} ${token.user.lastName}`})
 
     //set id to cookie
-    res.cookie("MAILVERIFICATION",otpObject.id,{
-        maxAge:30*60*1000,
-        secure:true,
-        httpOnly:true,
-    })
+    setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
     
     return ResponseHandler.sendSuccessResponse({res,data:{verifyToken:otpObject.id}})
   
@@ -399,12 +387,7 @@ export const forgotPassword = catchDefaultAsync(async(req,res,next)=>{
     await mailSender({to:email,subject:"Verify Email Adress",body:otpCode,name:`${user.firstName} ${user.lastName}`})
     
     //set resetObjectId in response cookies
-    res.cookie("resetToken",resetObject.id,{
-        maxAge:30*60*1000,
-        secure:true,
-        httpOnly:true,
-        // signed:true,
-    })
+    setCookie({res,name:"resetToken",value:resetObject.id})
 
     return ResponseHandler.sendSuccessResponse({res,message:"Verification mail sent"})
     

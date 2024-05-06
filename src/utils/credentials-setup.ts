@@ -5,6 +5,7 @@ import { Request } from "express";
 import { generateDeviceId } from "./clientDevice";
 import { generateOTP, getTimeFromNow } from "./util";
 import { mailSender } from "./send-mail";
+import { setCookie } from "./CookieService";
 
 interface IsetAuthCookie{
     req:Request
@@ -50,12 +51,7 @@ export  async function setAuthCredentials ({req,res,id,email}:IsetAuthCookie){
 
         await mailSender({to:email,subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
 
-        res.cookie("identityToken",newDeviceOtp.id,{
-            maxAge:30*60*1000,
-            secure:true,
-            httpOnly:true,
-            // signed:true,
-        })
+        setCookie({res,name:'identityToken',value:newDeviceOtp.id})
         return  false
     }
 
@@ -88,21 +84,8 @@ export  async function setAuthCredentials ({req,res,id,email}:IsetAuthCookie){
         })
 
     }
-
-    res.cookie("acessToken",acessToken,{
-        maxAge:5*60*1000,
-        secure:true,
-        httpOnly:true,
-        // signed:true,
-    })
-
-    res.cookie("refreshToken",refreshToken,{
-        maxAge:60*60*1000,
-        secure:true,
-        httpOnly:true,
-        // signed:true,
-    })
-
+    setCookie({res,name:"acessToken",value:acessToken})
+    setCookie({res,name:"refreshToken",value:refreshToken})
     return true
 
     

@@ -45,6 +45,7 @@ var pris_client_1 = __importDefault(require("../prisma/pris-client"));
 var clientDevice_1 = require("./clientDevice");
 var util_1 = require("./util");
 var send_mail_1 = require("./send-mail");
+var CookieService_1 = require("./CookieService");
 function setAuthCredentials(_a) {
     return __awaiter(this, arguments, void 0, function (_b) {
         var acessToken, refreshToken, deviceId, isDeviceActive, otpCode, newDeviceOtp, isSessionExisting;
@@ -79,12 +80,7 @@ function setAuthCredentials(_a) {
                     return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: email, subject: "Utilor Sign In Identification", body: otpCode, name: "Confirm Identiy" })];
                 case 3:
                     _c.sent();
-                    res.cookie("identityToken", newDeviceOtp.id, {
-                        maxAge: 30 * 60 * 1000,
-                        secure: true,
-                        httpOnly: true,
-                        // signed:true,
-                    });
+                    (0, CookieService_1.setCookie)({ res: res, name: 'identityToken', value: newDeviceOtp.id });
                     return [2 /*return*/, false];
                 case 4: return [4 /*yield*/, pris_client_1.default.session.findFirst({
                         where: {
@@ -120,18 +116,8 @@ function setAuthCredentials(_a) {
                     _c.sent();
                     _c.label = 9;
                 case 9:
-                    res.cookie("acessToken", acessToken, {
-                        maxAge: 5 * 60 * 1000,
-                        secure: true,
-                        httpOnly: true,
-                        // signed:true,
-                    });
-                    res.cookie("refreshToken", refreshToken, {
-                        maxAge: 60 * 60 * 1000,
-                        secure: true,
-                        httpOnly: true,
-                        // signed:true,
-                    });
+                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken });
+                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken });
                     return [2 /*return*/, true];
             }
         });
