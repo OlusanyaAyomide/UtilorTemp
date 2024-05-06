@@ -6,10 +6,11 @@ var setCookie = function (_a) {
     var currentTime = new Date();
     var futureTime = new Date(currentTime.getTime() + (30 * 60000));
     res.cookie(name, value, {
-        maxAge: duration * 60 * 1000,
+        // maxAge:duration*60*1000,
         secure: true,
         httpOnly: false,
-        expires: futureTime
+        sameSite: "none",
+        expires: futureTime,
     });
 };
 exports.setCookie = setCookie;

@@ -9,15 +9,17 @@ import hookRoutes from "./routes/webhooks"
 import userRoutes from "./routes/userRoutes"
 import walletRoutes from "./routes/walletRoutes"
 import adminRoutes from "./routes/adminRoutes"
-
 const app  = express()
 app.use(cors({
     origin:['http://localhost:3000','https://utilourapp-z36b.vercel.app',"*"],
     credentials: true
 }))
+
 app.use(morgan("dev"))
 app.use(express.json())
 app.use(cookieParser())
+app.set("trust proxy",1)
+
 
 app.use('/auth',authRoutes)
 app.use('/savings',savingRoutes)
