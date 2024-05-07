@@ -7,11 +7,11 @@ var setCookie = function (_a) {
     var futureTime = new Date(currentTime.getTime() + (duration * 60000));
     var isProd = process.env.APP_ENV !== "DEV";
     res.cookie(name, value, {
-        // maxAge:duration*60*1000,
+        maxAge: duration * 60 * 1000,
         secure: isProd,
         httpOnly: true,
         sameSite: isProd ? "none" : "lax",
-        expires: futureTime,
+        // expires:futureTime,
         partitioned: isProd,
     });
 };

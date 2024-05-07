@@ -11,11 +11,11 @@ export const setCookie=({name,value,duration=30,res}:ISetCookie)=>{
     const futureTime = new Date(currentTime.getTime() + (duration * 60000))
     const isProd = process.env.APP_ENV !== "DEV"
     res.cookie(name,value,{
-        // maxAge:duration*60*1000,
+        maxAge:duration*60*1000,
         secure:isProd,
         httpOnly:true,
         sameSite:isProd ? "none":"lax",
-        expires:futureTime,
+        // expires:futureTime,
         partitioned:isProd,
     })
 }
