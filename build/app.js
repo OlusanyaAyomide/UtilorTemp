@@ -15,7 +15,7 @@ var walletRoutes_1 = __importDefault(require("./routes/walletRoutes"));
 var adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 var app = (0, express_1.default)();
 app.use((0, cors_1.default)({
-    origin: ['http://localhost:3000', 'https://utilourapp-z36b.vercel.app', "*"],
+    origin: ['http://localhost:3000', 'https://utilourapp-z36b.vercel.app', "https://utilor-front-end.vercel.app", "*"],
     credentials: true
 }));
 app.use((0, morgan_1.default)("dev"));
