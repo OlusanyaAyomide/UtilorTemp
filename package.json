@@ -41,8 +41,5 @@
     "node-device-detector": "^2.1.0",
     "nodemailer": "^6.9.13",
     "prisma": "^5.12.1"
-  },
-  "resolutions": {
-    "cookie": "0.6.0"
   }
 }

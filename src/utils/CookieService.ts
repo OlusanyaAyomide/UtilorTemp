@@ -8,13 +8,14 @@ interface ISetCookie{
 }
 export const setCookie=({name,value,duration=30,res}:ISetCookie)=>{
     const currentTime = new Date()
-    const futureTime = new Date(currentTime.getTime() + (30 * 60000))
+    const futureTime = new Date(currentTime.getTime() + (duration * 60000))
+    const isProd = process.env.APP_ENV !== "DEV"
     res.cookie(name,value,{
         // maxAge:duration*60*1000,
-        secure:true,
-        httpOnly:false,
-        sameSite:"none",
+        secure:isProd,
+        httpOnly:true,
+        sameSite:isProd ? "none":"lax",
         expires:futureTime,
-    
+        partitioned:isProd,
     })
 }

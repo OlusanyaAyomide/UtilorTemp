@@ -9,7 +9,15 @@ import hookRoutes from "./routes/webhooks"
 import userRoutes from "./routes/userRoutes"
 import walletRoutes from "./routes/walletRoutes"
 import adminRoutes from "./routes/adminRoutes"
+
+declare module "express-serve-static-core" {
+    export interface CookieOptions {
+      partitioned?: boolean;
+    }
+}
+
 const app  = express()
+
 app.use(cors({
     origin:['http://localhost:3000','https://utilourapp-z36b.vercel.app',"*"],
     credentials: true
