@@ -8,7 +8,7 @@ export async function signUpValidation (req:Request,
     res:Response,
     next:NextFunction):Promise<Response | void>{
     const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-
+    console.log(req.cookies)
     const signUpSchema = Joi.object({
     email: Joi.string().required().regex(emailRegex).message('Email is not valid'),
     });

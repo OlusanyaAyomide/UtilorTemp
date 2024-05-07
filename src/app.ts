@@ -19,7 +19,7 @@ declare module "express-serve-static-core" {
 const app  = express()
 
 app.use(cors({
-    origin:['http://localhost:3000','https://utilourapp-z36b.vercel.app',"https://utilor-front-end.vercel.app","*"],
+    origin:['http://localhost:3000','https://utilourapp-z36b.vercel.app',"*"],
     credentials: true
 }))
 

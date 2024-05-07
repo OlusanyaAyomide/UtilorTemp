@@ -54,7 +54,7 @@ var mailSender = function (_a) { return __awaiter(void 0, [_a], void 0, function
                     host: process.env.EMAIL_HOST,
                     service: process.env.EMAIL_SERVICE,
                     port: 587,
-                    secure: true,
+                    secure: false,
                     auth: {
                         user: process.env.EMAIL_USER,
                         pass: process.env.EMAIL_PASSWORD

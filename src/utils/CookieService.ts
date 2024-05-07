@@ -6,7 +6,7 @@ interface ISetCookie{
     name:string
     duration?:number
 }
-export const setCookie=({name,value,duration=3600,res}:ISetCookie)=>{
+export const setCookie=({name,value,duration=30,res}:ISetCookie)=>{
     const currentTime = new Date()
     const futureTime = new Date(currentTime.getTime() + (duration * 60000))
     const isProd = process.env.APP_ENV !== "DEV"

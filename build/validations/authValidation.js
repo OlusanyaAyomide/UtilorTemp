@@ -47,6 +47,7 @@ function signUpValidation(req, res, next) {
         var emailRegex, signUpSchema, validation, error;
         return __generator(this, function (_a) {
             emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            console.log(req.cookies);
             signUpSchema = joi_1.default.object({
                 email: joi_1.default.string().required().regex(emailRegex).message('Email is not valid'),
             });

@@ -10,7 +10,7 @@ export const mailSender = async ({to,body,subject,name}:{to:string,body:string,s
         host: process.env.EMAIL_HOST  as string,
         service:process.env.EMAIL_SERVICE as string,
         port:587,
-        secure: true,
+        secure: false,
         auth:{
             user:process.env.EMAIL_USER ,
             pass:process.env.EMAIL_PASSWORD

@@ -106,8 +106,8 @@ function verifyUsers(req, res, next) {
                 case 2:
                     _a.sent();
                     //set  refresh token to cookie
-                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: newRefreshToken });
-                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: newAcessToken });
+                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: newRefreshToken, duration: 120 });
+                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: newAcessToken, duration: 120 });
                     req.user = {
                         userId: user.id,
                         firstName: (user === null || user === void 0 ? void 0 : user.firstName) || "", lastName: (user === null || user === void 0 ? void 0 : user.lastName) || "",

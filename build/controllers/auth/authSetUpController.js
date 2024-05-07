@@ -146,8 +146,8 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 _a.sent();
                 _a.label = 12;
             case 12:
-                (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken });
-                (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken });
+                (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken, duration: 120 });
+                (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken, duration: 120 });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
                             user: {
                                 id: user === null || user === void 0 ? void 0 : user.userId,

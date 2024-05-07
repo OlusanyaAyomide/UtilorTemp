@@ -116,8 +116,8 @@ function setAuthCredentials(_a) {
                     _c.sent();
                     _c.label = 9;
                 case 9:
-                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken });
-                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken });
+                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken, duration: 120 });
+                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken, duration: 120 });
                     return [2 /*return*/, true];
             }
         });

@@ -112,8 +112,8 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
         })
     }
 
-    setCookie({res,name:"acessToken",value:acessToken})
-    setCookie({res,name:"refreshToken",value:refreshToken})
+    setCookie({res,name:"acessToken",value:acessToken,duration:120})
+    setCookie({res,name:"refreshToken",value:refreshToken,duration:120})
 
 
     return ResponseHandler.sendSuccessResponse({res,data:{
