@@ -1,7 +1,7 @@
 import express from "express"
-import { basicSetUpValidation, createPinValidation, credentialSignInValidation, forgotPasswordValidation, googleSignUpValidation, newDeviceValidation, otpvalidation, resendTokenValidation, resetPasswordValidation, signUpValidation } from "../validations/authValidation"
+import { basicSetUpValidation, createPinValidation, credentialSignInValidation, forgotPasswordValidation, googleSignUpValidation, newDeviceValidation, otpvalidation, resendTokenValidation, resetPasswordValidation, signUpValidation, updateBvnValidation } from "../validations/authValidation"
 import { completeBasicDetail, createNewUser, forgotPassword, googleSignIn, googleSignUp, mailVerification,resetPassword, reverifyToken, userLogIn, verifyAndAddNewDevice } from "../controllers/auth/authController"
-import { createPin, credentialSignIn } from "../controllers/auth/authSetUpController"
+import { createPin, credentialSignIn, updateDobAndBvn } from "../controllers/auth/authSetUpController"
 import { verifyUsers } from "../middlewares/verifyUser"
 import { verifyUserStats } from "../middlewares/verifyUserStatus"
 
@@ -19,5 +19,6 @@ authRoutes.route("/verify-device").post(newDeviceValidation,verifyAndAddNewDevic
 authRoutes.route("/forgot-password").post(forgotPasswordValidation,forgotPassword)
 authRoutes.route("/reset-password").post(resetPasswordValidation,resetPassword)
 authRoutes.route("/pin-setup").post(createPinValidation, verifyUsers,verifyUserStats,createPin)
+authRoutes.route("/verification-setup").post(updateBvnValidation,verifyUsers,verifyUserStats,updateDobAndBvn)
 
 export default authRoutes

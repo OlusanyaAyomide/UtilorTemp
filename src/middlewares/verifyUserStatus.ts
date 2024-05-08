@@ -43,8 +43,6 @@ export async function verifyUserStats  (req:IExpressRequest,res:Response,next:Ne
     })
 
     //check if user device is recognised
-
-    console.log(isDeviceActive,"device active")
     if(!isDeviceActive){
         //if not recognized send user a device verification Token
         const otpCode = generateOTP()

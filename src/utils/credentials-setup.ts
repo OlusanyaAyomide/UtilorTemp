@@ -84,8 +84,8 @@ export  async function setAuthCredentials ({req,res,id,email}:IsetAuthCookie){
         })
 
     }
-    setCookie({res,name:"acessToken",value:acessToken,duration:120})
-    setCookie({res,name:"refreshToken",value:refreshToken,duration:120})
+    setCookie({res,name:"acessToken",value:acessToken,duration:5})
+    setCookie({res,name:"refreshToken",value:refreshToken,duration:60})
     return true
 
     

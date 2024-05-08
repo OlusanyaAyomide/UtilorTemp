@@ -64,3 +64,9 @@ export interface IPromoCodeToSaving{
     promoCode : string
     savingsId : string
 }
+
+
+export interface IUpdateBvn{
+    bvnNumber : string
+    dateOfBirth : string
+}

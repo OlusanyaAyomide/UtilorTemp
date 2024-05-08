@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
 import ResponseHandler from '../utils/response-handler';
-import { CURRENCY, DESCRIPTION_TYPE } from '@prisma/client';
+import { CURRENCY } from '@prisma/client';
 
 
 export async function createForUValidation(

@@ -7,12 +7,11 @@ import { bcryptHash, generateOTP } from "../../utils/util";
 import { getTimeFromNow } from "../../utils/util";
 import catchDefaultAsync from "../../utils/catch-async";
 import { setCookie } from "../../utils/CookieService";
+import { IUpdateBvn } from "../../interfaces/bodyInterface";
 
 //in charge of asigning token and signing in users
 export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
     const user = req.user
-
-
 
     //send otp code to user if mail is not verified
     if(!user?.isMailVerified){
@@ -70,7 +69,7 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
     const acessToken = jwt.sign(
         { userId:user?.userId,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified,firstName:user.firstName,lastName:user.lastName},
         process.env.JWT_SECRET as string,
-        { expiresIn:"4m" }
+        { expiresIn:"6m" }
     );
 
     const refreshToken = jwt.sign(
@@ -112,8 +111,8 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
         })
     }
 
-    setCookie({res,name:"acessToken",value:acessToken,duration:120})
-    setCookie({res,name:"refreshToken",value:refreshToken,duration:120})
+    setCookie({res,name:"acessToken",value:acessToken,duration:5})
+    setCookie({res,name:"refreshToken",value:refreshToken,duration:60})
 
 
     return ResponseHandler.sendSuccessResponse({res,data:{
@@ -164,4 +163,24 @@ export const createPin = catchDefaultAsync(async (req,res,next)=>{
     return ResponseHandler.sendSuccessResponse({res,data:{
         message: "PIN setup successfully"
     }});
+})
+
+export const updateDobAndBvn = catchDefaultAsync(async(req,res,next)=>{
+    const {bvnNumber,dateOfBirth}:IUpdateBvn = req.body
+    const user = req.user
+    if (!user) {
+        return ResponseHandler.sendErrorResponse({res, error: "Server Error", code: 500})
+    }
+    const userData = await prismaClient.user.findFirst({where:{id:user.userId}})
+
+    if(userData?.BvnNumber){
+        return ResponseHandler.sendErrorResponse({res,error:"Bvn And Date Of Birth Already set"})
+    }
+    await prismaClient.user.update({
+        where:{id:user.userId},
+        data:{
+            BvnNumber:bvnNumber ,dateOfBirth
+        }
+    })
+    return ResponseHandler.sendSuccessResponse({res,message:"Details successfully updated"})
 })

@@ -58,7 +58,7 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     const newAcessToken = jwt.sign(
         { userId:user.id,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified,firstName:user.firstName,lastName:user.lastName},
         process.env.JWT_SECRET as string,
-        { expiresIn:"4m" }
+        { expiresIn:"6m" }
     );
 
 
@@ -78,8 +78,8 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     })
 
     //set  refresh token to cookie
-    setCookie({res,name:"refreshToken",value:newRefreshToken,duration:120})
-    setCookie({res,name:"acessToken",value:newAcessToken,duration:120})
+    setCookie({res,name:"refreshToken",value:newRefreshToken,duration:5})
+    setCookie({res,name:"acessToken",value:newAcessToken,duration:60})
 
     req.user={
         userId:user.id,

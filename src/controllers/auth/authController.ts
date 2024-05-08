@@ -12,6 +12,7 @@ import type { User } from "@prisma/client";
 import { referralAmount } from "../../utils/TempRates";
 import { setCookie } from "../../utils/CookieService";
 
+
 export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
     const {email}:{email:string} = req.body
     //check if email aleready exists
@@ -446,6 +447,8 @@ export const resetPassword = catchDefaultAsync(async(req,res,next)=>{
 })
 
 
+
+
 export const googleSignUp = catchDefaultAsync(async(req,res,next)=>{
     const {googleToken}:{googleToken:string} = req.body
 
@@ -552,5 +555,4 @@ export const googleSignIn = catchDefaultAsync(async(req,res,next)=>{
         }
     }})
     
-
 })

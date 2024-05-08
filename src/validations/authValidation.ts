@@ -151,7 +151,7 @@ export async function newDeviceValidation(req:Request,
 
     const verificationId = req.cookies["identityToken"]
     if(!verificationId){
-        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired"})
+        return ResponseHandler.sendErrorResponse({res,error:"Verifcation session exppired",status_code:"LOGIN_REDIRECT"})
     }
 
     return next()
@@ -192,7 +192,7 @@ export async function resetPasswordValidation(req:Request,
 
     const verificationId = req.cookies["resetToken"]
     if(!verificationId){
-        return ResponseHandler.sendErrorResponse({res,error:"Otp token not found or expired"})
+        return ResponseHandler.sendErrorResponse({res,error:"Verification session expired",status_code:"LOGIN_REDIRECT"})
     }
 
     return next()
@@ -202,7 +202,6 @@ export async function resetPasswordValidation(req:Request,
 export async function createPinValidation(req:Request,
     res:Response,
     next:NextFunction):Promise<Response | void>{
-    const passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
     const schema = Joi.object({
         pin:Joi.string().required().length(4),
     });
@@ -217,4 +216,23 @@ export async function createPinValidation(req:Request,
     return next()
 }
 
+
+export async function updateBvnValidation(req:Request,
+    res:Response,
+    next:NextFunction):Promise<Response | void>{
+
+    const schema = Joi.object({
+        bvnNumber : Joi.string().required().max(20),
+        dateOfBirth : Joi.date().iso()
+    });
+
+    const validation = schema.validate(req.body);
+    if(validation.error){
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, code: 400, error });
+    }
+
+    return next()
+}
 
