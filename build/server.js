@@ -21,14 +21,12 @@ var ENV_KEYS = [
     "FLW_SECRET",
     "FLW_HASH"
 ];
-if (ENV_KEYS.some(function (k) { return !process.env[k]; })) {
-    console.log("Server not started! 1 or more Environment Keys Missing");
-}
-else {
+// if (ENV_KEYS.some(function (k) { return !process.env[k]; })) {
+//     console.log("Server not started! 1 or more Environment KeysSg");
+// }
     try {
         server.listen(PORT, function () { return console.log("Server listening on port ".concat(PORT)); });
     }
     catch (e) {
         console.log('Cannot connect to the server');
-    }
 }
