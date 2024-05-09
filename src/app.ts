@@ -9,6 +9,8 @@ import hookRoutes from "./routes/webhooks"
 import userRoutes from "./routes/userRoutes"
 import walletRoutes from "./routes/walletRoutes"
 import adminRoutes from "./routes/adminRoutes"
+import cronRoutes from "./routes/cronRoutes"
+
 
 declare module "express-serve-static-core" {
     export interface CookieOptions {
@@ -35,6 +37,7 @@ app.use('/hooks',hookRoutes)
 app.use('/user',userRoutes)
 app.use('/wallet',walletRoutes)
 app.use('/admin',adminRoutes)
+app.use('/cron',cronRoutes)
 
 
 app.all('*', (req, res) => {

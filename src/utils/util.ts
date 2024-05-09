@@ -78,10 +78,23 @@ export function getCurrentDollarRate() {
 }
 
 
+export const getForUPercentage = ()=>{
+  return 11
+}
+
+export const getEmergencypercentage = ()=>{
+  return 12
+}
+
 // Todo: Implement an enumToRegex function to help with JOI Validation
 // export function enumToRegex(enum: Enum) {
 
 // }
+
+export const calculateDailyReturns=({capital,interest}:{capital:number,interest:number})=>{
+  const dayPercent = ((interest/100)/365)
+  return capital * dayPercent
+}
 
 
 export const generateConsentToken = ()=>{

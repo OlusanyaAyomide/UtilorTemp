@@ -59,6 +59,7 @@ export const depositIntoForUSavingViaFlutterwave = async(dataFromWebhook: Webhoo
         data: {
             investmentCapital: {increment: depositAmount},
             totalInvestment: {increment: depositAmount},
+            isActivated:true
         }
     })
 

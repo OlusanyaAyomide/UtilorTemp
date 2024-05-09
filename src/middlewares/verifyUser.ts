@@ -78,8 +78,8 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     })
 
     //set  refresh token to cookie
-    setCookie({res,name:"refreshToken",value:newRefreshToken,duration:5})
-    setCookie({res,name:"acessToken",value:newAcessToken,duration:60})
+    setCookie({res,name:"refreshToken",value:newRefreshToken,duration:60})
+    setCookie({res,name:"acessToken",value:newAcessToken,duration:5})
 
     req.user={
         userId:user.id,
