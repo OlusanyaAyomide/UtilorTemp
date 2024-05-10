@@ -21,4 +21,5 @@ authRoutes.route("/verify-device").post(authValidation_1.newDeviceValidation, au
 authRoutes.route("/forgot-password").post(authValidation_1.forgotPasswordValidation, authController_1.forgotPassword);
 authRoutes.route("/reset-password").post(authValidation_1.resetPasswordValidation, authController_1.resetPassword);
 authRoutes.route("/pin-setup").post(authValidation_1.createPinValidation, verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, authSetUpController_1.createPin);
+authRoutes.route("/verification-setup").post(authValidation_1.updateBvnValidation, verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, authSetUpController_1.updateDobAndBvn);
 exports.default = authRoutes;

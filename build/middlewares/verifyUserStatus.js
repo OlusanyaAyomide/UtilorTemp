@@ -89,8 +89,6 @@ function verifyUserStats(req, res, next) {
                     ];
                 case 4:
                     isDeviceActive = _a.sent();
-                    //check if user device is recognised
-                    console.log(isDeviceActive, "device active");
                     if (!!isDeviceActive) return [3 /*break*/, 7];
                     otpCode = (0, util_1.generateOTP)();
                     return [4 /*yield*/, pris_client_1.default.verificationOTp.create({

@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createPinValidation = exports.resetPasswordValidation = exports.forgotPasswordValidation = exports.newDeviceValidation = exports.resendTokenValidation = exports.googleSignUpValidation = exports.credentialSignInValidation = exports.basicSetUpValidation = exports.otpvalidation = exports.signUpValidation = void 0;
+exports.updateBvnValidation = exports.createPinValidation = exports.resetPasswordValidation = exports.forgotPasswordValidation = exports.newDeviceValidation = exports.resendTokenValidation = exports.googleSignUpValidation = exports.credentialSignInValidation = exports.basicSetUpValidation = exports.otpvalidation = exports.signUpValidation = void 0;
 var joi_1 = __importDefault(require("joi"));
 var response_handler_1 = __importDefault(require("../utils/response-handler"));
 function signUpValidation(req, res, next) {
@@ -182,7 +182,7 @@ function newDeviceValidation(req, res, next) {
             }
             verificationId = req.cookies["identityToken"];
             if (!verificationId) {
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired" })];
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verifcation session exppired", status_code: "LOGIN_REDIRECT" })];
             }
             return [2 /*return*/, next()];
         });
@@ -222,7 +222,7 @@ function resetPasswordValidation(req, res, next) {
             }
             verificationId = req.cookies["resetToken"];
             if (!verificationId) {
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Otp token not found or expired" })];
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verification session expired", status_code: "LOGIN_REDIRECT" })];
             }
             return [2 /*return*/, next()];
         });
@@ -231,9 +231,8 @@ function resetPasswordValidation(req, res, next) {
 exports.resetPasswordValidation = resetPasswordValidation;
 function createPinValidation(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var passwordRegex, schema, validation, error;
+        var schema, validation, error;
         return __generator(this, function (_a) {
-            passwordRegex = /^(?=.*[A-Z])(?=.*[a-zA-Z0-9!@#$%^&*]).{8,}$/;
             schema = joi_1.default.object({
                 pin: joi_1.default.string().required().length(4),
             });
@@ -247,3 +246,21 @@ function createPinValidation(req, res, next) {
     });
 }
 exports.createPinValidation = createPinValidation;
+function updateBvnValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var schema, validation, error;
+        return __generator(this, function (_a) {
+            schema = joi_1.default.object({
+                bvnNumber: joi_1.default.string().required().max(20),
+                dateOfBirth: joi_1.default.date().iso()
+            });
+            validation = schema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 400, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.updateBvnValidation = updateBvnValidation;

@@ -92,7 +92,7 @@ function verifyUsers(req, res, next) {
                         return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token Expired 2", code: 401, status_code: "LOGIN_REDIRECT" })];
                     }
                     user = isTokenValid.user;
-                    newAcessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "4m" });
+                    newAcessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "6m" });
                     newRefreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
                     return [4 /*yield*/, pris_client_1.default.session.update({
                             where: { id: isTokenValid.id },
@@ -106,8 +106,8 @@ function verifyUsers(req, res, next) {
                 case 2:
                     _a.sent();
                     //set  refresh token to cookie
-                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: newRefreshToken, duration: 120 });
-                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: newAcessToken, duration: 120 });
+                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: newRefreshToken, duration: 60 });
+                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: newAcessToken, duration: 5 });
                     req.user = {
                         userId: user.id,
                         firstName: (user === null || user === void 0 ? void 0 : user.firstName) || "", lastName: (user === null || user === void 0 ? void 0 : user.lastName) || "",

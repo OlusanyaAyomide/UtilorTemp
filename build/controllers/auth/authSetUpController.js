@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createPin = exports.credentialSignIn = void 0;
+exports.updateDobAndBvn = exports.createPin = exports.credentialSignIn = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
@@ -108,7 +108,7 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 (0, CookieService_1.setCookie)({ res: res, name: "identityToken", value: newDeviceOtp.id });
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verify device", code: 403 })];
             case 7:
-                acessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "4m" });
+                acessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "6m" });
                 refreshToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId }, process.env.JWT_SECRET, { expiresIn: "62m" });
                 return [4 /*yield*/, pris_client_1.default.session.findFirst({
                         where: {
@@ -146,8 +146,8 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 _a.sent();
                 _a.label = 12;
             case 12:
-                (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken, duration: 120 });
-                (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken, duration: 120 });
+                (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken, duration: 5 });
+                (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken, duration: 60 });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
                             user: {
                                 id: user === null || user === void 0 ? void 0 : user.userId,
@@ -193,6 +193,35 @@ exports.createPin = (0, catch_async_1.default)(function (req, res, next) { retur
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
                             message: "PIN setup successfully"
                         } })];
+        }
+    });
+}); });
+exports.updateDobAndBvn = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, bvnNumber, dateOfBirth, user, userData;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _a = req.body, bvnNumber = _a.bvnNumber, dateOfBirth = _a.dateOfBirth;
+                user = req.user;
+                if (!user) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Server Error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.user.findFirst({ where: { id: user.userId } })];
+            case 1:
+                userData = _b.sent();
+                if (userData === null || userData === void 0 ? void 0 : userData.BvnNumber) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Bvn And Date Of Birth Already set" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.user.update({
+                        where: { id: user.userId },
+                        data: {
+                            BvnNumber: bvnNumber,
+                            dateOfBirth: dateOfBirth
+                        }
+                    })];
+            case 2:
+                _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Details successfully updated" })];
         }
     });
 }); });

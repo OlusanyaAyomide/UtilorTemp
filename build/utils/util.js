@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateConsentToken = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
+exports.generateConsentToken = exports.calculateDailyReturns = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
 var bcrypt_1 = __importDefault(require("bcrypt"));
 function generateOTP() {
     var otpLength = 4;
@@ -126,9 +126,23 @@ function getCurrentDollarRate() {
     return 1200.00;
 }
 exports.getCurrentDollarRate = getCurrentDollarRate;
+var getForUPercentage = function () {
+    return 11;
+};
+exports.getForUPercentage = getForUPercentage;
+var getEmergencypercentage = function () {
+    return 12;
+};
+exports.getEmergencypercentage = getEmergencypercentage;
 // Todo: Implement an enumToRegex function to help with JOI Validation
 // export function enumToRegex(enum: Enum) {
 // }
+var calculateDailyReturns = function (_a) {
+    var capital = _a.capital, interest = _a.interest;
+    var dayPercent = ((interest / 100) / 365);
+    return capital * dayPercent;
+};
+exports.calculateDailyReturns = calculateDailyReturns;
 var generateConsentToken = function () {
 };
 exports.generateConsentToken = generateConsentToken;
