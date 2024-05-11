@@ -52,6 +52,15 @@ enum VERIFICATION_TYPE {
   RESETPASSWORD
 }
 
+enum CRON_TYPES {
+  WALLET_UPDATE
+  MANAGE_SESSION
+  MANAGE_PROMOCODES
+  MANAGE_REFERRALS
+
+
+}
+
 model User {
   id                  String            @id @unique() @default(uuid())
   email               String            @unique()
@@ -145,6 +154,7 @@ model Transaction {
   transactionStatus TRANSACTION_STATUS @default(PENDING)
   createdAt     DateTime        @default(now())
   featureId String
+  note String?
 }
 
 
@@ -298,5 +308,11 @@ model PromoCodes{
     createdAt           DateTime              @default(now())
     revokedAt           DateTime
     expiredAt           DateTime
+}
 
+model CronTracker{
+  id                  String                 @id @unique() @default(uuid())
+  modfiedAt           DateTime                @default(now())
+  type CRON_TYPES
+  status TRANSACTION_STATUS                   @default(PENDING)  
 }

@@ -338,6 +338,7 @@ var depositIntoEmeergencySavingViaFlutterwave = function (dataFromWebhook, trans
                         data: {
                             investmentCapital: { increment: depositAmount },
                             totalInvestment: { increment: depositAmount },
+                            isActivated: true
                         }
                     })];
             case 5:

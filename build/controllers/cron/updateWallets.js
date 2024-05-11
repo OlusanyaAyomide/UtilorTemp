@@ -45,7 +45,7 @@ var util_1 = require("../../utils/util");
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 function updateWallets(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var cronTracker, allForU, forUpercentage_1, operations, allEmergency, emergencypercentage_1, emergencyOperations, err_1;
+        var cronTracker, allForU, forUpercentage_1, operations, allEmergency, emergencypercentage_1, emergencyOperations, allUandIs, uandIPercentage_1, uandioperations, allCabals, allCabalOperations, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, pris_client_1.default.cronTracker.create({
@@ -57,7 +57,7 @@ function updateWallets(req, res, next) {
                     cronTracker = _a.sent();
                     _a.label = 2;
                 case 2:
-                    _a.trys.push([2, 7, , 9]);
+                    _a.trys.push([2, 12, , 14]);
                     return [4 /*yield*/, pris_client_1.default.uSaveForU.findMany({
                             where: { isActivated: true },
                             include: {
@@ -152,8 +152,128 @@ function updateWallets(req, res, next) {
                 case 6:
                     //update all wallets simulataneously
                     _a.sent();
-                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Wallets updated successfuly" })];
+                    return [4 /*yield*/, pris_client_1.default.uANDI.findMany({
+                            where: { isActivated: true },
+                            include: {
+                                promoCode: true
+                            }
+                        })];
                 case 7:
+                    allUandIs = _a.sent();
+                    uandIPercentage_1 = (0, util_1.getUAndIPercentage)();
+                    uandioperations = allUandIs.flatMap(function (uandIWallet) {
+                        //add promocode percentage to user
+                        var intrestPercentage = uandIPercentage_1;
+                        uandIWallet.promoCode.forEach(function (code) {
+                            intrestPercentage += code.percentageIncrease;
+                        });
+                        console.log(intrestPercentage, "UANDI");
+                        //update Uand I wallet with new percentage
+                        var newCreatorReturns = (0, util_1.calculateDailyReturns)({ capital: uandIWallet.creatorCapital, interest: intrestPercentage });
+                        var newpartnerReturns = (0, util_1.calculateDailyReturns)({ capital: uandIWallet.partnerCapital, interest: intrestPercentage });
+                        var newTotalCapital = uandIWallet.totalCapital + newCreatorReturns + newpartnerReturns;
+                        var newInvestmentOfReturn = uandIWallet.totalInvestmentReturn + newCreatorReturns + newpartnerReturns;
+                        return [
+                            pris_client_1.default.uANDI.update({ where: { id: uandIWallet.id },
+                                data: {
+                                    creatorInvestmentReturn: newCreatorReturns + uandIWallet.creatorInvestmentReturn,
+                                    partnerInvestmentReturn: newpartnerReturns + uandIWallet.partnerInvestmentReturn,
+                                    totalInvestmentReturn: newInvestmentOfReturn,
+                                    totalCapital: newTotalCapital
+                                }
+                            }),
+                            //create two transactions for creator and partner
+                            pris_client_1.default.transaction.create({
+                                data: {
+                                    transactionReference: (0, util_1.generateTransactionRef)(),
+                                    transactionCurrency: uandIWallet.currency,
+                                    amount: newCreatorReturns + newpartnerReturns,
+                                    description: "UANDI",
+                                    featureId: uandIWallet.id,
+                                    userId: uandIWallet.creatorId,
+                                    transactionStatus: "SUCCESS",
+                                    transactionType: "INTEREST",
+                                    paymentMethod: "UWALLET",
+                                    note: "".concat(intrestPercentage, "% incerease")
+                                }
+                            }),
+                            pris_client_1.default.transaction.create({
+                                data: {
+                                    transactionReference: (0, util_1.generateTransactionRef)(),
+                                    transactionCurrency: uandIWallet.currency,
+                                    amount: newCreatorReturns + newpartnerReturns,
+                                    description: "UANDI",
+                                    featureId: uandIWallet.id,
+                                    userId: uandIWallet.partnerId,
+                                    transactionStatus: "SUCCESS",
+                                    transactionType: "INTEREST",
+                                    paymentMethod: "UWALLET",
+                                    note: "".concat(intrestPercentage, "% incerease")
+                                }
+                            })
+                        ];
+                    });
+                    //update all emergency wallets simulataneously
+                    return [4 /*yield*/, pris_client_1.default.$transaction(uandioperations)];
+                case 8:
+                    //update all emergency wallets simulataneously
+                    _a.sent();
+                    return [4 /*yield*/, pris_client_1.default.cronTracker.update({
+                            where: { id: cronTracker.id },
+                            data: { status: "SUCCESS" }
+                        })
+                        //add to all userCabalWWKW
+                    ];
+                case 9:
+                    _a.sent();
+                    return [4 /*yield*/, pris_client_1.default.cabalGroup.findMany({
+                            where: {
+                                hasStarted: true,
+                            },
+                            include: {
+                                userCabals: true
+                            }
+                        })];
+                case 10:
+                    allCabals = _a.sent();
+                    allCabalOperations = allCabals.flatMap(function (cabalGroup) {
+                        var interestPercentage = (0, util_1.getCabalpercentage)();
+                        var cabalGroupusers = cabalGroup.userCabals.flatMap(function (userCabal) {
+                            var dailyInterest = (0, util_1.calculateDailyReturns)({ capital: userCabal.cabalCapital, interest: interestPercentage });
+                            var userCabalTotalInterest = userCabal.cabalRoI + dailyInterest;
+                            var userCabalTotal = userCabal.totalBalance + dailyInterest;
+                            return [
+                                pris_client_1.default.userCabal.update({
+                                    where: { id: userCabal.id },
+                                    data: {
+                                        totalBalance: userCabalTotal,
+                                        cabalRoI: userCabalTotalInterest
+                                    }
+                                }),
+                                //create new resulting transaction
+                                pris_client_1.default.transaction.create({
+                                    data: {
+                                        transactionReference: (0, util_1.generateTransactionRef)(),
+                                        transactionCurrency: cabalGroup.currency,
+                                        amount: dailyInterest,
+                                        description: "CABAL",
+                                        featureId: userCabal.id,
+                                        userId: userCabal.userId,
+                                        transactionStatus: "SUCCESS",
+                                        transactionType: "INTEREST",
+                                        paymentMethod: "UWALLET",
+                                        note: "".concat(interestPercentage, "% incerease")
+                                    }
+                                })
+                            ];
+                        });
+                        return cabalGroupusers;
+                    });
+                    return [4 /*yield*/, pris_client_1.default.$transaction(allCabalOperations)];
+                case 11:
+                    _a.sent();
+                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Wallets updated successfuly" })];
+                case 12:
                     err_1 = _a.sent();
                     return [4 /*yield*/, pris_client_1.default.cronTracker.update({
                             where: { id: cronTracker.id },
@@ -161,10 +281,10 @@ function updateWallets(req, res, next) {
                                 status: "FAIL"
                             }
                         })];
-                case 8:
+                case 13:
                     _a.sent();
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "An error was encountered" })];
-                case 9: return [2 /*return*/];
+                case 14: return [2 /*return*/];
             }
         });
     });

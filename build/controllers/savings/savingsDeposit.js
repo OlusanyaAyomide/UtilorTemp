@@ -125,7 +125,7 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                 return [4 /*yield*/, pris_client_1.default.uWallet.update({
                         where: { id: uWallet.id },
                         data: {
-                            balance: { decrement: depositData.amount }
+                            balance: { decrement: depositData.amount },
                         }
                     })];
             case 5:

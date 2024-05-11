@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateConsentToken = exports.calculateDailyReturns = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
+exports.generateConsentToken = exports.calculateDailyReturns = exports.getCabalpercentage = exports.getUAndIPercentage = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
 var bcrypt_1 = __importDefault(require("bcrypt"));
 function generateOTP() {
     var otpLength = 4;
@@ -134,6 +134,14 @@ var getEmergencypercentage = function () {
     return 12;
 };
 exports.getEmergencypercentage = getEmergencypercentage;
+var getUAndIPercentage = function () {
+    return 14;
+};
+exports.getUAndIPercentage = getUAndIPercentage;
+var getCabalpercentage = function () {
+    return 13;
+};
+exports.getCabalpercentage = getCabalpercentage;
 // Todo: Implement an enumToRegex function to help with JOI Validation
 // export function enumToRegex(enum: Enum) {
 // }

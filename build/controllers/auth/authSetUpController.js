@@ -75,7 +75,7 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 _a.sent();
                 //set otpId to user response cookie 
                 (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: newOtpObject.id });
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code" })];
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code", status_code: "EMAIL_REDIRECT" })];
             case 3:
                 deviceId = (0, clientDevice_1.generateDeviceId)(req);
                 return [4 /*yield*/, pris_client_1.default.userDevices.findFirst({
@@ -106,8 +106,13 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
             case 6:
                 _a.sent();
                 (0, CookieService_1.setCookie)({ res: res, name: "identityToken", value: newDeviceOtp.id });
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verify device", code: 403 })];
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verify device", code: 403, status_code: "VERIFY_DEVICE" })];
             case 7:
+                if (!user.firstName) {
+                    res.clearCookie("MAILVERIFICATION");
+                    (0, CookieService_1.setCookie)({ res: res, name: "CLIENTEMAIL", value: user.email });
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Profile not completed", code: 403, status_code: "COMPLETE_PROFILE" })];
+                }
                 acessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "6m" });
                 refreshToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId }, process.env.JWT_SECRET, { expiresIn: "62m" });
                 return [4 /*yield*/, pris_client_1.default.session.findFirst({

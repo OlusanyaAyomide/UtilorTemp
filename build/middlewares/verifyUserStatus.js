@@ -78,6 +78,9 @@ function verifyUserStats(req, res, next) {
                     (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: newOtpObject.id });
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code" })];
                 case 3:
+                    if (!user.firstName) {
+                        console.log("Gotchaa");
+                    }
                     deviceId = (0, clientDevice_1.generateDeviceId)(req);
                     return [4 /*yield*/, pris_client_1.default.userDevices.findFirst({
                             where: {
