@@ -185,9 +185,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
             data:{status:"SUCCESS"}
         })
 
-
-        //add to all userCabal
-
+        //add to all userCabalWWKW
         const allCabals = await prismaClient.cabalGroup.findMany({
             where:{
                 hasStarted:true,
