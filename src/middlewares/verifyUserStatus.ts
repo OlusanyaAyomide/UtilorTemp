@@ -32,6 +32,10 @@ export async function verifyUserStats  (req:IExpressRequest,res:Response,next:Ne
         return ResponseHandler.sendErrorResponse({res,code:401,error:"Email unverified, Check email for OTP code"})
     } 
 
+    if(!user.firstName){
+        console.log("Gotchaa")
+    }
+
     
     const deviceId = generateDeviceId(req)
 

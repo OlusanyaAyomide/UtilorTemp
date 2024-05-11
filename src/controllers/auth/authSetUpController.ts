@@ -30,7 +30,7 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
         //set otpId to user response cookie 
         setCookie({res,name:"MAILVERIFICATION",value:newOtpObject.id})
 
-        return ResponseHandler.sendErrorResponse({res,code:401,error:"Email unverified, Check email for OTP code"})
+        return ResponseHandler.sendErrorResponse({res,code:401,error:"Email unverified, Check email for OTP code",status_code:"EMAIL_REDIRECT"})
     } 
 
     const deviceId = generateDeviceId(req)
@@ -62,7 +62,13 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
 
         setCookie({res,name:"identityToken",value:newDeviceOtp.id})
 
-        return ResponseHandler.sendErrorResponse({res,error:"Verify device",code:403})
+        return ResponseHandler.sendErrorResponse({res,error:"Verify device",code:403,status_code:"VERIFY_DEVICE"})
+    }
+
+    if(!user.firstName){
+        res.clearCookie("MAILVERIFICATION")
+        setCookie({res,name:"CLIENTEMAIL",value:user.email})
+        return ResponseHandler.sendErrorResponse({res,error:"Profile not completed",code:403,status_code:"COMPLETE_PROFILE"})
     }
 
    

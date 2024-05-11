@@ -86,6 +86,14 @@ export const getEmergencypercentage = ()=>{
   return 12
 }
 
+export const getUAndIPercentage = () =>{
+  return 14
+}
+
+export const getCabalpercentage = () =>{
+  return 13
+}
+
 // Todo: Implement an enumToRegex function to help with JOI Validation
 // export function enumToRegex(enum: Enum) {
 

@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import { IExpressRequest } from './user-interface';
 
-type ErrorResCode = "EMAIL_REDIRECT" | "LOGIN_REDIRECT" | "BAD_REQUEST" | "VERIFY_DEVICE"
+type ErrorResCode = "EMAIL_REDIRECT" | "LOGIN_REDIRECT" | "BAD_REQUEST" | "VERIFY_DEVICE" | "COMPLETE_PROFILE"
 
 
 export interface IReqResNext {

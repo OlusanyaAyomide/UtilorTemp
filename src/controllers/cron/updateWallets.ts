@@ -1,6 +1,6 @@
 import { NextFunction,Request,Response } from "express";
 import prismaClient from "../../prisma/pris-client";
-import { calculateDailyReturns, generateTransactionRef, getEmergencypercentage, getForUPercentage } from "../../utils/util";
+import { calculateDailyReturns, generateTransactionRef, getCabalpercentage, getEmergencypercentage, getForUPercentage, getUAndIPercentage } from "../../utils/util";
 import ResponseHandler from "../../utils/response-handler";
 
 export async function  updateWallets(req:Request,res:Response,next:NextFunction){
@@ -109,6 +109,128 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
 
         //update all wallets simulataneously
         await prismaClient.$transaction(emergencyOperations)
+
+
+
+        const allUandIs = await prismaClient.uANDI.findMany({
+            where:{isActivated:true},
+            include:{
+                promoCode:true
+            }
+        })
+
+        const uandIPercentage = getUAndIPercentage()
+        //create new prisma transactions
+        //flat multiple array as one with flatMap
+        const uandioperations = allUandIs.flatMap((uandIWallet)=>{
+            //add promocode percentage to user
+            let intrestPercentage = uandIPercentage
+
+            uandIWallet.promoCode.forEach((code)=>{
+                intrestPercentage += code.percentageIncrease
+            })
+            console.log(intrestPercentage,"UANDI")
+            
+            //update Uand I wallet with new percentage
+            const newCreatorReturns = calculateDailyReturns({capital:uandIWallet.creatorCapital,interest:intrestPercentage})
+            const newpartnerReturns = calculateDailyReturns({capital:uandIWallet.partnerCapital,interest:intrestPercentage})
+            const newTotalCapital = uandIWallet.totalCapital + newCreatorReturns + newpartnerReturns
+            const newInvestmentOfReturn = uandIWallet.totalInvestmentReturn + newCreatorReturns + newpartnerReturns
+            return[
+                prismaClient.uANDI.update({where:{id:uandIWallet.id},
+                    data:{
+                        creatorInvestmentReturn:newCreatorReturns + uandIWallet.creatorInvestmentReturn,
+                        partnerInvestmentReturn:newpartnerReturns + uandIWallet.partnerInvestmentReturn,
+                        totalInvestmentReturn:newInvestmentOfReturn,
+                        totalCapital:newTotalCapital
+                    }
+                },     
+                ),
+                //create two transactions for creator and partner
+                prismaClient.transaction.create({
+                    data:{
+                        transactionReference:generateTransactionRef(),
+                        transactionCurrency:uandIWallet.currency,
+                        amount:newCreatorReturns + newpartnerReturns,
+                        description:"UANDI",
+                        featureId:uandIWallet.id,
+                        userId:uandIWallet.creatorId,
+                        transactionStatus:"SUCCESS",
+                        transactionType:"INTEREST",
+                        paymentMethod:"UWALLET",
+                        note:`${intrestPercentage}% incerease`
+                    }
+                }),
+                prismaClient.transaction.create({
+                    data:{
+                        transactionReference:generateTransactionRef(),
+                        transactionCurrency:uandIWallet.currency,
+                        amount:newCreatorReturns + newpartnerReturns,
+                        description:"UANDI",
+                        featureId:uandIWallet.id,
+                        userId:uandIWallet.partnerId,
+                        transactionStatus:"SUCCESS",
+                        transactionType:"INTEREST",
+                        paymentMethod:"UWALLET",
+                        note:`${intrestPercentage}% incerease`
+                    }
+                })
+            ]
+        })
+
+        //update all emergency wallets simulataneously
+        await prismaClient.$transaction(uandioperations)
+        await prismaClient.cronTracker.update({
+            where:{id:cronTracker.id},
+            data:{status:"SUCCESS"}
+        })
+
+
+        //add to all userCabal
+
+        const allCabals = await prismaClient.cabalGroup.findMany({
+            where:{
+                hasStarted:true,
+            },
+            include:{
+                userCabals:true
+            }
+        })
+        const allCabalOperations = allCabals.flatMap((cabalGroup)=>{
+            const interestPercentage = getCabalpercentage()
+            const cabalGroupusers = cabalGroup.userCabals.flatMap((userCabal)=>{
+                const dailyInterest = calculateDailyReturns({capital:userCabal.cabalCapital,interest:interestPercentage}) 
+                const userCabalTotalInterest = userCabal.cabalRoI + dailyInterest
+                const userCabalTotal = userCabal.totalBalance +  dailyInterest
+                
+                return [
+                    prismaClient.userCabal.update({
+                        where:{id:userCabal.id},
+                        data:{
+                            totalBalance:userCabalTotal,
+                            cabalRoI:userCabalTotalInterest
+                        }
+                    }),
+                    //create new resulting transaction
+                    prismaClient.transaction.create({
+                        data:{
+                            transactionReference:generateTransactionRef(),
+                            transactionCurrency:cabalGroup.currency,
+                            amount:dailyInterest,
+                            description:"CABAL",
+                            featureId:userCabal.id,
+                            userId:userCabal.userId,
+                            transactionStatus:"SUCCESS",
+                            transactionType:"INTEREST",
+                            paymentMethod:"UWALLET",
+                            note:`${interestPercentage}% incerease`
+                        }
+                    })
+                ]
+            })
+            return cabalGroupusers
+        })
+        await prismaClient.$transaction(allCabalOperations)
 
         return ResponseHandler.sendSuccessResponse({res,message:"Wallets updated successfuly"})
 

@@ -97,7 +97,7 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
         const updateUWallet = await prismaClient.uWallet.update({
             where: {id: uWallet.id},
             data: {
-                balance: {decrement: depositData.amount}
+                balance: {decrement: depositData.amount},
             }
         });
 
