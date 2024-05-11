@@ -181,7 +181,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
         //update all emergency wallets simulataneously
         await prismaClient.$transaction(uandioperations)
 
-        //add to all userCabalWWKW
+        //add to all userCabal
         const allCabals = await prismaClient.cabalGroup.findMany({
             where:{
                 hasStarted:true,
