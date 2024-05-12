@@ -215,7 +215,7 @@ function updateWallets(req, res, next) {
                     });
                     //update all emergency wallets simulataneously
                     return [4 /*yield*/, pris_client_1.default.$transaction(uandioperations)
-                        //add to all userCabalWWKW
+                        //add to all userCabal
                     ];
                 case 8:
                     //update all emergency wallets simulataneously
