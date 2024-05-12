@@ -180,10 +180,6 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
 
         //update all emergency wallets simulataneously
         await prismaClient.$transaction(uandioperations)
-        await prismaClient.cronTracker.update({
-            where:{id:cronTracker.id},
-            data:{status:"SUCCESS"}
-        })
 
         //add to all userCabalWWKW
         const allCabals = await prismaClient.cabalGroup.findMany({
@@ -229,7 +225,11 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
             return cabalGroupusers
         })
         await prismaClient.$transaction(allCabalOperations)
-
+        
+        await prismaClient.cronTracker.update({
+            where:{id:cronTracker.id},
+            data:{status:"SUCCESS"}
+        })
         return ResponseHandler.sendSuccessResponse({res,message:"Wallets updated successfuly"})
 
     }
