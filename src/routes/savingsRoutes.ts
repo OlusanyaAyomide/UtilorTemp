@@ -4,7 +4,7 @@ import { verifyUsers } from "../middlewares/verifyUser"
 import { addPromoCodeValidation, createCabalValidation, createForUValidation, createUAndIValidation, depositForUValidation, sendCabalInvitationValidation, startCabalValidation } from "../validations/savingsValidation"
 import { depositIntoEmergencySavings, depositIntoForUSavings, depositIntoMyCabalSaving, depositIntoUANDISavings } from "../controllers/savings/savingsDeposit"
 import { createMyCabal, createNewEmergency, createNewForUplan, createNewUAndISavings } from "../controllers/savings/createSavings"
-import { getAllCabalUsers, getAllUserEmergency, getAllUserForU, getAllUserUAndI, getSingleEmergency, getSingleForU } from "../controllers/savings/savingsRetrival"
+import { getAllCabalUsers, getAllSavingsData, getAllUserEmergency, getAllUserForU, getAllUserUAndI, getSingleEmergency, getSingleForU } from "../controllers/savings/savingsRetrival"
 import { JoinMyCabal, addPromoCodeToEmergency, addPromoCodeToUAndI, addPromoCodeToUsave, sendMyCabalInvitation, startCabalGroup } from "../controllers/savings/savingsUtils"
 
 
@@ -39,6 +39,7 @@ savingRoutes.route("/cabal/join/:id").get(verifyUsers,verifyUserStats,JoinMyCaba
 savingRoutes.route("/cabal/users/all/:id").get(verifyUsers,verifyUserStats,getAllCabalUsers)
 savingRoutes.route("/cabal/deposit").post(verifyUsers,verifyUserStats,depositForUValidation,depositIntoMyCabalSaving)
 savingRoutes.route("/cabal/start").post(verifyUsers,verifyUserStats,startCabalValidation,startCabalGroup)
+savingRoutes.route("/summary").get(verifyUsers,verifyUserStats,getAllSavingsData)
 
 
 

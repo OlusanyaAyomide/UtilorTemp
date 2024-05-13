@@ -110,7 +110,7 @@ exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { r
     });
 }); });
 exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var otpCode, verificationID, otpVerification, currentDate;
+    var otpCode, verificationID, otpVerification, currentDate, deviceId;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -157,16 +157,27 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                         where: {
                             userId: otpVerification.userId, type: "MAILVERIFICATION"
                         }
-                    })];
+                    })
+                    //add device to list of user Devices
+                ];
             case 3:
                 //delete all OTp associated with user
+                _a.sent();
+                deviceId = (0, clientDevice_1.generateDeviceId)(req);
+                return [4 /*yield*/, pris_client_1.default.userDevices.create({
+                        data: {
+                            userId: otpVerification.userId,
+                            device: deviceId
+                        }
+                    })];
+            case 4:
                 _a.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Email succesfully verfied" })];
         }
     });
 }); });
 exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, firstName, lastName, password, phoneNumber, merchantID, email, existingUser, referredByUser, hashedPassword, user, newuserWallet, referalUserWallet, deviceId;
+    var _a, firstName, lastName, password, phoneNumber, merchantID, email, existingUser, referredByUser, hashedPassword, user, newuserWallet, referalUserWallet;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -268,15 +279,6 @@ exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, nex
                 _b.sent();
                 _b.label = 11;
             case 11:
-                deviceId = (0, clientDevice_1.generateDeviceId)(req);
-                return [4 /*yield*/, pris_client_1.default.userDevices.create({
-                        data: {
-                            userId: user.id,
-                            device: deviceId
-                        }
-                    })];
-            case 12:
-                _b.sent();
                 req.user = {
                     userId: user.id,
                     firstName: firstName,

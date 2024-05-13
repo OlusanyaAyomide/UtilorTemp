@@ -204,3 +204,100 @@ export const getSingleEmergency = catchDefaultAsync(async (req,res,next)=>{
 
     return ResponseHandler.sendSuccessResponse({res,data})
 })
+
+export const getAllSavingsData = catchDefaultAsync(async(req,res,next)=>{
+
+    const userId = req.user?.userId 
+
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
+    let totalForUNairaBalance:number = 0
+    let totalForUDollarbalaance:number = 0
+    const allForus = await prismaClient.uSaveForU.findMany({
+        where:{userId}
+    })
+    allForus.forEach((foru)=>{
+        if(foru.currency === "NGN"){totalForUNairaBalance += foru.totalInvestment}
+        else{totalForUDollarbalaance += foru.totalInvestment}
+    })
+
+    let totalEmergencyNairaBalance:number = 0
+    let totalEmergencyDollarBalance:number = 0
+
+    const allEmergency = await prismaClient.emergency.findMany({
+        where:{userId}
+    })
+    allEmergency.forEach((emergency)=>{
+        if(emergency.currency === "NGN"){totalEmergencyNairaBalance += emergency.totalInvestment}
+        else{totalEmergencyDollarBalance += emergency.totalInvestment}
+    })
+
+    let totalUAndINairaBalance:number = 0
+    let totalUAndIDollarBalance:number = 0
+
+    const allUandI = await prismaClient.uANDI.findMany({
+        where:{OR:[
+            {creatorId:userId},
+            {partnerId:userId}
+        ]}
+    })
+
+    allUandI.forEach((uandI)=>{
+        if(uandI.currency === "NGN"){
+            if(uandI.creatorId === userId){
+                totalUAndINairaBalance += (uandI.creatorCapital + uandI.creatorInvestmentReturn)
+            }else{
+                totalUAndINairaBalance += (uandI.partnerCapital + uandI.partnerInvestmentReturn)
+            }
+        }else{
+            if(uandI.creatorId === userId){
+                totalUAndIDollarBalance +=  (uandI.creatorCapital + uandI.creatorInvestmentReturn)
+            }else{
+                totalUAndIDollarBalance += (uandI.partnerCapital + uandI.partnerInvestmentReturn)
+            }
+        }
+    })
+    
+    let totalUserNairaCabal : number = 0
+    let totalUserDollarCabal : number = 0
+
+    const allUserCabal = await prismaClient.userCabal.findMany({
+        where:{userId},
+        include:{
+            cabelGroup:true
+        }
+    })
+    allUserCabal.forEach((cabal)=>{
+        if(cabal.cabelGroup.currency === "NGN"){
+            totalUserNairaCabal += cabal.totalBalance
+        }else{
+            totalUserDollarCabal += cabal.totalBalance
+        }
+    })
+
+    const savingsSummary = {
+        forU:{
+            NGN:totalForUNairaBalance,
+            USD:totalForUDollarbalaance
+        },
+        uAndI:{
+            NGN:totalUAndINairaBalance,
+            USD:totalUAndIDollarBalance
+        },
+        emergency:{
+            NGN:totalEmergencyNairaBalance,
+            USD:totalEmergencyDollarBalance
+        },
+        cabals:{
+            NGN:totalUserNairaCabal,
+            USD:totalUserDollarCabal,
+        },
+        total:{
+            NGN:totalForUNairaBalance+totalUAndINairaBalance+totalEmergencyNairaBalance+totalUserNairaCabal,
+            USD:totalForUDollarbalaance+totalUAndIDollarBalance+totalEmergencyDollarBalance+totalUserDollarCabal
+        }
+    }
+
+    return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
+})

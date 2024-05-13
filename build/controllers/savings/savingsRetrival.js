@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
+exports.getAllSavingsData = exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
@@ -280,6 +280,118 @@ exports.getSingleEmergency = (0, catch_async_1.default)(function (req, res, next
                 transactions = _b.sent();
                 data = __assign(__assign({}, singleEmergency), { transactions: transactions });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: data })];
+        }
+    });
+}); });
+exports.getAllSavingsData = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, totalForUNairaBalance, totalForUDollarbalaance, allForus, totalEmergencyNairaBalance, totalEmergencyDollarBalance, allEmergency, totalUAndINairaBalance, totalUAndIDollarBalance, allUandI, totalUserNairaCabal, totalUserDollarCabal, allUserCabal, savingsSummary;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                totalForUNairaBalance = 0;
+                totalForUDollarbalaance = 0;
+                return [4 /*yield*/, pris_client_1.default.uSaveForU.findMany({
+                        where: { userId: userId }
+                    })];
+            case 1:
+                allForus = _b.sent();
+                allForus.forEach(function (foru) {
+                    if (foru.currency === "NGN") {
+                        totalForUNairaBalance += foru.totalInvestment;
+                    }
+                    else {
+                        totalForUDollarbalaance += foru.totalInvestment;
+                    }
+                });
+                totalEmergencyNairaBalance = 0;
+                totalEmergencyDollarBalance = 0;
+                return [4 /*yield*/, pris_client_1.default.emergency.findMany({
+                        where: { userId: userId }
+                    })];
+            case 2:
+                allEmergency = _b.sent();
+                allEmergency.forEach(function (emergency) {
+                    if (emergency.currency === "NGN") {
+                        totalEmergencyNairaBalance += emergency.totalInvestment;
+                    }
+                    else {
+                        totalEmergencyDollarBalance += emergency.totalInvestment;
+                    }
+                });
+                totalUAndINairaBalance = 0;
+                totalUAndIDollarBalance = 0;
+                return [4 /*yield*/, pris_client_1.default.uANDI.findMany({
+                        where: { OR: [
+                                { creatorId: userId },
+                                { partnerId: userId }
+                            ] }
+                    })];
+            case 3:
+                allUandI = _b.sent();
+                allUandI.forEach(function (uandI) {
+                    if (uandI.currency === "NGN") {
+                        if (uandI.creatorId === userId) {
+                            totalUAndINairaBalance += (uandI.creatorCapital + uandI.creatorInvestmentReturn);
+                        }
+                        else {
+                            totalUAndINairaBalance += (uandI.partnerCapital + uandI.partnerInvestmentReturn);
+                        }
+                    }
+                    else {
+                        if (uandI.creatorId === userId) {
+                            totalUAndIDollarBalance += (uandI.creatorCapital + uandI.creatorInvestmentReturn);
+                        }
+                        else {
+                            totalUAndIDollarBalance += (uandI.partnerCapital + uandI.partnerInvestmentReturn);
+                        }
+                    }
+                });
+                totalUserNairaCabal = 0;
+                totalUserDollarCabal = 0;
+                return [4 /*yield*/, pris_client_1.default.userCabal.findMany({
+                        where: { userId: userId },
+                        include: {
+                            cabelGroup: true
+                        }
+                    })];
+            case 4:
+                allUserCabal = _b.sent();
+                allUserCabal.forEach(function (cabal) {
+                    if (cabal.cabelGroup.currency === "NGN") {
+                        totalUserNairaCabal += cabal.totalBalance;
+                    }
+                    else {
+                        totalUserDollarCabal += cabal.totalBalance;
+                    }
+                });
+                savingsSummary = {
+                    forU: {
+                        NGN: totalForUNairaBalance,
+                        USD: totalForUDollarbalaance
+                    },
+                    uAndI: {
+                        NGN: totalUAndINairaBalance,
+                        USD: totalUAndIDollarBalance
+                    },
+                    emergency: {
+                        NGN: totalEmergencyNairaBalance,
+                        USD: totalEmergencyDollarBalance
+                    },
+                    cabals: {
+                        NGN: totalUserNairaCabal,
+                        USD: totalUserDollarCabal,
+                    },
+                    total: {
+                        NGN: totalForUNairaBalance + totalUAndINairaBalance + totalEmergencyNairaBalance + totalUserNairaCabal,
+                        USD: totalForUDollarbalaance + totalUAndIDollarBalance + totalEmergencyDollarBalance + totalUserDollarCabal
+                    }
+                };
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: savingsSummary })];
         }
     });
 }); });

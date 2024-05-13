@@ -110,6 +110,16 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
             userId:otpVerification.userId,type:"MAILVERIFICATION"
         }
     })
+
+    //add device to list of user Devices
+    const deviceId = generateDeviceId(req)
+
+    await prismaClient.userDevices.create({
+        data:{
+            userId:otpVerification.userId,
+            device:deviceId
+        }
+    })
     
     return ResponseHandler.sendSuccessResponse({res,message:"Email succesfully verfied"})
 
@@ -200,15 +210,7 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
     }
     
 
-    //add device to list of user Devices
-    const deviceId = generateDeviceId(req)
 
-    await prismaClient.userDevices.create({
-        data:{
-            userId:user.id,
-            device:deviceId
-        }
-    })
 
     req.user={
         userId:user.id,
