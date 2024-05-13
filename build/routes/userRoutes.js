@@ -13,4 +13,5 @@ var userRoutes = express_1.default.Router();
 userRoutes.route("/consent-token/create").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, userValidation_1.createConsentValidation, userController_1.createConsentToken);
 userRoutes.route("/consent-token/retrieve").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, userController_1.retrieveConsentToken);
 userRoutes.route("/notifications/all").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, userController_1.getUserNotifications);
+userRoutes.route("/info").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, userController_1.getUserData);
 exports.default = userRoutes;

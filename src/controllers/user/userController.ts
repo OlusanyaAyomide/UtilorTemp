@@ -52,3 +52,21 @@ export const getUserNotifications = catchDefaultAsync(async (req,res,next)=>{
   })
   return ResponseHandler.sendSuccessResponse({res,data:notications})
 })
+
+
+export const getUserData  = catchDefaultAsync(async (req,res,next)=>{
+  const userId = req.user?.userId
+  if(!userId){
+    return ResponseHandler.sendErrorResponse({res,code:500,error:"server error"})
+  }
+  const userData = await prismaClient.user.findFirst({
+    where:{id:userId},
+    select:{
+      firstName:true,
+      lastName:true,
+      email:true,
+      phoneNumber:true
+    }
+  })
+  return ResponseHandler.sendSuccessResponse({res,data:userData})
+})

@@ -214,17 +214,11 @@ function updateWallets(req, res, next) {
                         ];
                     });
                     //update all emergency wallets simulataneously
-                    return [4 /*yield*/, pris_client_1.default.$transaction(uandioperations)];
-                case 8:
-                    //update all emergency wallets simulataneously
-                    _a.sent();
-                    return [4 /*yield*/, pris_client_1.default.cronTracker.update({
-                            where: { id: cronTracker.id },
-                            data: { status: "SUCCESS" }
-                        })
+                    return [4 /*yield*/, pris_client_1.default.$transaction(uandioperations)
                         //add to all userCabalWWKW
                     ];
-                case 9:
+                case 8:
+                    //update all emergency wallets simulataneously
                     _a.sent();
                     return [4 /*yield*/, pris_client_1.default.cabalGroup.findMany({
                             where: {
@@ -234,7 +228,7 @@ function updateWallets(req, res, next) {
                                 userCabals: true
                             }
                         })];
-                case 10:
+                case 9:
                     allCabals = _a.sent();
                     allCabalOperations = allCabals.flatMap(function (cabalGroup) {
                         var interestPercentage = (0, util_1.getCabalpercentage)();
@@ -270,6 +264,12 @@ function updateWallets(req, res, next) {
                         return cabalGroupusers;
                     });
                     return [4 /*yield*/, pris_client_1.default.$transaction(allCabalOperations)];
+                case 10:
+                    _a.sent();
+                    return [4 /*yield*/, pris_client_1.default.cronTracker.update({
+                            where: { id: cronTracker.id },
+                            data: { status: "SUCCESS" }
+                        })];
                 case 11:
                     _a.sent();
                     return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Wallets updated successfuly" })];

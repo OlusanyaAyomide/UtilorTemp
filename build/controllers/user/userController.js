@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserNotifications = exports.retrieveConsentToken = exports.createConsentToken = void 0;
+exports.getUserData = exports.getUserNotifications = exports.retrieveConsentToken = exports.createConsentToken = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var util_1 = require("../../utils/util");
@@ -108,6 +108,31 @@ exports.getUserNotifications = (0, catch_async_1.default)(function (req, res, ne
             case 1:
                 notications = _b.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: notications })];
+        }
+    });
+}); });
+exports.getUserData = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, userData;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "server error" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.user.findFirst({
+                        where: { id: userId },
+                        select: {
+                            firstName: true,
+                            lastName: true,
+                            email: true,
+                            phoneNumber: true
+                        }
+                    })];
+            case 1:
+                userData = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: userData })];
         }
     });
 }); });
