@@ -28,43 +28,40 @@ export async function verifyUserStats  (req:IExpressRequest,res:Response,next:Ne
         await mailSender({to:user?.email || "",subject:"Utilor Sign up code",body:otpCode,name:`Utilor Verifcation`})
 
         //set otpId to user response cookie 
-        setCookie({res,name:"MAILVERIFICATION",value:newOtpObject.id})
-        return ResponseHandler.sendErrorResponse({res,code:401,error:"Email unverified, Check email for OTP code"})
+
+        return ResponseHandler.sendErrorResponse({res,code:401,error:"Email unverified, Check email for OTP code",status_code:"EMAIL_REDIRECT",data:{MAILVERIFICATION:newOtpObject.id}})
     } 
 
-    if(!user.firstName){
-        console.log("Gotchaa")
-    }
 
     
     const deviceId = generateDeviceId(req)
 
-    const isDeviceActive = await prismaClient.userDevices.findFirst({
-        where:{
-            device:deviceId,
-            userId:user?.userId
-        }
-    })
+    // const isDeviceActive = await prismaClient.userDevices.findFirst({
+    //     where:{
+    //         device:deviceId,
+    //         userId:user?.userId
+    //     }
+    // })
 
     //check if user device is recognised
-    if(!isDeviceActive){
-        //if not recognized send user a device verification Token
-        const otpCode = generateOTP()
+    // if(!isDeviceActive){
+    //     //if not recognized send user a device verification Token
+    //     const otpCode = generateOTP()
         
-        const newDeviceOtp = await prismaClient.verificationOTp.create({
-            data:{
-                otpCode,
-                expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE)),
-                userId:user?.userId || "",
-                type:"DEVICEVERIFCATION"
-            }
-        })
+    //     const newDeviceOtp = await prismaClient.verificationOTp.create({
+    //         data:{
+    //             otpCode,
+    //             expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE)),
+    //             userId:user?.userId || "",
+    //             type:"DEVICEVERIFCATION"
+    //         }
+    //     })
+        
+    //     await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
 
-        await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
-
-        setCookie({res,name:"identityToken",value:newDeviceOtp.id})
-        return ResponseHandler.sendUnauthorizedResponse({res,error:"Verify device",status_code:"VERIFY_DEVICE"})
-    }
+    //     setCookie({res,name:"identityToken",value:newDeviceOtp.id})
+    //     return ResponseHandler.sendUnauthorizedResponse({res,error:"Verify device",status_code:"VERIFY_DEVICE"})
+    // }
 
     return next()
 }

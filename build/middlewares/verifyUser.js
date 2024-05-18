@@ -45,15 +45,14 @@ var clientDevice_1 = require("../utils/clientDevice");
 var pris_client_1 = __importDefault(require("../prisma/pris-client"));
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var util_1 = require("../utils/util");
-var CookieService_1 = require("../utils/CookieService");
 function verifyUsers(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
         var refreshToken, accessToken, decoded, deviceId, isTokenValid, user, newAcessToken, newRefreshToken;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    refreshToken = req.cookies['refreshToken'];
-                    accessToken = req.cookies['acessToken'];
+                    refreshToken = req.header('refreshToken');
+                    accessToken = req.header('accessToken');
                     if (accessToken) {
                         try {
                             decoded = jsonwebtoken_1.default.verify(accessToken, process.env.JWT_SECRET);
@@ -70,7 +69,7 @@ function verifyUsers(req, res, next) {
                         }
                     }
                     if (!refreshToken) {
-                        return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Session Expired 1", code: 401, status_code: "LOGIN_REDIRECT" })];
+                        return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Session Expired ,relog In", code: 401, status_code: "LOGIN_REDIRECT" })];
                     }
                     deviceId = (0, clientDevice_1.generateDeviceId)(req);
                     return [4 /*yield*/, pris_client_1.default.session.findFirst({
@@ -87,27 +86,21 @@ function verifyUsers(req, res, next) {
                         })];
                 case 1:
                     isTokenValid = _a.sent();
-                    console.log(isTokenValid);
                     if (!isTokenValid) {
                         return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token Expired 2", code: 401, status_code: "LOGIN_REDIRECT" })];
                     }
                     user = isTokenValid.user;
-                    newAcessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "6m" });
-                    newRefreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+                    newAcessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "62m" });
+                    newRefreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "2h" });
                     return [4 /*yield*/, pris_client_1.default.session.update({
                             where: { id: isTokenValid.id },
                             data: {
                                 token: newRefreshToken,
                                 expiredAt: (0, util_1.getTimeFromNow)(60)
                             }
-                        })
-                        //set  refresh token to cookie
-                    ];
+                        })];
                 case 2:
                     _a.sent();
-                    //set  refresh token to cookie
-                    (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: newRefreshToken, duration: 60 });
-                    (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: newAcessToken, duration: 5 });
                     req.user = {
                         userId: user.id,
                         firstName: (user === null || user === void 0 ? void 0 : user.firstName) || "", lastName: (user === null || user === void 0 ? void 0 : user.lastName) || "",

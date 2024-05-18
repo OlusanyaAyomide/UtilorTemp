@@ -9,8 +9,8 @@ import { setCookie } from '../utils/CookieService';
 
 
 export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFunction):Promise<Response | void>{
-    const refreshToken = req.cookies['refreshToken']
-    const accessToken = req.cookies['acessToken']
+    const refreshToken = req.header('refreshToken') 
+    const accessToken = req.header('accessToken') 
 
     if(accessToken){   
         try{
@@ -31,7 +31,7 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     }
     
     if(!refreshToken){
-        return ResponseHandler.sendErrorResponse({res,error:"Session Expired 1",code:401,status_code:"LOGIN_REDIRECT"})
+        return ResponseHandler.sendErrorResponse({res,error:"Session Expired ,relog In",code:401,status_code:"LOGIN_REDIRECT"})
     }
     const deviceId = generateDeviceId(req)
     const isTokenValid = await prismaClient.session.findFirst({
@@ -46,7 +46,6 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
             user:true
         }
     })
-    console.log(isTokenValid)
     
     if(!isTokenValid){
         return ResponseHandler.sendErrorResponse({res,error:"Token Expired 2",code:401,status_code:"LOGIN_REDIRECT"})
@@ -54,11 +53,13 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
 
     const user =isTokenValid.user
 
+
+    //tempoarily set to 1h for testing
     //create new access token
     const newAcessToken = jwt.sign(
         { userId:user.id,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified,firstName:user.firstName,lastName:user.lastName},
         process.env.JWT_SECRET as string,
-        { expiresIn:"6m" }
+        { expiresIn:"62m" }
     );
 
 
@@ -66,7 +67,7 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
     const newRefreshToken = jwt.sign(
         {userId:user.id},
         process.env.JWT_SECRET as string,
-        {expiresIn:"1h"}
+        {expiresIn:"2h"}
     )
 
     await prismaClient.session.update({
@@ -77,9 +78,6 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
         }
     })
 
-    //set  refresh token to cookie
-    setCookie({res,name:"refreshToken",value:newRefreshToken,duration:60})
-    setCookie({res,name:"acessToken",value:newAcessToken,duration:5})
 
     req.user={
         userId:user.id,

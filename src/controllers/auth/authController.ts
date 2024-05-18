@@ -15,9 +15,10 @@ import { setCookie } from "../../utils/CookieService";
 
 export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
     const {email}:{email:string} = req.body
+    const userEmail = email.toLowerCase()
     //check if email aleready exists
     const existingUser = await prismaClient.user.findFirst({
-        where:{email}
+        where:{email:userEmail}
     })
     //if user exists and mail is verified , send an error message
     if(existingUser && existingUser.isMailVerified){
@@ -43,9 +44,7 @@ export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
         }
     })
 
-
     }
-
 
     const otpCode = generateOTP()
     await mailSender({to:email,subject:"Utilor Sign up code",body:otpCode,name:`Utilor Verifcation`})
@@ -57,17 +56,18 @@ export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
             expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE))
         }
     })
-    setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
+    // setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
 
-    return ResponseHandler.sendSuccessResponse({res,message:"Verifcation sent to email"})
+    return ResponseHandler.sendSuccessResponse({res,message:"Verifcation sent to email",data:{
+        MAILVERIFICATION:otpObject.id
+    }})
 
 })
 
 
 export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
-    const {otpCode}:IOtpVerication = req.body
+    const {otpCode,MAILVERIFICATION:verificationID}:IOtpVerication = req.body
     
-    const verificationID = req.cookies["MAILVERIFICATION"]
     const otpVerification = await prismaClient.verificationOTp.findFirst({
         where:{
             id:verificationID,
@@ -101,12 +101,12 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
 
     //delete verifcation token from cookie
 
-    res.clearCookie("MAILVERIFICATION")
-    setCookie({res,name:"CLIENTEMAIL",value:otpVerification.user.email})
+    // res.clearCookie("MAILVERIFICATION")
+ 
 
     //delete all OTp associated with user
     await prismaClient.verificationOTp.deleteMany({
-        where:{
+        where:{   // setCookie({res,name:"CLIENTEMAIL",value:otpVerification.user.email})
             userId:otpVerification.userId,type:"MAILVERIFICATION"
         }
     })
@@ -121,14 +121,15 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
         }
     })
     
-    return ResponseHandler.sendSuccessResponse({res,message:"Email succesfully verfied"})
+    return ResponseHandler.sendSuccessResponse({res,message:"Email succesfully verfied",data:{
+        email:otpVerification.user.email
+    }})
 
 })
 
 
 export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
-    const {firstName,lastName,password,phoneNumber,merchantID}:ISignUpForm = req.body
-    const email = req.cookies["CLIENTEMAIL"]
+    const {firstName,lastName,password,phoneNumber,merchantID,email}:ISignUpForm = req.body
     const existingUser = await prismaClient.user.findFirst({
         where:{
             email:email
@@ -142,6 +143,8 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
     if(existingUser.isCredentialsSet){
         return ResponseHandler.sendErrorResponse({res,error:"Basic Detail already setup"})
     }
+
+
 
     //set referredByUser global
     let referredByUser:User| null = null
@@ -220,7 +223,6 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
         email,
         isMailVerified:user.isMailVerified
     }
-    res.clearCookie("CLIENTEMAIL")
 
 
     return next()
@@ -268,10 +270,10 @@ export const  userLogIn=catchDefaultAsync(async(req,res,next)=>{
 
 export const reverifyToken=catchDefaultAsync(async(req,res,next)=>{
 
-    const verifyToken = req.cookies['MAILVERIFICATION']
+    const {MAILVERIFICATION} :{MAILVERIFICATION:string} = req.body
     const token = await prismaClient.verificationOTp.findFirst({
         where:{
-            id:verifyToken,type:"MAILVERIFICATION"
+            id:MAILVERIFICATION,type:"MAILVERIFICATION"
         },
         include:{
             user:true
@@ -279,7 +281,7 @@ export const reverifyToken=catchDefaultAsync(async(req,res,next)=>{
     })
     //if token in cookie is not retrieving any result, it must have been malformed , user should relogin
     if(!token){
-        return ResponseHandler.sendErrorResponse({res,error:"Session Expired, RelogIn",code:401})
+        return ResponseHandler.sendErrorResponse({res,error:"Token supplied invalid ",code:401})
     }
     //delete all associated token the user has
     await prismaClient.verificationOTp.deleteMany({
@@ -300,10 +302,8 @@ export const reverifyToken=catchDefaultAsync(async(req,res,next)=>{
 
     await mailSender({to:token.user.email,subject:"Utilor SignInOTp",body:otpObject.otpCode,name:`${token.user.firstName} ${token.user.lastName}`})
 
-    //set id to cookie
-    setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
     
-    return ResponseHandler.sendSuccessResponse({res,data:{verifyToken:otpObject.id}})
+    return ResponseHandler.sendSuccessResponse({res,data:{MAILVERIFICATION:otpObject.id}})
   
 })
 
@@ -388,22 +388,21 @@ export const forgotPassword = catchDefaultAsync(async(req,res,next)=>{
     })
 
     await mailSender({to:email,subject:"Verify Email Adress",body:otpCode,name:`${user.firstName} ${user.lastName}`})
-    
-    //set resetObjectId in response cookies
-    setCookie({res,name:"resetToken",value:resetObject.id})
 
-    return ResponseHandler.sendSuccessResponse({res,message:"Verification mail sent"})
+    return ResponseHandler.sendSuccessResponse({res,message:"Verification E-mail sent",data:{
+        resetToken:resetObject.id
+    }})
     
 })
 
 export const resetPassword = catchDefaultAsync(async(req,res,next)=>{
-    const verificationToken = req.cookies['resetToken']
-    const {otpCode,password}:{otpCode:string,password:string} = req.body
+
+    const {otpCode,password,resetToken}:{otpCode:string,password:string,resetToken:string} = req.body
 
     //validate if otp code is valid
     const resetObject = await prismaClient.verificationOTp.findFirst({
         where:{
-            id:verificationToken,
+            id:resetToken,
             otpCode
         },
         include:{
@@ -434,7 +433,6 @@ export const resetPassword = catchDefaultAsync(async(req,res,next)=>{
         }
     })
 
-    res.clearCookie("resetToken")
 
     return ResponseHandler.sendSuccessResponse({res,data:{
         user:{
@@ -447,7 +445,6 @@ export const resetPassword = catchDefaultAsync(async(req,res,next)=>{
     }
     })
 })
-
 
 
 
@@ -496,7 +493,7 @@ export const googleSignUp = catchDefaultAsync(async(req,res,next)=>{
     //set user response cookies
     const isAuthorized = await setAuthCredentials({req,res,id:newUser.id,email:newUser.email})
     if(!isAuthorized){
-        return ResponseHandler.sendErrorResponse({res,error:"verify device",code:403})
+        return ResponseHandler.sendErrorResponse({res,error:"verify device",code:403,status_code:"VERIFY_DEVICE"})
     }
 
     return ResponseHandler.sendSuccessResponse({res,data:{

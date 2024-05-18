@@ -22,8 +22,9 @@ class ResponseHandler {
         status_code ="BAD_REQUEST",
         error = 'Operation failed',
         custom = false,
+        data = null
     }: IResponseError): Response<any> {
-        const response = custom ? { code: code,status_code, message: error } : { success: false, code: code, message: error,status_code };
+        const response = custom ? { code: code,status_code, message: error ,data } : { success: false, code: code, message: error,status_code,data };
         return res.status(code).json(response);
     }
 

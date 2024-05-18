@@ -48,10 +48,9 @@ var send_mail_1 = require("../../utils/send-mail");
 var util_1 = require("../../utils/util");
 var util_2 = require("../../utils/util");
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
-var CookieService_1 = require("../../utils/CookieService");
 //in charge of asigning token and signing in users
 exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var user, otpCode, newOtpObject, deviceId, isDeviceActive, otpCode, newDeviceOtp, acessToken, refreshToken, isSessionExisting, currentDate;
+    var user, otpCode, newOtpObject, deviceId, accessToken, refreshToken, isSessionExisting, currentDate;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -70,60 +69,58 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 newOtpObject = _a.sent();
                 return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: (user === null || user === void 0 ? void 0 : user.email) || "", subject: "Utilor Sign up code", body: otpCode, name: "Utilor Verifcation" })
                     //set otpId to user response cookie 
+                    // setCookie({res,name:"MAILVERIFICATION",value:newOtpObject.id})
                 ];
             case 2:
                 _a.sent();
                 //set otpId to user response cookie 
-                (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: newOtpObject.id });
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code", status_code: "EMAIL_REDIRECT" })];
+                // setCookie({res,name:"MAILVERIFICATION",value:newOtpObject.id})
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code", status_code: "EMAIL_REDIRECT",
+                        data: {
+                            MAILVERIFICATION: newOtpObject.id
+                        } })];
             case 3:
                 deviceId = (0, clientDevice_1.generateDeviceId)(req);
-                return [4 /*yield*/, pris_client_1.default.userDevices.findFirst({
-                        where: {
-                            device: deviceId,
-                            userId: user === null || user === void 0 ? void 0 : user.userId
-                        }
-                    })
-                    //check if user device is recognised
-                ];
-            case 4:
-                isDeviceActive = _a.sent();
+                // const isDeviceActive = await prismaClient.userDevices.findFirst({
+                //     where:{
+                //         device:deviceId,
+                //         userId:user?.userId
+                //     }
+                // })
                 //check if user device is recognised
-                console.log(isDeviceActive, "device active");
-                if (!!isDeviceActive) return [3 /*break*/, 7];
-                otpCode = (0, util_1.generateOTP)();
-                return [4 /*yield*/, pris_client_1.default.verificationOTp.create({
-                        data: {
-                            otpCode: otpCode,
-                            expiredTime: (0, util_2.getTimeFromNow)(Number(process.env.OTP_EXPIRY_MINUTE)),
-                            userId: (user === null || user === void 0 ? void 0 : user.userId) || "",
-                            type: "DEVICEVERIFCATION"
-                        }
-                    })];
-            case 5:
-                newDeviceOtp = _a.sent();
-                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: (user === null || user === void 0 ? void 0 : user.email) || "", subject: "Utilor Sign In Identification", body: otpCode, name: "Confirm Identiy" })];
-            case 6:
-                _a.sent();
-                (0, CookieService_1.setCookie)({ res: res, name: "identityToken", value: newDeviceOtp.id });
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verify device", code: 403, status_code: "VERIFY_DEVICE" })];
-            case 7:
+                // console.log(isDeviceActive,"device active")
+                // if(!isDeviceActive){
+                //     //if not recognized send user a device verification Token
+                //     const otpCode = generateOTP()
+                //     const newDeviceOtp = await prismaClient.verificationOTp.create({
+                //         data:{
+                //             otpCode,
+                //             expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE)),
+                //             userId:user?.userId || "",
+                //             type:"DEVICEVERIFCATION"
+                //         }
+                //     })
+                //     await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
+                //     setCookie({res,name:"identityToken",value:newDeviceOtp.id})
+                //     return ResponseHandler.sendErrorResponse({res,error:"Verify device",code:403,status_code:"VERIFY_DEVICE"})
+                // }
                 if (!user.firstName) {
-                    res.clearCookie("MAILVERIFICATION");
-                    (0, CookieService_1.setCookie)({ res: res, name: "CLIENTEMAIL", value: user.email });
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Profile not completed", code: 403, status_code: "COMPLETE_PROFILE" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Profile not completed", code: 403, status_code: "COMPLETE_PROFILE",
+                            data: {
+                                email: user.email
+                            } })];
                 }
-                acessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "6m" });
-                refreshToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId }, process.env.JWT_SECRET, { expiresIn: "62m" });
+                accessToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "62m" });
+                refreshToken = jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user.userId }, process.env.JWT_SECRET, { expiresIn: "2h" });
                 return [4 /*yield*/, pris_client_1.default.session.findFirst({
                         where: {
                             deviceId: deviceId,
                             userId: user === null || user === void 0 ? void 0 : user.userId,
                         }
                     })];
-            case 8:
+            case 4:
                 isSessionExisting = _a.sent();
-                if (!isSessionExisting) return [3 /*break*/, 10];
+                if (!isSessionExisting) return [3 /*break*/, 6];
                 currentDate = new Date();
                 return [4 /*yield*/, pris_client_1.default.session.update({
                         where: { id: isSessionExisting.id },
@@ -133,10 +130,10 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                             createdAt: currentDate
                         }
                     })];
-            case 9:
+            case 5:
                 _a.sent();
-                return [3 /*break*/, 12];
-            case 10: 
+                return [3 /*break*/, 8];
+            case 6: 
             //create new session for user 
             return [4 /*yield*/, pris_client_1.default.session.create({
                     data: {
@@ -146,22 +143,23 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                         expiredAt: (0, util_2.getTimeFromNow)(60),
                     }
                 })];
-            case 11:
+            case 7:
                 //create new session for user 
                 _a.sent();
-                _a.label = 12;
-            case 12:
-                (0, CookieService_1.setCookie)({ res: res, name: "acessToken", value: acessToken, duration: 5 });
-                (0, CookieService_1.setCookie)({ res: res, name: "refreshToken", value: refreshToken, duration: 60 });
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
-                            user: {
-                                id: user === null || user === void 0 ? void 0 : user.userId,
-                                email: user === null || user === void 0 ? void 0 : user.email,
-                                firstName: user === null || user === void 0 ? void 0 : user.firstName,
-                                lastName: user === null || user === void 0 ? void 0 : user.lastName,
-                                isMailVerified: user.isMailVerified,
-                            }
-                        } })];
+                _a.label = 8;
+            case 8: return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
+                        tokens: {
+                            accessToken: accessToken,
+                            refreshToken: refreshToken
+                        },
+                        user: {
+                            id: user === null || user === void 0 ? void 0 : user.userId,
+                            email: user === null || user === void 0 ? void 0 : user.email,
+                            firstName: user === null || user === void 0 ? void 0 : user.firstName,
+                            lastName: user === null || user === void 0 ? void 0 : user.lastName,
+                            isMailVerified: user.isMailVerified,
+                        }
+                    } })];
         }
     });
 }); });

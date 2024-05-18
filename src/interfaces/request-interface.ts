@@ -10,13 +10,14 @@ export interface ISignUpForm{
     isAgreed:boolean
     phoneNumber:string
     merchantID?:string
+    email:string
     
 }
 
 
 export interface IOtpVerication{
     otpCode:string
-    verifyToken:string
+    MAILVERIFICATION:string
 }
 
 

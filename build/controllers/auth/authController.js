@@ -50,15 +50,15 @@ var util_2 = require("../../utils/util");
 var credentials_setup_1 = require("../../utils/credentials-setup");
 var clientDevice_1 = require("../../utils/clientDevice");
 var TempRates_1 = require("../../utils/TempRates");
-var CookieService_1 = require("../../utils/CookieService");
 exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var email, existingUser, newUserId, merchantID, newUser, otpCode, otpObject;
+    var email, userEmail, existingUser, newUserId, merchantID, newUser, otpCode, otpObject;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 email = req.body.email;
+                userEmail = email.toLowerCase();
                 return [4 /*yield*/, pris_client_1.default.user.findFirst({
-                        where: { email: email }
+                        where: { email: userEmail }
                     })
                     //if user exists and mail is verified , send an error message
                 ];
@@ -101,21 +101,24 @@ exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { r
                             type: "MAILVERIFICATION",
                             expiredTime: (0, util_1.getTimeFromNow)(Number(process.env.OTP_EXPIRY_MINUTE))
                         }
-                    })];
+                    })
+                    // setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
+                ];
             case 6:
                 otpObject = _a.sent();
-                (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: otpObject.id });
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verifcation sent to email" })];
+                // setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verifcation sent to email", data: {
+                            MAILVERIFICATION: otpObject.id
+                        } })];
         }
     });
 }); });
 exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var otpCode, verificationID, otpVerification, currentDate, deviceId;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
+    var _a, otpCode, verificationID, otpVerification, currentDate, deviceId;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
-                otpCode = req.body.otpCode;
-                verificationID = req.cookies["MAILVERIFICATION"];
+                _a = req.body, otpCode = _a.otpCode, verificationID = _a.MAILVERIFICATION;
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.findFirst({
                         where: {
                             id: verificationID,
@@ -127,7 +130,7 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                         }
                     })];
             case 1:
-                otpVerification = _a.sent();
+                otpVerification = _b.sent();
                 if (!otpVerification) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "OTP Supplied Invalid" })];
                 }
@@ -145,13 +148,14 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                         },
                     })
                     //delete verifcation token from cookie
+                    // res.clearCookie("MAILVERIFICATION")
+                    //delete all OTp associated with user
                 ];
             case 2:
                 //update user mail verification status to true
-                _a.sent();
+                _b.sent();
                 //delete verifcation token from cookie
-                res.clearCookie("MAILVERIFICATION");
-                (0, CookieService_1.setCookie)({ res: res, name: "CLIENTEMAIL", value: otpVerification.user.email });
+                // res.clearCookie("MAILVERIFICATION")
                 //delete all OTp associated with user
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.deleteMany({
                         where: {
@@ -161,8 +165,10 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                     //add device to list of user Devices
                 ];
             case 3:
+                //delete verifcation token from cookie
+                // res.clearCookie("MAILVERIFICATION")
                 //delete all OTp associated with user
-                _a.sent();
+                _b.sent();
                 deviceId = (0, clientDevice_1.generateDeviceId)(req);
                 return [4 /*yield*/, pris_client_1.default.userDevices.create({
                         data: {
@@ -171,8 +177,10 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                         }
                     })];
             case 4:
-                _a.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Email succesfully verfied" })];
+                _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Email succesfully verfied", data: {
+                            email: otpVerification.user.email
+                        } })];
         }
     });
 }); });
@@ -181,8 +189,7 @@ exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, nex
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, firstName = _a.firstName, lastName = _a.lastName, password = _a.password, phoneNumber = _a.phoneNumber, merchantID = _a.merchantID;
-                email = req.cookies["CLIENTEMAIL"];
+                _a = req.body, firstName = _a.firstName, lastName = _a.lastName, password = _a.password, phoneNumber = _a.phoneNumber, merchantID = _a.merchantID, email = _a.email;
                 return [4 /*yield*/, pris_client_1.default.user.findFirst({
                         where: {
                             email: email
@@ -288,7 +295,6 @@ exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, nex
                     email: email,
                     isMailVerified: user.isMailVerified
                 };
-                res.clearCookie("CLIENTEMAIL");
                 return [2 /*return*/, next()];
         }
     });
@@ -330,14 +336,14 @@ exports.userLogIn = (0, catch_async_1.default)(function (req, res, next) { retur
     });
 }); });
 exports.reverifyToken = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var verifyToken, token, otpCode, otpObject;
+    var MAILVERIFICATION, token, otpCode, otpObject;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                verifyToken = req.cookies['MAILVERIFICATION'];
+                MAILVERIFICATION = req.body.MAILVERIFICATION;
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.findFirst({
                         where: {
-                            id: verifyToken, type: "MAILVERIFICATION"
+                            id: MAILVERIFICATION, type: "MAILVERIFICATION"
                         },
                         include: {
                             user: true
@@ -349,7 +355,7 @@ exports.reverifyToken = (0, catch_async_1.default)(function (req, res, next) { r
                 token = _a.sent();
                 //if token in cookie is not retrieving any result, it must have been malformed , user should relogin
                 if (!token) {
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Session Expired, RelogIn", code: 401 })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token supplied invalid ", code: 401 })];
                 }
                 //delete all associated token the user has
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.deleteMany({
@@ -371,14 +377,10 @@ exports.reverifyToken = (0, catch_async_1.default)(function (req, res, next) { r
                     })];
             case 3:
                 otpObject = _a.sent();
-                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: token.user.email, subject: "Utilor SignInOTp", body: otpObject.otpCode, name: "".concat(token.user.firstName, " ").concat(token.user.lastName) })
-                    //set id to cookie
-                ];
+                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: token.user.email, subject: "Utilor SignInOTp", body: otpObject.otpCode, name: "".concat(token.user.firstName, " ").concat(token.user.lastName) })];
             case 4:
                 _a.sent();
-                //set id to cookie
-                (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: otpObject.id });
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: { verifyToken: otpObject.id } })];
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: { MAILVERIFICATION: otpObject.id } })];
         }
     });
 }); });
@@ -470,27 +472,24 @@ exports.forgotPassword = (0, catch_async_1.default)(function (req, res, next) { 
                     })];
             case 2:
                 resetObject = _a.sent();
-                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: email, subject: "Verify Email Adress", body: otpCode, name: "".concat(user.firstName, " ").concat(user.lastName) })
-                    //set resetObjectId in response cookies
-                ];
+                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: email, subject: "Verify Email Adress", body: otpCode, name: "".concat(user.firstName, " ").concat(user.lastName) })];
             case 3:
                 _a.sent();
-                //set resetObjectId in response cookies
-                (0, CookieService_1.setCookie)({ res: res, name: "resetToken", value: resetObject.id });
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verification mail sent" })];
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verification E-mail sent", data: {
+                            resetToken: resetObject.id
+                        } })];
         }
     });
 }); });
 exports.resetPassword = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var verificationToken, _a, otpCode, password, resetObject, hashedPassword, user;
+    var _a, otpCode, password, resetToken, resetObject, hashedPassword, user;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                verificationToken = req.cookies['resetToken'];
-                _a = req.body, otpCode = _a.otpCode, password = _a.password;
+                _a = req.body, otpCode = _a.otpCode, password = _a.password, resetToken = _a.resetToken;
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.findFirst({
                         where: {
-                            id: verificationToken,
+                            id: resetToken,
                             otpCode: otpCode
                         },
                         include: {
@@ -525,7 +524,6 @@ exports.resetPassword = (0, catch_async_1.default)(function (req, res, next) { r
                     })];
             case 4:
                 _b.sent();
-                res.clearCookie("resetToken");
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
                             user: {
                                 id: user.id,
@@ -595,7 +593,7 @@ exports.googleSignUp = (0, catch_async_1.default)(function (req, res, next) { re
             case 6:
                 isAuthorized = _a.sent();
                 if (!isAuthorized) {
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "verify device", code: 403 })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "verify device", code: 403, status_code: "VERIFY_DEVICE" })];
                 }
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: {
                             user: {

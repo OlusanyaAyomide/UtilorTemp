@@ -51,7 +51,7 @@ export  async function setAuthCredentials ({req,res,id,email}:IsetAuthCookie){
 
         await mailSender({to:email,subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
 
-        setCookie({res,name:'identityToken',value:newDeviceOtp.id})
+        // setCookie({res,name:'identityToken',value:newDeviceOtp.id})
         return  false
     }
 
@@ -84,9 +84,8 @@ export  async function setAuthCredentials ({req,res,id,email}:IsetAuthCookie){
         })
 
     }
-    setCookie({res,name:"acessToken",value:acessToken,duration:5})
-    setCookie({res,name:"refreshToken",value:refreshToken,duration:60})
+    // setCookie({res,name:"acessToken",value:acessToken,duration:5})
+    // setCookie({res,name:"refreshToken",value:refreshToken,duration:60})
     return true
 
-    
 }   

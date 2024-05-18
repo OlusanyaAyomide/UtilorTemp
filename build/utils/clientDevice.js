@@ -7,7 +7,7 @@ exports.generateDeviceId = void 0;
 var node_device_detector_1 = __importDefault(require("node-device-detector"));
 var crypto_1 = __importDefault(require("crypto"));
 var generateDeviceId = function (req) {
-    var userAgent = req.headers["user-agent"] || "";
+    var userAgent = req.header("user-agent") || req.headers["user-agent"] || "";
     //gets device objects
     var detector = new node_device_detector_1.default({
         clientIndexes: true,

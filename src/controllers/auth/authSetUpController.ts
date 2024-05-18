@@ -28,60 +28,68 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
         await mailSender({to:user?.email || "",subject:"Utilor Sign up code",body:otpCode,name:`Utilor Verifcation`})
 
         //set otpId to user response cookie 
-        setCookie({res,name:"MAILVERIFICATION",value:newOtpObject.id})
+        // setCookie({res,name:"MAILVERIFICATION",value:newOtpObject.id})
 
-        return ResponseHandler.sendErrorResponse({res,code:401,error:"Email unverified, Check email for OTP code",status_code:"EMAIL_REDIRECT"})
+        return ResponseHandler.sendErrorResponse({res,code:401,error:"Email unverified, Check email for OTP code",status_code:"EMAIL_REDIRECT",
+            data:{
+                MAILVERIFICATION:newOtpObject.id
+            }
+        })
     } 
 
     const deviceId = generateDeviceId(req)
 
-    const isDeviceActive = await prismaClient.userDevices.findFirst({
-        where:{
-            device:deviceId,
-            userId:user?.userId
-        }
-    })
+    // const isDeviceActive = await prismaClient.userDevices.findFirst({
+    //     where:{
+    //         device:deviceId,
+    //         userId:user?.userId
+    //     }
+    // })
 
     //check if user device is recognised
 
-    console.log(isDeviceActive,"device active")
-    if(!isDeviceActive){
-        //if not recognized send user a device verification Token
-        const otpCode = generateOTP()
+    // console.log(isDeviceActive,"device active")
+    // if(!isDeviceActive){
+    //     //if not recognized send user a device verification Token
+    //     const otpCode = generateOTP()
         
-        const newDeviceOtp = await prismaClient.verificationOTp.create({
-            data:{
-                otpCode,
-                expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE)),
-                userId:user?.userId || "",
-                type:"DEVICEVERIFCATION"
-            }
-        })
+    //     const newDeviceOtp = await prismaClient.verificationOTp.create({
+    //         data:{
+    //             otpCode,
+    //             expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE)),
+    //             userId:user?.userId || "",
+    //             type:"DEVICEVERIFCATION"
+    //         }
+    //     })
 
-        await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
+    //     await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
 
-        setCookie({res,name:"identityToken",value:newDeviceOtp.id})
+    //     setCookie({res,name:"identityToken",value:newDeviceOtp.id})
 
-        return ResponseHandler.sendErrorResponse({res,error:"Verify device",code:403,status_code:"VERIFY_DEVICE"})
-    }
+    //     return ResponseHandler.sendErrorResponse({res,error:"Verify device",code:403,status_code:"VERIFY_DEVICE"})
+    // }
 
     if(!user.firstName){
-        res.clearCookie("MAILVERIFICATION")
-        setCookie({res,name:"CLIENTEMAIL",value:user.email})
-        return ResponseHandler.sendErrorResponse({res,error:"Profile not completed",code:403,status_code:"COMPLETE_PROFILE"})
+
+        return ResponseHandler.sendErrorResponse({res,error:"Profile not completed",code:403,status_code:"COMPLETE_PROFILE",
+            data:{
+                email:user.email
+            }
+        })
     }
 
    
-    const acessToken = jwt.sign(
+    //tempoarily set to 62m for testing
+    const accessToken = jwt.sign(
         { userId:user?.userId,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified,firstName:user.firstName,lastName:user.lastName},
         process.env.JWT_SECRET as string,
-        { expiresIn:"6m" }
+        { expiresIn:"62m" }
     );
 
     const refreshToken = jwt.sign(
         {userId:user?.userId},
         process.env.JWT_SECRET as string,
-        {expiresIn:"62m"}
+        {expiresIn:"2h"}
     )
 
     //check is session with devideID and token already exists
@@ -117,11 +125,12 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
         })
     }
 
-    setCookie({res,name:"acessToken",value:acessToken,duration:5})
-    setCookie({res,name:"refreshToken",value:refreshToken,duration:60})
 
 
     return ResponseHandler.sendSuccessResponse({res,data:{
+        tokens:{
+            accessToken,refreshToken
+        },
         user:{
             id:user?.userId ,
             email:user?.email,

@@ -3,7 +3,7 @@ import DeviceDetector from "node-device-detector";
 import crypto from "crypto"
 
 export const generateDeviceId = (req:Request)=> {
-    const userAgent = req.headers["user-agent"] || ""
+    const userAgent =  req.header("user-agent") || req.headers["user-agent"] || ""
     //gets device objects
     const detector = new DeviceDetector({
         clientIndexes: true,

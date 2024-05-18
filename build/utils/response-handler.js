@@ -22,8 +22,8 @@ var ResponseHandler = /** @class */ (function () {
     };
     // Error Response Handler
     ResponseHandler.sendErrorResponse = function (_a) {
-        var res = _a.res, _b = _a.code, code = _b === void 0 ? 400 : _b, _c = _a.status_code, status_code = _c === void 0 ? "BAD_REQUEST" : _c, _d = _a.error, error = _d === void 0 ? 'Operation failed' : _d, _e = _a.custom, custom = _e === void 0 ? false : _e;
-        var response = custom ? { code: code, status_code: status_code, message: error } : { success: false, code: code, message: error, status_code: status_code };
+        var res = _a.res, _b = _a.code, code = _b === void 0 ? 400 : _b, _c = _a.status_code, status_code = _c === void 0 ? "BAD_REQUEST" : _c, _d = _a.error, error = _d === void 0 ? 'Operation failed' : _d, _e = _a.custom, custom = _e === void 0 ? false : _e, _f = _a.data, data = _f === void 0 ? null : _f;
+        var response = custom ? { code: code, status_code: status_code, message: error, data: data } : { success: false, code: code, message: error, status_code: status_code, data: data };
         return res.status(code).json(response);
     };
     ResponseHandler.sendUnauthorizedResponse = function (_a) {

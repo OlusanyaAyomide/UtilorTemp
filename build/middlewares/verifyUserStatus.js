@@ -45,10 +45,9 @@ var util_1 = require("../utils/util");
 var send_mail_1 = require("../utils/send-mail");
 var response_handler_1 = __importDefault(require("../utils/response-handler"));
 var clientDevice_1 = require("../utils/clientDevice");
-var CookieService_1 = require("../utils/CookieService");
 function verifyUserStats(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var user, otpCode, newOtpObject, deviceId, isDeviceActive, otpCode, newDeviceOtp;
+        var user, otpCode, newOtpObject, deviceId;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -75,41 +74,32 @@ function verifyUserStats(req, res, next) {
                 case 2:
                     _a.sent();
                     //set otpId to user response cookie 
-                    (0, CookieService_1.setCookie)({ res: res, name: "MAILVERIFICATION", value: newOtpObject.id });
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 401, error: "Email unverified, Check email for OTP code", status_code: "EMAIL_REDIRECT", data: { MAILVERIFICATION: newOtpObject.id } })];
                 case 3:
-                    if (!user.firstName) {
-                        console.log("Gotchaa");
-                    }
                     deviceId = (0, clientDevice_1.generateDeviceId)(req);
-                    return [4 /*yield*/, pris_client_1.default.userDevices.findFirst({
-                            where: {
-                                device: deviceId,
-                                userId: user === null || user === void 0 ? void 0 : user.userId
-                            }
-                        })
-                        //check if user device is recognised
-                    ];
-                case 4:
-                    isDeviceActive = _a.sent();
-                    if (!!isDeviceActive) return [3 /*break*/, 7];
-                    otpCode = (0, util_1.generateOTP)();
-                    return [4 /*yield*/, pris_client_1.default.verificationOTp.create({
-                            data: {
-                                otpCode: otpCode,
-                                expiredTime: (0, util_1.getTimeFromNow)(Number(process.env.OTP_EXPIRY_MINUTE)),
-                                userId: (user === null || user === void 0 ? void 0 : user.userId) || "",
-                                type: "DEVICEVERIFCATION"
-                            }
-                        })];
-                case 5:
-                    newDeviceOtp = _a.sent();
-                    return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: (user === null || user === void 0 ? void 0 : user.email) || "", subject: "Utilor Sign In Identification", body: otpCode, name: "Confirm Identiy" })];
-                case 6:
-                    _a.sent();
-                    (0, CookieService_1.setCookie)({ res: res, name: "identityToken", value: newDeviceOtp.id });
-                    return [2 /*return*/, response_handler_1.default.sendUnauthorizedResponse({ res: res, error: "Verify device", status_code: "VERIFY_DEVICE" })];
-                case 7: return [2 /*return*/, next()];
+                    // const isDeviceActive = await prismaClient.userDevices.findFirst({
+                    //     where:{
+                    //         device:deviceId,
+                    //         userId:user?.userId
+                    //     }
+                    // })
+                    //check if user device is recognised
+                    // if(!isDeviceActive){
+                    //     //if not recognized send user a device verification Token
+                    //     const otpCode = generateOTP()
+                    //     const newDeviceOtp = await prismaClient.verificationOTp.create({
+                    //         data:{
+                    //             otpCode,
+                    //             expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE)),
+                    //             userId:user?.userId || "",
+                    //             type:"DEVICEVERIFCATION"
+                    //         }
+                    //     })
+                    //     await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
+                    //     setCookie({res,name:"identityToken",value:newDeviceOtp.id})
+                    //     return ResponseHandler.sendUnauthorizedResponse({res,error:"Verify device",status_code:"VERIFY_DEVICE"})
+                    // }
+                    return [2 /*return*/, next()];
             }
         });
     });

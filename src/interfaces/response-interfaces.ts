@@ -19,6 +19,7 @@ export interface IResponse {
 
 export interface IResponseError {
     res: Response;
+    data?:any
     code?: number;
     error?: string;
     custom?: boolean;
