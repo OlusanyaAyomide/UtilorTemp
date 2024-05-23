@@ -48,7 +48,7 @@ var send_mail_1 = require("../../utils/send-mail");
 var util_1 = require("../../utils/util");
 var util_2 = require("../../utils/util");
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
-//in charge of asigning token and signing in users
+//in charge of assigning token and signing in users
 exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var user, otpCode, newOtpObject, deviceId, accessToken, refreshToken, isSessionExisting, currentDate;
     return __generator(this, function (_a) {

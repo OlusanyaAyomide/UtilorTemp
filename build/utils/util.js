@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateConsentToken = exports.calculateDailyReturns = exports.getCabalpercentage = exports.getUAndIPercentage = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
+exports.calculateSavingsPercentage = exports.calculateDailyReturns = exports.getCabalpercentage = exports.getUAndIPercentage = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
 var bcrypt_1 = __importDefault(require("bcrypt"));
 function generateOTP() {
     var otpLength = 4;
@@ -151,6 +151,16 @@ var calculateDailyReturns = function (_a) {
     return capital * dayPercent;
 };
 exports.calculateDailyReturns = calculateDailyReturns;
-var generateConsentToken = function () {
+var calculateSavingsPercentage = function (_a) {
+    var initial = _a.initial, currentTotal = _a.currentTotal, startDate = _a.startDate, endDate = _a.endDate;
+    var startDateObject = new Date(startDate);
+    var endDateObject = new Date(endDate);
+    var yearsDifference = endDateObject.getFullYear() - startDateObject.getFullYear();
+    var monthsDifference = endDateObject.getMonth() - startDateObject.getMonth();
+    var duration = Math.abs((yearsDifference * 12) + monthsDifference);
+    var expectedDuration = initial * duration;
+    var completedPercentage = ((currentTotal / expectedDuration) * 100);
+    var roundedPercentage = Math.round((completedPercentage + Number.EPSILON) * 100) / 100;
+    return roundedPercentage;
 };
-exports.generateConsentToken = generateConsentToken;
+exports.calculateSavingsPercentage = calculateSavingsPercentage;

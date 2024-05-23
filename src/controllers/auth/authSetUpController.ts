@@ -6,10 +6,9 @@ import { mailSender } from "../../utils/send-mail";
 import { bcryptHash, generateOTP } from "../../utils/util";
 import { getTimeFromNow } from "../../utils/util";
 import catchDefaultAsync from "../../utils/catch-async";
-import { setCookie } from "../../utils/CookieService";
 import { IUpdateBvn } from "../../interfaces/bodyInterface";
 
-//in charge of asigning token and signing in users
+//in charge of assigning token and signing in users
 export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
     const user = req.user
 
@@ -124,8 +123,6 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
             }
         })
     }
-
-
 
     return ResponseHandler.sendSuccessResponse({res,data:{
         tokens:{

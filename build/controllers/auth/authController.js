@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.googleSignIn = exports.googleSignUp = exports.resetPassword = exports.forgotPassword = exports.verifyAndAddNewDevice = exports.reverifyToken = exports.userLogIn = exports.completeBasicDetail = exports.mailVerification = exports.createNewUser = void 0;
+exports.googleSignIn = exports.googleSignUp = exports.resendForgotPassword = exports.resetPassword = exports.forgotPassword = exports.verifyAndAddNewDevice = exports.reverifyToken = exports.userLogIn = exports.completeBasicDetail = exports.mailVerification = exports.createNewUser = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
@@ -91,7 +91,7 @@ exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { r
                 _a.label = 4;
             case 4:
                 otpCode = (0, util_1.generateOTP)();
-                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: email, subject: "Utilor Sign up code", body: otpCode, name: "Utilor Verifcation" })];
+                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: email, subject: "Utilor Sign up code", body: otpCode, name: "Utilor Verification" })];
             case 5:
                 _a.sent();
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.create({
@@ -107,7 +107,7 @@ exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { r
             case 6:
                 otpObject = _a.sent();
                 // setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verifcation sent to email", data: {
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verification sent to email", data: {
                             MAILVERIFICATION: otpObject.id
                         } })];
         }
@@ -179,7 +179,7 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
             case 4:
                 _b.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Email succesfully verfied", data: {
-                            email: otpVerification.user.email
+                            email: otpVerification.user.email,
                         } })];
         }
     });
@@ -377,7 +377,7 @@ exports.reverifyToken = (0, catch_async_1.default)(function (req, res, next) { r
                     })];
             case 3:
                 otpObject = _a.sent();
-                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: token.user.email, subject: "Utilor SignInOTp", body: otpObject.otpCode, name: "".concat(token.user.firstName, " ").concat(token.user.lastName) })];
+                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: token.user.email, subject: "Utilor SignInOTp", body: otpObject.otpCode, name: "".concat(token.user.firstName || "", " ").concat(token.user.lastName || "") })];
             case 4:
                 _a.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: { MAILVERIFICATION: otpObject.id } })];
@@ -472,7 +472,7 @@ exports.forgotPassword = (0, catch_async_1.default)(function (req, res, next) { 
                     })];
             case 2:
                 resetObject = _a.sent();
-                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: email, subject: "Verify Email Adress", body: otpCode, name: "".concat(user.firstName, " ").concat(user.lastName) })];
+                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: email, subject: "Utilor Reset Password OTP", body: otpCode, name: "".concat(user.firstName, " ").concat(user.lastName) })];
             case 3:
                 _a.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verification E-mail sent", data: {
@@ -490,6 +490,7 @@ exports.resetPassword = (0, catch_async_1.default)(function (req, res, next) { r
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.findFirst({
                         where: {
                             id: resetToken,
+                            type: "RESETPASSWORD",
                             otpCode: otpCode
                         },
                         include: {
@@ -533,6 +534,52 @@ exports.resetPassword = (0, catch_async_1.default)(function (req, res, next) { r
                                 isVerified: true
                             }
                         } })];
+        }
+    });
+}); });
+exports.resendForgotPassword = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var resetToken, token, otpCode, otpObject;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                resetToken = req.body.resetToken;
+                return [4 /*yield*/, pris_client_1.default.verificationOTp.findFirst({
+                        where: {
+                            id: resetToken, type: "RESETPASSWORD"
+                        },
+                        include: {
+                            user: true
+                        }
+                    })];
+            case 1:
+                token = _a.sent();
+                if (!token) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token supplied invalid ", code: 401 })];
+                }
+                //delete all associated token the user has
+                return [4 /*yield*/, pris_client_1.default.verificationOTp.deleteMany({
+                        where: {
+                            userId: token.user.id, type: "RESETPASSWORD"
+                        }
+                    })];
+            case 2:
+                //delete all associated token the user has
+                _a.sent();
+                otpCode = (0, util_1.generateOTP)();
+                return [4 /*yield*/, pris_client_1.default.verificationOTp.create({
+                        data: {
+                            otpCode: otpCode,
+                            userId: token.user.id,
+                            expiredTime: (0, util_1.getTimeFromNow)(Number(process.env.OTP_EXPIRY_MINUTE)),
+                            type: "RESETPASSWORD"
+                        }
+                    })];
+            case 3:
+                otpObject = _a.sent();
+                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: token.user.email, subject: "Utilor Reset Password", body: otpObject.otpCode, name: "".concat(token.user.firstName || "", " ").concat(token.user.lastName || "") })];
+            case 4:
+                _a.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: { resetToken: otpObject.id } })];
         }
     });
 }); });

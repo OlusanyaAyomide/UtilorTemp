@@ -121,6 +121,21 @@ export async function resendTokenValidation(req:Request,
         return ResponseHandler.sendErrorResponse({ res, code: 400, error });
     }
 
+    return next()
+}
+
+export async function resendForgotPasswordValidation(req:Request,
+    res:Response,
+    next:NextFunction):Promise<Response | void>{
+    const schema = Joi.object({
+        resendToken:Joi.string().uuid().required()
+    })
+    const validation = schema.validate(req.body);
+    if(validation.error){
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, code: 400, error });
+    }
 
     return next()
 }

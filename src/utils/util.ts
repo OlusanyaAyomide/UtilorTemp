@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import base64 from "base-64";
+import { ICalculateDuration } from "../interfaces/interface";
 
 export function generateOTP(): string {
   const otpLength = 4;
@@ -105,6 +106,18 @@ export const calculateDailyReturns=({capital,interest}:{capital:number,interest:
 }
 
 
-export const generateConsentToken = ()=>{
 
+export const calculateSavingsPercentage = ({initial,currentTotal,startDate,endDate}:ICalculateDuration)=>{
+  const startDateObject = new Date(startDate)
+  const endDateObject = new Date(endDate)
+
+  const  yearsDifference = endDateObject.getFullYear() - startDateObject.getFullYear();
+  const  monthsDifference = endDateObject.getMonth() - startDateObject.getMonth();
+
+  let duration = Math.abs((yearsDifference * 12) + monthsDifference)
+
+  const  expectedDuration  = initial * duration
+  const  completedPercentage = ((currentTotal/expectedDuration) * 100)
+  const  roundedPercentage = Math.round((completedPercentage + Number.EPSILON) * 100) / 100; 
+  return roundedPercentage
 }

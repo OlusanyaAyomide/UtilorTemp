@@ -18,3 +18,24 @@ export interface IUWalletDepositInformation{
     currency: CURRENCY
 }
 
+export interface SavingsArrayData {
+    savingsId:string
+    savingsName:string,
+    percentageCompleted:number | null
+    startDate:Date,
+    endDate:Date
+    monthlySaving:number | null,
+    totalInvestment:number,
+    savingsType:DESCRIPTION_TYPE,
+    currency:CURRENCY,
+    iconLink:string
+}
+
+
+export interface ICalculateDuration {
+    initial:number,
+    currentTotal:number,
+    startDate:Date,
+    endDate:Date
+}
+

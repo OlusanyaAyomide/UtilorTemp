@@ -47,7 +47,7 @@ var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var util_1 = require("../utils/util");
 function verifyUsers(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var refreshToken, accessToken, decoded, deviceId, isTokenValid, user, newAcessToken, newRefreshToken;
+        var refreshToken, accessToken, decoded, deviceId, isTokenValid, user, newAccessToken, newRefreshToken;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -90,7 +90,7 @@ function verifyUsers(req, res, next) {
                         return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Token Expired 2", code: 401, status_code: "LOGIN_REDIRECT" })];
                     }
                     user = isTokenValid.user;
-                    newAcessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "62m" });
+                    newAccessToken = jsonwebtoken_1.default.sign({ userId: user.id, email: user === null || user === void 0 ? void 0 : user.email, isCredentialsSet: user.isCredentialsSet, isGoogleUser: user.isGoogleUser, isMailVerified: user.isMailVerified, firstName: user.firstName, lastName: user.lastName }, process.env.JWT_SECRET, { expiresIn: "62m" });
                     newRefreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: "2h" });
                     return [4 /*yield*/, pris_client_1.default.session.update({
                             where: { id: isTokenValid.id },

@@ -5,13 +5,11 @@ import prismaClient from '../prisma/pris-client';
 import jwt from "jsonwebtoken";
 import { IExpressRequest, IUserDetail } from '../interfaces/user-interface';
 import { getTimeFromNow } from '../utils/util';
-import { setCookie } from '../utils/CookieService';
 
 
 export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFunction):Promise<Response | void>{
     const refreshToken = req.header('refreshToken') 
     const accessToken = req.header('accessToken') 
-
     if(accessToken){   
         try{
             const decoded = jwt.verify(accessToken,process.env.JWT_SECRET as string) as IUserDetail
@@ -27,7 +25,6 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
         }catch(err){
             return ResponseHandler.sendErrorResponse({res,error:"Token malformed",code:401,status_code:"LOGIN_REDIRECT"})
         }
-
     }
     
     if(!refreshToken){
@@ -56,7 +53,7 @@ export async function verifyUsers  (req:IExpressRequest,res:Response,next:NextFu
 
     //tempoarily set to 1h for testing
     //create new access token
-    const newAcessToken = jwt.sign(
+    const newAccessToken = jwt.sign(
         { userId:user.id,email:user?.email,isCredentialsSet:user.isCredentialsSet,isGoogleUser:user.isGoogleUser,isMailVerified:user.isMailVerified,firstName:user.firstName,lastName:user.lastName},
         process.env.JWT_SECRET as string,
         { expiresIn:"62m" }

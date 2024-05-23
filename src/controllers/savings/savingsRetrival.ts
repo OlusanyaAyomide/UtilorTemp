@@ -1,6 +1,9 @@
 import ResponseHandler from "../../utils/response-handler";
 import catchDefaultAsync from "../../utils/catch-async";
 import prismaClient from "../../prisma/pris-client";
+import { SavingsArrayData } from "../../interfaces/interface";
+import { calculateSavingsPercentage, getCurrentDollarRate } from "../../utils/util";
+import { group } from "console";
 
 
 
@@ -300,4 +303,131 @@ export const getAllSavingsData = catchDefaultAsync(async(req,res,next)=>{
     }
 
     return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
+})
+
+
+export const getSavingsList = catchDefaultAsync(async(req,res,next)=>{
+    const userId = req.user?.userId 
+
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
+    const forU = await prismaClient.uSaveForU.findMany({
+        where:{
+            userId:userId
+        }
+    })
+    const emergency = await prismaClient.emergency.findMany({
+        where:{
+            userId:userId
+        }
+    })
+
+    const uandI = await prismaClient.uANDI.findMany({
+        where:{
+            OR:[
+                {
+                    creatorId:userId
+                },
+                {
+                    partnerId:userId
+                }
+            ]
+        }
+    })
+
+    const cabal = await prismaClient.userCabal.findMany({
+        where:{
+            userId:userId
+        },
+        include:{
+            cabelGroup:true
+        }
+    })
+
+    const savingsArray:SavingsArrayData[] = []
+
+    forU.forEach((saving)=>{
+        const item:SavingsArrayData={
+            savingsName:saving.savingsName,
+            savingsId:saving.id,
+            savingsType:"FORU",
+            startDate:saving.createdAt,
+            endDate:saving.endingDate,
+            percentageCompleted:calculateSavingsPercentage(
+                {initial:saving.expectedMonthlyAmount,currentTotal:saving.totalInvestment,startDate:saving.createdAt,endDate:saving.endingDate}
+            ),
+            monthlySaving:saving.expectedMonthlyAmount,
+            currency:saving.currency,
+            totalInvestment:saving.totalInvestment,
+            iconLink:saving.iconLink
+        }
+        savingsArray.push(item)
+    })
+
+    emergency.forEach((saving)=>{
+        const item:SavingsArrayData={
+            savingsName:saving.savingsName,
+            savingsId:saving.id,
+            savingsType:"EMERGENCY",
+            startDate:saving.createdAt,
+            endDate:saving.endingDate,
+            percentageCompleted:calculateSavingsPercentage(
+                {initial:saving.expectedMonthlyAmount,currentTotal:saving.totalInvestment,startDate:saving.createdAt,endDate:saving.endingDate}
+            ),
+            monthlySaving:saving.expectedMonthlyAmount,
+            currency:saving.currency,
+            totalInvestment:saving.totalInvestment,
+            iconLink:saving.iconLink
+        }
+        savingsArray.push(item)
+    })
+    
+    uandI.forEach((saving)=>{
+        const totalUandI = saving.partnerCapital + saving.totalCapital + saving.totalInvestmentReturn
+        const item:SavingsArrayData={
+            savingsName:saving.Savingsname,
+            savingsId:saving.id, 
+            savingsType:"UANDI",
+            startDate:saving.createdAt,
+            endDate:saving.endingDate,
+            percentageCompleted:calculateSavingsPercentage({
+                initial:saving.expectedMonthlyAmount,currentTotal:totalUandI,startDate:saving.createdAt,endDate:saving.endingDate
+            }) ,
+            currency:saving.currency,
+            monthlySaving:saving.expectedMonthlyAmount,
+            totalInvestment:totalUandI,
+            iconLink:saving.iconLink
+        }
+        savingsArray.push(item)
+    })
+
+    cabal.forEach((userCabal)=>{
+        const cabalGroup = userCabal.cabelGroup
+        const item:SavingsArrayData = {
+            savingsName:cabalGroup.groupName,
+            savingsId:cabalGroup.id,
+            savingsType:"CABAL",
+            startDate:cabalGroup.createdAt,
+            endDate:cabalGroup.lockedInDate,
+            percentageCompleted:null,
+            currency:cabalGroup.currency,
+            totalInvestment:userCabal.totalBalance,
+            monthlySaving:null,
+            iconLink:cabalGroup.iconLink
+        }
+        savingsArray.push(item)
+    })
+    savingsArray.sort((a, b) => {
+        const totalInvestmentA = a.currency === "USD" ? a.totalInvestment * getCurrentDollarRate() : a.totalInvestment;
+        const totalInvestmentB = b.currency === "USD" ? b.totalInvestment * getCurrentDollarRate() : b.totalInvestment;
+        return totalInvestmentB - totalInvestmentA; // 
+    });
+    return ResponseHandler.sendSuccessResponse({
+        res,data:savingsArray
+    })
+    
+    
+
+
 })

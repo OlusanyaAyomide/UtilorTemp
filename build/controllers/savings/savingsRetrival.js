@@ -50,10 +50,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllSavingsData = exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
+exports.getSavingsList = exports.getAllSavingsData = exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
+var util_1 = require("../../utils/util");
 exports.getAllUserForU = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var userId, allForU;
     var _a;
@@ -392,6 +393,131 @@ exports.getAllSavingsData = (0, catch_async_1.default)(function (req, res, next)
                     }
                 };
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: savingsSummary })];
+        }
+    });
+}); });
+exports.getSavingsList = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, forU, emergency, uandI, cabal, savingsArray;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.uSaveForU.findMany({
+                        where: {
+                            userId: userId
+                        }
+                    })];
+            case 1:
+                forU = _b.sent();
+                return [4 /*yield*/, pris_client_1.default.emergency.findMany({
+                        where: {
+                            userId: userId
+                        }
+                    })];
+            case 2:
+                emergency = _b.sent();
+                return [4 /*yield*/, pris_client_1.default.uANDI.findMany({
+                        where: {
+                            OR: [
+                                {
+                                    creatorId: userId
+                                },
+                                {
+                                    partnerId: userId
+                                }
+                            ]
+                        }
+                    })];
+            case 3:
+                uandI = _b.sent();
+                return [4 /*yield*/, pris_client_1.default.userCabal.findMany({
+                        where: {
+                            userId: userId
+                        },
+                        include: {
+                            cabelGroup: true
+                        }
+                    })];
+            case 4:
+                cabal = _b.sent();
+                savingsArray = [];
+                forU.forEach(function (saving) {
+                    var item = {
+                        savingsName: saving.savingsName,
+                        savingsId: saving.id,
+                        savingsType: "FORU",
+                        startDate: saving.createdAt,
+                        endDate: saving.endingDate,
+                        percentageCompleted: (0, util_1.calculateSavingsPercentage)({ initial: saving.expectedMonthlyAmount, currentTotal: saving.totalInvestment, startDate: saving.createdAt, endDate: saving.endingDate }),
+                        monthlySaving: saving.expectedMonthlyAmount,
+                        currency: saving.currency,
+                        totalInvestment: saving.totalInvestment,
+                        iconLink: saving.iconLink
+                    };
+                    savingsArray.push(item);
+                });
+                emergency.forEach(function (saving) {
+                    var item = {
+                        savingsName: saving.savingsName,
+                        savingsId: saving.id,
+                        savingsType: "EMERGENCY",
+                        startDate: saving.createdAt,
+                        endDate: saving.endingDate,
+                        percentageCompleted: (0, util_1.calculateSavingsPercentage)({ initial: saving.expectedMonthlyAmount, currentTotal: saving.totalInvestment, startDate: saving.createdAt, endDate: saving.endingDate }),
+                        monthlySaving: saving.expectedMonthlyAmount,
+                        currency: saving.currency,
+                        totalInvestment: saving.totalInvestment,
+                        iconLink: saving.iconLink
+                    };
+                    savingsArray.push(item);
+                });
+                uandI.forEach(function (saving) {
+                    var totalUandI = saving.partnerCapital + saving.totalCapital + saving.totalInvestmentReturn;
+                    var item = {
+                        savingsName: saving.Savingsname,
+                        savingsId: saving.id,
+                        savingsType: "UANDI",
+                        startDate: saving.createdAt,
+                        endDate: saving.endingDate,
+                        percentageCompleted: (0, util_1.calculateSavingsPercentage)({
+                            initial: saving.expectedMonthlyAmount, currentTotal: totalUandI, startDate: saving.createdAt, endDate: saving.endingDate
+                        }),
+                        currency: saving.currency,
+                        monthlySaving: saving.expectedMonthlyAmount,
+                        totalInvestment: totalUandI,
+                        iconLink: saving.iconLink
+                    };
+                    savingsArray.push(item);
+                });
+                cabal.forEach(function (userCabal) {
+                    var cabalGroup = userCabal.cabelGroup;
+                    var item = {
+                        savingsName: cabalGroup.groupName,
+                        savingsId: cabalGroup.id,
+                        savingsType: "CABAL",
+                        startDate: cabalGroup.createdAt,
+                        endDate: cabalGroup.lockedInDate,
+                        percentageCompleted: null,
+                        currency: cabalGroup.currency,
+                        totalInvestment: userCabal.totalBalance,
+                        monthlySaving: null,
+                        iconLink: cabalGroup.iconLink
+                    };
+                    savingsArray.push(item);
+                });
+                savingsArray.sort(function (a, b) {
+                    var totalInvestmentA = a.currency === "USD" ? a.totalInvestment * (0, util_1.getCurrentDollarRate)() : a.totalInvestment;
+                    var totalInvestmentB = b.currency === "USD" ? b.totalInvestment * (0, util_1.getCurrentDollarRate)() : b.totalInvestment;
+                    return totalInvestmentB - totalInvestmentA; // 
+                });
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({
+                        res: res,
+                        data: savingsArray
+                    })];
         }
     });
 }); });

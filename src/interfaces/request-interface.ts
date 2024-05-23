@@ -15,7 +15,7 @@ export interface ISignUpForm{
 }
 
 
-export interface IOtpVerication{
+export interface IOtpVerification{
     otpCode:string
     MAILVERIFICATION:string
 }

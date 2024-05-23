@@ -1,6 +1,6 @@
 import express from "express"
 import { basicSetUpValidation, createPinValidation, credentialSignInValidation, forgotPasswordValidation, googleSignUpValidation, newDeviceValidation, otpvalidation, resendTokenValidation, resetPasswordValidation, signUpValidation, updateBvnValidation } from "../validations/authValidation"
-import { completeBasicDetail, createNewUser, forgotPassword, googleSignIn, googleSignUp, mailVerification,resetPassword, reverifyToken, userLogIn, verifyAndAddNewDevice } from "../controllers/auth/authController"
+import { completeBasicDetail, createNewUser, forgotPassword, googleSignIn, googleSignUp, mailVerification,resendForgotPassword,resetPassword, reverifyToken, userLogIn, verifyAndAddNewDevice } from "../controllers/auth/authController"
 import { createPin, credentialSignIn, updateDobAndBvn } from "../controllers/auth/authSetUpController"
 import { verifyUsers } from "../middlewares/verifyUser"
 import { verifyUserStats } from "../middlewares/verifyUserStatus"
@@ -18,6 +18,7 @@ authRoutes.route("/resend-token").post(resendTokenValidation,reverifyToken)
 // authRoutes.route("/verify-device").post(newDeviceValidation,verifyAndAddNewDevice,credentialSignIn)
 authRoutes.route("/forgot-password").post(forgotPasswordValidation,forgotPassword)
 authRoutes.route("/reset-password").post(resetPasswordValidation,resetPassword)
+authRoutes.route("/resend-forgot-password").post(resendForgotPassword,resendForgotPassword)
 authRoutes.route("/pin-setup").post(createPinValidation, verifyUsers,verifyUserStats,createPin)
 authRoutes.route("/verification-setup").post(updateBvnValidation,verifyUsers,verifyUserStats,updateDobAndBvn)
 
