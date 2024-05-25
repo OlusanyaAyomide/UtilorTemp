@@ -1,10 +1,7 @@
-import { WebhookData, WebhookData2 } from "../../interfaces/webhook.interface";
+import {  WebhookData2 } from "../../interfaces/webhook.interface";
 import prismaClient from "../../prisma/pris-client";
-import { getCurrentDollarRate } from "../../utils/util";
-import { Transaction } from "@prisma/client";
 import { manageReferralBalance } from "./hookUtility";
 import { depositIntoEmeergencySavingViaFlutterwave, depositIntoForUSavingViaFlutterwave, depositIntoMyCabalSavingViaFlutterwave, depositIntoUAndISavingViaFlutterwave } from "../savings/hookDeposits";
-import { getConvertedRate, updateTransactionStatus } from "../../utils/transactions.util";
 import { depositIntoUWalletViaFlutterwave } from "../wallet/walletController";
 
 export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {

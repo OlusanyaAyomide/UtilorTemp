@@ -142,9 +142,6 @@ var getCabalpercentage = function () {
     return 13;
 };
 exports.getCabalpercentage = getCabalpercentage;
-// Todo: Implement an enumToRegex function to help with JOI Validation
-// export function enumToRegex(enum: Enum) {
-// }
 var calculateDailyReturns = function (_a) {
     var capital = _a.capital, interest = _a.interest;
     var dayPercent = ((interest / 100) / 365);

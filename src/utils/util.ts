@@ -13,7 +13,6 @@ export function generateOTP(): string {
 
 
 
-
 export function generateMerchantID(): string {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let id = '';
@@ -95,17 +94,10 @@ export const getCabalpercentage = () =>{
   return 13
 }
 
-// Todo: Implement an enumToRegex function to help with JOI Validation
-// export function enumToRegex(enum: Enum) {
-
-// }
-
 export const calculateDailyReturns=({capital,interest}:{capital:number,interest:number})=>{
   const dayPercent = ((interest/100)/365)
   return capital * dayPercent
 }
-
-
 
 export const calculateSavingsPercentage = ({initial,currentTotal,startDate,endDate}:ICalculateDuration)=>{
   const startDateObject = new Date(startDate)
