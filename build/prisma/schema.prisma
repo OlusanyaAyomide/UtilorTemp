@@ -175,7 +175,7 @@ model USaveForU {
   endingDate            DateTime
   createdAt             DateTime               @default(now())
   iconLink              String
-  promoCode PromoCodes[]
+  promoCode USaveForUPromoCode[]
 
 }
 
@@ -215,7 +215,7 @@ model UANDI{
   endingDate            DateTime
   createdAt             DateTime               @default(now())
   iconLink              String
-  promoCode             PromoCodes[]
+  promoCode             UAndIPromoCode[]
 }
 
 
@@ -289,26 +289,52 @@ model Emergency {
   endingDate            DateTime
   createdAt             DateTime               @default(now())
   iconLink              String
-  promoCode             PromoCodes[]
+  promoCode             EmergencyPromoCode[]
 
 }
 
 
-model PromoCodes{
-    id                  String                 @id @unique() @default(uuid())
-    percentageIncrease  Float
-    product             DESCRIPTION_TYPE
-    emergency           Emergency?            @relation(fields: [emergencyId], references: [id])
-    emergencyId         String?
-    uandi               UANDI?                @relation(fields: [uandiId], references: [id])
-    uandiId             String?
-    foru                USaveForU?            @relation(fields: [forUId], references: [id])
-    forUId              String?
-    name                String                
-    createdAt           DateTime              @default(now())
-    revokedAt           DateTime
-    expiredAt           DateTime
+model PromoCodes {
+  id                  String                 @id @unique @default(uuid())
+  percentageIncrease  Float
+  product             DESCRIPTION_TYPE
+  name                String                
+  createdAt           DateTime              @default(now())
+  revokedAt           DateTime
+  expiredAt           DateTime
+  usaveForUs          USaveForUPromoCode[]  // Update to use the join table
+  emergencies         EmergencyPromoCode[]  // Update to use the join table
+  uAndIs              UAndIPromoCode[]      // Update to use the join table
 }
+
+// Join table for USaveForU and PromoCodes
+model USaveForUPromoCode {
+  usaveForUId String
+  promoCodeId String
+  usaveForU   USaveForU @relation(fields: [usaveForUId], references: [id])
+  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id])
+
+  @@id([usaveForUId, promoCodeId])  // Composite primary key
+}
+
+model EmergencyPromoCode {
+  emergencyId String
+  promoCodeId String
+  emergency   Emergency @relation(fields: [emergencyId], references: [id])
+  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id])
+
+  @@id([emergencyId, promoCodeId])  // Composite primary key
+}
+ 
+model UAndIPromoCode {
+  uAndIId String
+  promoCodeId String
+  uAndI   UANDI @relation(fields: [uAndIId], references: [id])
+  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id]) 
+
+  @@id([uAndIId, promoCodeId])  // Composite primary key  
+}
+
 
 model CronTracker{
   id                  String                 @id @unique() @default(uuid())

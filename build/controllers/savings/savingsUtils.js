@@ -134,11 +134,11 @@ exports.JoinMyCabal = (0, catch_async_1.default)(function (req, res, next) { ret
                 return [4 /*yield*/, pris_client_1.default.userCabal.findMany({
                         where: { cabalGroupId: cabalGroup === null || cabalGroup === void 0 ? void 0 : cabalGroup.id }
                     })
-                    //create a dashboard notifcation for all user in cabal
+                    //create a dashboard notification for all user in cabal
                 ];
             case 4:
                 allUsers = _a.sent();
-                //create a dashboard notifcation for all user in cabal
+                //create a dashboard notification for all user in cabal
                 return [4 /*yield*/, pris_client_1.default.notification.createMany({
                         data: allUsers.map(function (item) {
                             var _a, _b;
@@ -146,7 +146,7 @@ exports.JoinMyCabal = (0, catch_async_1.default)(function (req, res, next) { ret
                         })
                     })];
             case 5:
-                //create a dashboard notifcation for all user in cabal
+                //create a dashboard notification for all user in cabal
                 _a.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Succesfully Joined Cabal ".concat(updatedCabal.groupName) })];
         }
@@ -208,19 +208,17 @@ exports.addPromoCodeToUsave = (0, catch_async_1.default)(function (req, res, nex
                 if (!promoCode) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Promo Code invalid or has expired" })];
                 }
-                return [4 /*yield*/, pris_client_1.default.promoCodes.update({
-                        where: { id: promoCode.id },
+                //create new connection between usave and promoCode
+                return [4 /*yield*/, pris_client_1.default.uSaveForUPromoCode.create({
                         data: {
-                            foru: {
-                                connect: {
-                                    id: foru.id
-                                }
-                            }
+                            usaveForUId: foru.id,
+                            promoCodeId: promoCode.id
                         }
                     })];
             case 3:
+                //create new connection between usave and promoCode
                 _a.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Promo Code has been addeed to U savings" })];
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Promo Code has been added to U savings" })];
         }
     });
 }); });
@@ -252,17 +250,15 @@ exports.addPromoCodeToEmergency = (0, catch_async_1.default)(function (req, res,
                 if (!promoCode) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Promo Code invalid or has expired" })];
                 }
-                return [4 /*yield*/, pris_client_1.default.promoCodes.update({
-                        where: { id: promoCode.id },
+                //create new connection between emergency and promoCode
+                return [4 /*yield*/, pris_client_1.default.uSaveForUPromoCode.create({
                         data: {
-                            emergency: {
-                                connect: {
-                                    id: emergency.id
-                                }
-                            }
+                            usaveForUId: emergency.id,
+                            promoCodeId: promoCode.id
                         }
                     })];
             case 3:
+                //create new connection between emergency and promoCode
                 _a.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Promo Code has been addeed to Emergency savings" })];
         }
@@ -296,19 +292,17 @@ exports.addPromoCodeToUAndI = (0, catch_async_1.default)(function (req, res, nex
                 if (!promoCode) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Promo Code invalid or has expired" })];
                 }
-                return [4 /*yield*/, pris_client_1.default.promoCodes.update({
-                        where: { id: promoCode.id },
+                //create new connection between uAndi and promoCode
+                return [4 /*yield*/, pris_client_1.default.uSaveForUPromoCode.create({
                         data: {
-                            uandi: {
-                                connect: {
-                                    id: uandi.id
-                                }
-                            }
+                            usaveForUId: uandi.id,
+                            promoCodeId: promoCode.id
                         }
                     })];
             case 3:
+                //create new connection between uAndi and promoCode
                 _a.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Promo Code has been addeed to UAndI savings" })];
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Promo Code has been added to UAndI savings" })];
         }
     });
 }); });

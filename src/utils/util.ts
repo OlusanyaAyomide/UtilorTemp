@@ -79,7 +79,7 @@ export function getCurrentDollarRate() {
 
 
 export const getForUPercentage = ()=>{
-  return 11
+  return 10
 }
 
 export const getEmergencypercentage = ()=>{

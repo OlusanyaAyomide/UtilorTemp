@@ -14,7 +14,11 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
         const allForU = await prismaClient.uSaveForU.findMany({
             where:{isActivated:true},
             include:{
-                promoCode:true
+                promoCode:{
+                    include:{
+                        promoCode:true
+                    }
+                }
             }
         })
         const forUpercentage = getForUPercentage()
@@ -22,20 +26,21 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
         //flat multiple array as one with flatMap
         const operations = allForU.flatMap((forUWallet)=>{
             //add promocode percentage to user
-            let intrestPercentage = forUpercentage
+            let interestPercentage = forUpercentage
 
             forUWallet.promoCode.forEach((code)=>{
-                intrestPercentage += code.percentageIncrease
+                interestPercentage += code.promoCode.percentageIncrease
             })
-            console.log(intrestPercentage)
+            console.log(interestPercentage,"FORU")
             
             //update wallet with new percentage
-            const newReturns = calculateDailyReturns({capital:forUWallet.investmentCapital,interest:intrestPercentage})
+            const newReturns = calculateDailyReturns({capital:forUWallet.investmentCapital,interest:interestPercentage})
             const newTotalReturns = forUWallet.totalInvestment + newReturns
+            console.log("new Total :",newTotalReturns ,"\n", newReturns,"new Returns" )
             return[
                 prismaClient.uSaveForU.update({where:{id:forUWallet.id},
                     data:{
-                        returnOfInvestment:newReturns,
+                        returnOfInvestment:newReturns + forUWallet.returnOfInvestment ,
                         totalInvestment:newTotalReturns  
                     }
                 },     
@@ -51,20 +56,24 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
                         transactionStatus:"SUCCESS",
                         transactionType:"INTEREST",
                         paymentMethod:"UWALLET",
-                        note:`${intrestPercentage}% incerease`
+                        note:`${interestPercentage}% incerease`
                     }
                 })
             ]
         })
 
-        //update all emergency wallets simulataneously
+        //update all emergency wallets simultaneously
         await prismaClient.$transaction(operations)
 
 
         const allEmergency = await prismaClient.emergency.findMany({
             where:{isActivated:true},
             include:{
-                promoCode:true
+                promoCode:{
+                    include:{
+                        promoCode:true
+                    }
+                }
             }
         })
         const emergencypercentage = getEmergencypercentage()
@@ -72,20 +81,20 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
         //flat multiple array as one with flatMap
         const emergencyOperations = allEmergency.flatMap((emergencyWallet)=>{
             //add promocode percentage to user
-            let intrestPercentage = emergencypercentage
+            let interestPercentage = emergencypercentage
 
             emergencyWallet.promoCode.forEach((code)=>{
-                intrestPercentage += code.percentageIncrease
+                interestPercentage += code.promoCode.percentageIncrease
             })
-            console.log(intrestPercentage,"EMERGENCY")
+            console.log(interestPercentage,"EMERGENCY")
             
             //update wallet with new percentage
-            const newReturns = calculateDailyReturns({capital:emergencyWallet.investmentCapital,interest:intrestPercentage})
+            const newReturns = calculateDailyReturns({capital:emergencyWallet.investmentCapital,interest:interestPercentage})
             const newTotalReturns = emergencyWallet.totalInvestment + newReturns
             return[
                 prismaClient.emergency.update({where:{id:emergencyWallet.id},
                     data:{
-                        returnOfInvestment:newReturns,
+                        returnOfInvestment:newReturns + emergencyWallet.returnOfInvestment,
                         totalInvestment:newTotalReturns  
                     }
                 },     
@@ -101,13 +110,13 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
                         transactionStatus:"SUCCESS",
                         transactionType:"INTEREST",
                         paymentMethod:"UWALLET",
-                        note:`${intrestPercentage}% incerease`
+                        note:`${interestPercentage}% incerease`
                     }
                 })
             ]
         })
 
-        //update all wallets simulataneously
+        //update all wallets simultaneously
         await prismaClient.$transaction(emergencyOperations)
 
 
@@ -115,7 +124,11 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
         const allUandIs = await prismaClient.uANDI.findMany({
             where:{isActivated:true},
             include:{
-                promoCode:true
+                promoCode:{
+                    include:{
+                        promoCode:true
+                    }
+                }
             }
         })
 
@@ -124,16 +137,16 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
         //flat multiple array as one with flatMap
         const uandioperations = allUandIs.flatMap((uandIWallet)=>{
             //add promocode percentage to user
-            let intrestPercentage = uandIPercentage
+            let interestPercentage = uandIPercentage
 
             uandIWallet.promoCode.forEach((code)=>{
-                intrestPercentage += code.percentageIncrease
+                interestPercentage += code.promoCode.percentageIncrease
             })
-            console.log(intrestPercentage,"UANDI")
+            console.log(interestPercentage,"UANDI")
             
             //update Uand I wallet with new percentage
-            const newCreatorReturns = calculateDailyReturns({capital:uandIWallet.creatorCapital,interest:intrestPercentage})
-            const newpartnerReturns = calculateDailyReturns({capital:uandIWallet.partnerCapital,interest:intrestPercentage})
+            const newCreatorReturns = calculateDailyReturns({capital:uandIWallet.creatorCapital,interest:interestPercentage})
+            const newpartnerReturns = calculateDailyReturns({capital:uandIWallet.partnerCapital,interest:interestPercentage})
             const newTotalCapital = uandIWallet.totalCapital + newCreatorReturns + newpartnerReturns
             const newInvestmentOfReturn = uandIWallet.totalInvestmentReturn + newCreatorReturns + newpartnerReturns
             return[
@@ -158,7 +171,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
                         transactionStatus:"SUCCESS",
                         transactionType:"INTEREST",
                         paymentMethod:"UWALLET",
-                        note:`${intrestPercentage}% incerease`
+                        note:`${interestPercentage}% incerease`
                     }
                 }),
                 prismaClient.transaction.create({
@@ -172,13 +185,13 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
                         transactionStatus:"SUCCESS",
                         transactionType:"INTEREST",
                         paymentMethod:"UWALLET",
-                        note:`${intrestPercentage}% incerease`
+                        note:`${interestPercentage}% incerease`
                     }
                 })
             ]
         })
 
-        //update all emergency wallets simulataneously
+        //update all emergency wallets simultaneously
         await prismaClient.$transaction(uandioperations)
 
         //add to all userCabal
@@ -230,7 +243,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
             where:{id:cronTracker.id},
             data:{status:"SUCCESS"}
         })
-        return ResponseHandler.sendSuccessResponse({res,message:"Wallets updated successfuly"})
+        return ResponseHandler.sendSuccessResponse({res,message:"Wallets updated successfully"})
 
     }
     catch(err){

@@ -77,7 +77,7 @@ export const JoinMyCabal = catchDefaultAsync(async(req,res,next)=>{
     const allUsers = await prismaClient.userCabal.findMany({
         where:{cabalGroupId:cabalGroup?.id}
     })
-    //create a dashboard notifcation for all user in cabal
+    //create a dashboard notification for all user in cabal
     await prismaClient.notification.createMany({
         data:allUsers.map((item)=>{
             return {userId:item.userId,description:`${req.user?.firstName} ${req.user?.lastName} has joined ${updatedCabal.groupName}`}
@@ -137,18 +137,15 @@ export const addPromoCodeToUsave = catchDefaultAsync(async(req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"Promo Code invalid or has expired"})
     }
 
-    await prismaClient.promoCodes.update({
-        where:{id:promoCode.id},
+    //create new connection between usave and promoCode
+    await prismaClient.uSaveForUPromoCode.create({
         data:{
-            foru:{
-                connect:{
-                    id:foru.id
-                }
-            }
+            usaveForUId:foru.id,
+            promoCodeId:promoCode.id   
         }
     })
 
-    return ResponseHandler.sendSuccessResponse({res,message:"Promo Code has been addeed to U savings"})
+    return ResponseHandler.sendSuccessResponse({res,message:"Promo Code has been added to U savings"})
 })
 
 
@@ -175,14 +172,12 @@ export const addPromoCodeToEmergency = catchDefaultAsync(async(req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"Promo Code invalid or has expired"})
     }
 
-    await prismaClient.promoCodes.update({
-        where:{id:promoCode.id},
+
+    //create new connection between emergency and promoCode
+    await prismaClient.uSaveForUPromoCode.create({
         data:{
-            emergency:{
-                connect:{
-                    id:emergency.id
-                }
-            }
+            usaveForUId:emergency.id,
+            promoCodeId:promoCode.id   
         }
     })
 
@@ -212,16 +207,13 @@ export const addPromoCodeToUAndI = catchDefaultAsync(async(req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"Promo Code invalid or has expired"})
     }
 
-    await prismaClient.promoCodes.update({
-        where:{id:promoCode.id},
+    //create new connection between uAndi and promoCode
+    await prismaClient.uSaveForUPromoCode.create({
         data:{
-            uandi:{
-                connect:{
-                    id:uandi.id
-                }
-            }
+            usaveForUId:uandi.id,
+            promoCodeId:promoCode.id   
         }
     })
 
-    return ResponseHandler.sendSuccessResponse({res,message:"Promo Code has been addeed to UAndI savings"})
+    return ResponseHandler.sendSuccessResponse({res,message:"Promo Code has been added to UAndI savings"})
 })

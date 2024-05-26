@@ -14,19 +14,30 @@ export const getAllUserForU = catchDefaultAsync(async (req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
     }
 
-    const allForU =await prismaClient.uSaveForU.findMany({
-        where:{userId:userId},
-        include:{
-            promoCode:{
-                select:{
-                    name:true,
-                    percentageIncrease:true
-                }
-            }
-        }
-    })
+    const allForU = await prismaClient.uSaveForU.findMany({
+        where: { userId: userId },
+        include: {
+          promoCode: {
+            select: {
+              promoCode: {
+                select: {
+                  name: true,
+                  percentageIncrease: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
-    return ResponseHandler.sendSuccessResponse({res,data:allForU})
+    // Transform the result to put promoCode details into a promoCode array
+    const transformedForU = allForU.map(forU => ({
+      ...forU,
+      promoCode: forU.promoCode.map(pc => pc.promoCode),
+    }));
+
+
+    return ResponseHandler.sendSuccessResponse({res,data:transformedForU})
 })
 
 export const getSingleForU = catchDefaultAsync(async (req,res,next)=>{
@@ -38,14 +49,18 @@ export const getSingleForU = catchDefaultAsync(async (req,res,next)=>{
 
     const singleForU = await prismaClient.uSaveForU.findFirst({
         where:{id:detail},
-        include:{
-            promoCode:{
-                select:{
-                    name:true,
-                    percentageIncrease:true
-                }
-            }
-        }
+        include: {
+            promoCode: {
+              select: {
+                promoCode: {
+                  select: {
+                    name: true,
+                    percentageIncrease: true,
+                  },
+                },
+              },
+            },
+          },
     })
     if(!singleForU){
         return ResponseHandler.sendErrorResponse({res,error:"For U Id is invalid"})
@@ -54,12 +69,17 @@ export const getSingleForU = catchDefaultAsync(async (req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"Not permitted to view this savings"})
     }
 
+    const transformedForU = {
+        ...singleForU,
+        promoCode: singleForU.promoCode.map(pc => pc.promoCode),
+      };
+
     const transactions = await prismaClient.transaction.findMany({
         where:{
             featureId:singleForU.id
         }
     })
-    const data = {...singleForU,transactions}
+    const data = {...transformedForU,transactions}
 
     return ResponseHandler.sendSuccessResponse({res,data})
 })
@@ -87,16 +107,24 @@ export const getAllUserUAndI = catchDefaultAsync(async(req,res,next)=>{
         orderBy:{
             totalCapital:"desc"
         },
-        include:{
-            promoCode:{
-                select:{
-                    name:true,
-                    percentageIncrease:true
-                }
-            }
-        }
+        include: {
+            promoCode: {
+              select: {
+                promoCode: {
+                  select: {
+                    name: true,
+                    percentageIncrease: true,
+                  },
+                },
+              },
+            },
+        },
     })
-    return ResponseHandler.sendSuccessResponse({res,data:allUAndI})
+    const transformedUAndI = allUAndI.map(uAndI => ({
+        ...uAndI,
+        promoCode: uAndI.promoCode.map(pc => pc.promoCode),
+      }));
+    return ResponseHandler.sendSuccessResponse({res,data:transformedUAndI})
 
 })
 
@@ -157,19 +185,28 @@ export const getAllUserEmergency = catchDefaultAsync(async (req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
     }
 
-    const allForU =await prismaClient.emergency.findMany({
+    const allEmergency =await prismaClient.emergency.findMany({
         where:{userId:userId},
-        include:{
-            promoCode:{
-                select:{
-                    name:true,
-                    percentageIncrease:true
-                }
-            }
-        }
+        include: {
+            promoCode: {
+              select: {
+                promoCode: {
+                  select: {
+                    name: true,
+                    percentageIncrease: true,
+                  },
+                },
+              },
+            },
+          },
     })
 
-    return ResponseHandler.sendSuccessResponse({res,data:allForU})
+    const transformedEmergency = allEmergency.map(emergency => ({
+        ...emergency,
+        promoCode: emergency.promoCode.map(pc => pc.promoCode),
+      }));
+
+    return ResponseHandler.sendSuccessResponse({res,data:transformedEmergency})
 })
 
 
@@ -182,17 +219,21 @@ export const getSingleEmergency = catchDefaultAsync(async (req,res,next)=>{
 
     const singleEmergency = await prismaClient.emergency.findFirst({
         where:{id:detail},
-        include:{
-            promoCode:{
-                select:{
-                    name:true,
-                    percentageIncrease:true
-                }
-            }
-        }
+        include: {
+            promoCode: {
+              select: {
+                promoCode: {
+                  select: {
+                    name: true,
+                    percentageIncrease: true,
+                  },
+                },
+              },
+            },
+          },
     })
     if(!singleEmergency){
-        return ResponseHandler.sendErrorResponse({res,error:"For U Id is invalid"})
+        return ResponseHandler.sendErrorResponse({res,error:"Emergency Id is invalid"})
     }
     if(singleEmergency.userId !== req.user?.userId){
         return ResponseHandler.sendErrorResponse({res,error:"Not permitted to view this savings"})
@@ -203,7 +244,12 @@ export const getSingleEmergency = catchDefaultAsync(async (req,res,next)=>{
             featureId:singleEmergency.id
         }
     })
-    const data = {...singleEmergency,transactions}
+
+    const transformedEmergency = {
+        ...singleEmergency,
+        promoCode: singleEmergency.promoCode.map(pc => pc.promoCode),
+      };
+    const data = {...transformedEmergency,transactions}
 
     return ResponseHandler.sendSuccessResponse({res,data})
 })

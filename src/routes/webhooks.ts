@@ -1,5 +1,5 @@
 import express from "express"
-import { verifyHook } from "../controllers/hooks/verifyHook"
+import { verifyHook } from "../controllers/webhooks/verifyHook"
 import { WebhookData } from "../interfaces/webhook.interface"
 
 

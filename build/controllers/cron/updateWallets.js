@@ -61,7 +61,11 @@ function updateWallets(req, res, next) {
                     return [4 /*yield*/, pris_client_1.default.uSaveForU.findMany({
                             where: { isActivated: true },
                             include: {
-                                promoCode: true
+                                promoCode: {
+                                    include: {
+                                        promoCode: true
+                                    }
+                                }
                             }
                         })];
                 case 3:
@@ -69,18 +73,19 @@ function updateWallets(req, res, next) {
                     forUpercentage_1 = (0, util_1.getForUPercentage)();
                     operations = allForU.flatMap(function (forUWallet) {
                         //add promocode percentage to user
-                        var intrestPercentage = forUpercentage_1;
+                        var interestPercentage = forUpercentage_1;
                         forUWallet.promoCode.forEach(function (code) {
-                            intrestPercentage += code.percentageIncrease;
+                            interestPercentage += code.promoCode.percentageIncrease;
                         });
-                        console.log(intrestPercentage);
+                        console.log(interestPercentage, "FORU");
                         //update wallet with new percentage
-                        var newReturns = (0, util_1.calculateDailyReturns)({ capital: forUWallet.investmentCapital, interest: intrestPercentage });
+                        var newReturns = (0, util_1.calculateDailyReturns)({ capital: forUWallet.investmentCapital, interest: interestPercentage });
                         var newTotalReturns = forUWallet.totalInvestment + newReturns;
+                        console.log("new Total :", newTotalReturns, "\n", newReturns, "new Returns");
                         return [
                             pris_client_1.default.uSaveForU.update({ where: { id: forUWallet.id },
                                 data: {
-                                    returnOfInvestment: newReturns,
+                                    returnOfInvestment: newReturns + forUWallet.returnOfInvestment,
                                     totalInvestment: newTotalReturns
                                 }
                             }),
@@ -95,20 +100,24 @@ function updateWallets(req, res, next) {
                                     transactionStatus: "SUCCESS",
                                     transactionType: "INTEREST",
                                     paymentMethod: "UWALLET",
-                                    note: "".concat(intrestPercentage, "% incerease")
+                                    note: "".concat(interestPercentage, "% incerease")
                                 }
                             })
                         ];
                     });
-                    //update all emergency wallets simulataneously
+                    //update all emergency wallets simultaneously
                     return [4 /*yield*/, pris_client_1.default.$transaction(operations)];
                 case 4:
-                    //update all emergency wallets simulataneously
+                    //update all emergency wallets simultaneously
                     _a.sent();
                     return [4 /*yield*/, pris_client_1.default.emergency.findMany({
                             where: { isActivated: true },
                             include: {
-                                promoCode: true
+                                promoCode: {
+                                    include: {
+                                        promoCode: true
+                                    }
+                                }
                             }
                         })];
                 case 5:
@@ -116,18 +125,18 @@ function updateWallets(req, res, next) {
                     emergencypercentage_1 = (0, util_1.getEmergencypercentage)();
                     emergencyOperations = allEmergency.flatMap(function (emergencyWallet) {
                         //add promocode percentage to user
-                        var intrestPercentage = emergencypercentage_1;
+                        var interestPercentage = emergencypercentage_1;
                         emergencyWallet.promoCode.forEach(function (code) {
-                            intrestPercentage += code.percentageIncrease;
+                            interestPercentage += code.promoCode.percentageIncrease;
                         });
-                        console.log(intrestPercentage, "EMERGENCY");
+                        console.log(interestPercentage, "EMERGENCY");
                         //update wallet with new percentage
-                        var newReturns = (0, util_1.calculateDailyReturns)({ capital: emergencyWallet.investmentCapital, interest: intrestPercentage });
+                        var newReturns = (0, util_1.calculateDailyReturns)({ capital: emergencyWallet.investmentCapital, interest: interestPercentage });
                         var newTotalReturns = emergencyWallet.totalInvestment + newReturns;
                         return [
                             pris_client_1.default.emergency.update({ where: { id: emergencyWallet.id },
                                 data: {
-                                    returnOfInvestment: newReturns,
+                                    returnOfInvestment: newReturns + emergencyWallet.returnOfInvestment,
                                     totalInvestment: newTotalReturns
                                 }
                             }),
@@ -142,20 +151,24 @@ function updateWallets(req, res, next) {
                                     transactionStatus: "SUCCESS",
                                     transactionType: "INTEREST",
                                     paymentMethod: "UWALLET",
-                                    note: "".concat(intrestPercentage, "% incerease")
+                                    note: "".concat(interestPercentage, "% incerease")
                                 }
                             })
                         ];
                     });
-                    //update all wallets simulataneously
+                    //update all wallets simultaneously
                     return [4 /*yield*/, pris_client_1.default.$transaction(emergencyOperations)];
                 case 6:
-                    //update all wallets simulataneously
+                    //update all wallets simultaneously
                     _a.sent();
                     return [4 /*yield*/, pris_client_1.default.uANDI.findMany({
                             where: { isActivated: true },
                             include: {
-                                promoCode: true
+                                promoCode: {
+                                    include: {
+                                        promoCode: true
+                                    }
+                                }
                             }
                         })];
                 case 7:
@@ -163,14 +176,14 @@ function updateWallets(req, res, next) {
                     uandIPercentage_1 = (0, util_1.getUAndIPercentage)();
                     uandioperations = allUandIs.flatMap(function (uandIWallet) {
                         //add promocode percentage to user
-                        var intrestPercentage = uandIPercentage_1;
+                        var interestPercentage = uandIPercentage_1;
                         uandIWallet.promoCode.forEach(function (code) {
-                            intrestPercentage += code.percentageIncrease;
+                            interestPercentage += code.promoCode.percentageIncrease;
                         });
-                        console.log(intrestPercentage, "UANDI");
+                        console.log(interestPercentage, "UANDI");
                         //update Uand I wallet with new percentage
-                        var newCreatorReturns = (0, util_1.calculateDailyReturns)({ capital: uandIWallet.creatorCapital, interest: intrestPercentage });
-                        var newpartnerReturns = (0, util_1.calculateDailyReturns)({ capital: uandIWallet.partnerCapital, interest: intrestPercentage });
+                        var newCreatorReturns = (0, util_1.calculateDailyReturns)({ capital: uandIWallet.creatorCapital, interest: interestPercentage });
+                        var newpartnerReturns = (0, util_1.calculateDailyReturns)({ capital: uandIWallet.partnerCapital, interest: interestPercentage });
                         var newTotalCapital = uandIWallet.totalCapital + newCreatorReturns + newpartnerReturns;
                         var newInvestmentOfReturn = uandIWallet.totalInvestmentReturn + newCreatorReturns + newpartnerReturns;
                         return [
@@ -194,7 +207,7 @@ function updateWallets(req, res, next) {
                                     transactionStatus: "SUCCESS",
                                     transactionType: "INTEREST",
                                     paymentMethod: "UWALLET",
-                                    note: "".concat(intrestPercentage, "% incerease")
+                                    note: "".concat(interestPercentage, "% incerease")
                                 }
                             }),
                             pris_client_1.default.transaction.create({
@@ -208,17 +221,17 @@ function updateWallets(req, res, next) {
                                     transactionStatus: "SUCCESS",
                                     transactionType: "INTEREST",
                                     paymentMethod: "UWALLET",
-                                    note: "".concat(intrestPercentage, "% incerease")
+                                    note: "".concat(interestPercentage, "% incerease")
                                 }
                             })
                         ];
                     });
-                    //update all emergency wallets simulataneously
+                    //update all emergency wallets simultaneously
                     return [4 /*yield*/, pris_client_1.default.$transaction(uandioperations)
                         //add to all userCabal
                     ];
                 case 8:
-                    //update all emergency wallets simulataneously
+                    //update all emergency wallets simultaneously
                     _a.sent();
                     return [4 /*yield*/, pris_client_1.default.cabalGroup.findMany({
                             where: {
@@ -272,7 +285,7 @@ function updateWallets(req, res, next) {
                         })];
                 case 11:
                     _a.sent();
-                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Wallets updated successfuly" })];
+                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Wallets updated successfully" })];
                 case 12:
                     err_1 = _a.sent();
                     return [4 /*yield*/, pris_client_1.default.cronTracker.update({

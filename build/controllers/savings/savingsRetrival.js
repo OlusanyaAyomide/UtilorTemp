@@ -56,7 +56,7 @@ var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var util_1 = require("../../utils/util");
 exports.getAllUserForU = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, allForU;
+    var userId, allForU, transformedForU;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -70,20 +70,25 @@ exports.getAllUserForU = (0, catch_async_1.default)(function (req, res, next) { 
                         include: {
                             promoCode: {
                                 select: {
-                                    name: true,
-                                    percentageIncrease: true
-                                }
-                            }
-                        }
+                                    promoCode: {
+                                        select: {
+                                            name: true,
+                                            percentageIncrease: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     })];
             case 1:
                 allForU = _b.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: allForU })];
+                transformedForU = allForU.map(function (forU) { return (__assign(__assign({}, forU), { promoCode: forU.promoCode.map(function (pc) { return pc.promoCode; }) })); });
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: transformedForU })];
         }
     });
 }); });
 exports.getSingleForU = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var detail, singleForU, transactions, data;
+    var detail, singleForU, transformedForU, transactions, data;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -97,11 +102,15 @@ exports.getSingleForU = (0, catch_async_1.default)(function (req, res, next) { r
                         include: {
                             promoCode: {
                                 select: {
-                                    name: true,
-                                    percentageIncrease: true
-                                }
-                            }
-                        }
+                                    promoCode: {
+                                        select: {
+                                            name: true,
+                                            percentageIncrease: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     })];
             case 1:
                 singleForU = _b.sent();
@@ -111,6 +120,7 @@ exports.getSingleForU = (0, catch_async_1.default)(function (req, res, next) { r
                 if (singleForU.userId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not permitted to view this savings" })];
                 }
+                transformedForU = __assign(__assign({}, singleForU), { promoCode: singleForU.promoCode.map(function (pc) { return pc.promoCode; }) });
                 return [4 /*yield*/, pris_client_1.default.transaction.findMany({
                         where: {
                             featureId: singleForU.id
@@ -118,14 +128,14 @@ exports.getSingleForU = (0, catch_async_1.default)(function (req, res, next) { r
                     })];
             case 2:
                 transactions = _b.sent();
-                data = __assign(__assign({}, singleForU), { transactions: transactions });
+                data = __assign(__assign({}, transformedForU), { transactions: transactions });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: data })];
         }
     });
 }); });
 //get all UandI where the user is either the creator or the partner
 exports.getAllUserUAndI = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, allUAndI;
+    var userId, allUAndI, transformedUAndI;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -151,15 +161,20 @@ exports.getAllUserUAndI = (0, catch_async_1.default)(function (req, res, next) {
                         include: {
                             promoCode: {
                                 select: {
-                                    name: true,
-                                    percentageIncrease: true
-                                }
-                            }
-                        }
+                                    promoCode: {
+                                        select: {
+                                            name: true,
+                                            percentageIncrease: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     })];
             case 1:
                 allUAndI = _b.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: allUAndI })];
+                transformedUAndI = allUAndI.map(function (uAndI) { return (__assign(__assign({}, uAndI), { promoCode: uAndI.promoCode.map(function (pc) { return pc.promoCode; }) })); });
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: transformedUAndI })];
         }
     });
 }); });
@@ -217,7 +232,7 @@ exports.getAllCabalUsers = (0, catch_async_1.default)(function (req, res, next) 
     });
 }); });
 exports.getAllUserEmergency = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, allForU;
+    var userId, allEmergency, transformedEmergency;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -231,20 +246,25 @@ exports.getAllUserEmergency = (0, catch_async_1.default)(function (req, res, nex
                         include: {
                             promoCode: {
                                 select: {
-                                    name: true,
-                                    percentageIncrease: true
-                                }
-                            }
-                        }
+                                    promoCode: {
+                                        select: {
+                                            name: true,
+                                            percentageIncrease: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     })];
             case 1:
-                allForU = _b.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: allForU })];
+                allEmergency = _b.sent();
+                transformedEmergency = allEmergency.map(function (emergency) { return (__assign(__assign({}, emergency), { promoCode: emergency.promoCode.map(function (pc) { return pc.promoCode; }) })); });
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: transformedEmergency })];
         }
     });
 }); });
 exports.getSingleEmergency = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var detail, singleEmergency, transactions, data;
+    var detail, singleEmergency, transactions, transformedEmergency, data;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -258,16 +278,20 @@ exports.getSingleEmergency = (0, catch_async_1.default)(function (req, res, next
                         include: {
                             promoCode: {
                                 select: {
-                                    name: true,
-                                    percentageIncrease: true
-                                }
-                            }
-                        }
+                                    promoCode: {
+                                        select: {
+                                            name: true,
+                                            percentageIncrease: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     })];
             case 1:
                 singleEmergency = _b.sent();
                 if (!singleEmergency) {
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "For U Id is invalid" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Emergency Id is invalid" })];
                 }
                 if (singleEmergency.userId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not permitted to view this savings" })];
@@ -279,7 +303,8 @@ exports.getSingleEmergency = (0, catch_async_1.default)(function (req, res, next
                     })];
             case 2:
                 transactions = _b.sent();
-                data = __assign(__assign({}, singleEmergency), { transactions: transactions });
+                transformedEmergency = __assign(__assign({}, singleEmergency), { promoCode: singleEmergency.promoCode.map(function (pc) { return pc.promoCode; }) });
+                data = __assign(__assign({}, transformedEmergency), { transactions: transactions });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: data })];
         }
     });

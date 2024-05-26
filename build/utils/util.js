@@ -127,7 +127,7 @@ function getCurrentDollarRate() {
 }
 exports.getCurrentDollarRate = getCurrentDollarRate;
 var getForUPercentage = function () {
-    return 11;
+    return 10;
 };
 exports.getForUPercentage = getForUPercentage;
 var getEmergencypercentage = function () {
