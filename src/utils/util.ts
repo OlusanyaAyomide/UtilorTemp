@@ -77,21 +77,28 @@ export function getCurrentDollarRate() {
   return 1200.00;
 }
 
+function getRandomNumberBetween(min:number, max:number):number {
+  if (min > max) {
+    throw new Error('The min value must be less than or equal to the max value.');
+  }
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 
 export const getForUPercentage = ()=>{
-  return 10
+  return getRandomNumberBetween(9,15)
 }
 
 export const getEmergencypercentage = ()=>{
-  return 12
+  return getRandomNumberBetween(12,16)
 }
 
 export const getUAndIPercentage = () =>{
-  return 14
+  return getRandomNumberBetween(13,18)
 }
 
 export const getCabalpercentage = () =>{
-  return 13
+  return getRandomNumberBetween(12,15)
 }
 
 export const calculateDailyReturns=({capital,interest}:{capital:number,interest:number})=>{
