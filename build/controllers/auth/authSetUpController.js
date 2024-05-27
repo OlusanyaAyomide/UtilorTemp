@@ -67,7 +67,7 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                     })];
             case 1:
                 newOtpObject = _a.sent();
-                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: (user === null || user === void 0 ? void 0 : user.email) || "", subject: "Utilor Sign up code", body: otpCode, name: "Utilor Verifcation" })
+                return [4 /*yield*/, (0, send_mail_1.mailSender)({ to: (user === null || user === void 0 ? void 0 : user.email) || "", subject: "Utilor Sign up code", body: otpCode, name: "Utilor Verification" })
                     //set otpId to user response cookie 
                     // setCookie({res,name:"MAILVERIFICATION",value:newOtpObject.id})
                 ];
@@ -100,7 +100,7 @@ exports.credentialSignIn = (0, catch_async_1.default)(function (req, res, next) 
                 //             type:"DEVICEVERIFCATION"
                 //         }
                 //     })
-                //     await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
+                //     await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identity"})
                 //     setCookie({res,name:"identityToken",value:newDeviceOtp.id})
                 //     return ResponseHandler.sendErrorResponse({res,error:"Verify device",code:403,status_code:"VERIFY_DEVICE"})
                 // }
