@@ -306,7 +306,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                         where: { id: uAndISaving.id },
                         data: {
                             creatorCapital: { increment: depositAmount },
-                            totalCapital: { increment: depositAmount },
+                            totalInvestmentFund: { increment: depositAmount },
                             isActivated: true
                         }
                     })];
@@ -317,7 +317,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     where: { id: uAndISaving.id },
                     data: {
                         partnerCapital: { increment: depositAmount },
-                        totalCapital: { increment: depositAmount },
+                        totalInvestmentFund: { increment: depositAmount },
                         isActivated: true
                     }
                 })];
@@ -352,7 +352,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                         message: "U And I account \"".concat(uAndISaving.Savingsname, "\" successfully funded from U-Wallet"),
                         data: {
                             uWalletBalance: updateUWallet.balance,
-                            UAndIBalance: updatedUAndI.totalCapital
+                            UAndIBalance: updatedUAndI.totalInvestmentFund
                         }
                     })];
             case 16:

@@ -195,7 +195,7 @@ model UANDI{
   id   String   @id @unique() @default(uuid())
   creatorCapital Float    @default(0)
   partnerCapital Float    @default(0)
-  totalCapital Float  @default(0)
+  totalInvestmentFund Float  @default(0)
   creatorInvestmentReturn Float @default(0)
   partnerInvestmentReturn Float @default(0)
   totalInvestmentReturn Float @default(0)

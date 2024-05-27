@@ -160,7 +160,7 @@ var depositIntoUAndISavingViaFlutterwave = function (dataFromWebhook, transactio
                         where: { id: uAndISaving.id },
                         data: {
                             creatorCapital: { increment: depositAmount },
-                            totalCapital: { increment: depositAmount },
+                            totalInvestmentFund: { increment: depositAmount },
                             isActivated: true
                         }
                     })];
@@ -171,7 +171,7 @@ var depositIntoUAndISavingViaFlutterwave = function (dataFromWebhook, transactio
                     where: { id: uAndISaving.id },
                     data: {
                         partnerCapital: { increment: depositAmount },
-                        totalCapital: { increment: depositAmount },
+                        totalInvestmentFund: { increment: depositAmount },
                         isActivated: true
                     }
                 })];

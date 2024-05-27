@@ -36,6 +36,12 @@ export const getAllUserForU = catchDefaultAsync(async (req,res,next)=>{
       promoCode: forU.promoCode.map(pc => pc.promoCode),
     }));
 
+    transformedForU.sort((a, b) => {
+        const totalInvestmentA = a.currency === "USD" ? a.totalInvestment * getCurrentDollarRate() : a.totalInvestment;
+        const totalInvestmentB = b.currency === "USD" ? b.totalInvestment * getCurrentDollarRate() : b.totalInvestment;
+        return totalInvestmentB - totalInvestmentA; // 
+    });
+
 
     return ResponseHandler.sendSuccessResponse({res,data:transformedForU})
 })
@@ -79,6 +85,8 @@ export const getSingleForU = catchDefaultAsync(async (req,res,next)=>{
             featureId:singleForU.id
         }
     })
+
+    
     const data = {...transformedForU,transactions}
 
     return ResponseHandler.sendSuccessResponse({res,data})
@@ -105,7 +113,7 @@ export const getAllUserUAndI = catchDefaultAsync(async(req,res,next)=>{
             ]
         },
         orderBy:{
-            totalCapital:"desc"
+            totalInvestmentFund:"desc"
         },
         include: {
             promoCode: {
@@ -124,6 +132,11 @@ export const getAllUserUAndI = catchDefaultAsync(async(req,res,next)=>{
         ...uAndI,
         promoCode: uAndI.promoCode.map(pc => pc.promoCode),
       }));
+      transformedUAndI.sort((a, b) => {
+        const totalInvestmentA = a.currency === "USD" ? a.totalInvestmentFund * getCurrentDollarRate() : a.totalInvestmentFund;
+        const totalInvestmentB = b.currency === "USD" ? b.totalInvestmentFund * getCurrentDollarRate() : b.totalInvestmentFund;
+        return totalInvestmentB - totalInvestmentA; // 
+    });
     return ResponseHandler.sendSuccessResponse({res,data:transformedUAndI})
 
 })
@@ -205,6 +218,12 @@ export const getAllUserEmergency = catchDefaultAsync(async (req,res,next)=>{
         ...emergency,
         promoCode: emergency.promoCode.map(pc => pc.promoCode),
       }));
+
+      transformedEmergency.sort((a, b) => {
+        const totalInvestmentA = a.currency === "USD" ? a.totalInvestment * getCurrentDollarRate() : a.totalInvestment;
+        const totalInvestmentB = b.currency === "USD" ? b.totalInvestment * getCurrentDollarRate() : b.totalInvestment;
+        return totalInvestmentB - totalInvestmentA; // 
+    });
 
     return ResponseHandler.sendSuccessResponse({res,data:transformedEmergency})
 })
@@ -430,7 +449,7 @@ export const getSavingsList = catchDefaultAsync(async(req,res,next)=>{
     })
     
     uandI.forEach((saving)=>{
-        const totalUandI = saving.partnerCapital + saving.totalCapital + saving.totalInvestmentReturn
+        const totalUandI = saving.partnerCapital + saving.totalInvestmentFund + saving.totalInvestmentReturn
         const item:SavingsArrayData={
             savingsName:saving.Savingsname,
             savingsId:saving.id, 

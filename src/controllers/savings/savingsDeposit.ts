@@ -291,7 +291,7 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
                 where: {id: uAndISaving.id},
                 data: {
                     creatorCapital:{increment:depositAmount},
-                    totalCapital:{increment:depositAmount},
+                    totalInvestmentFund:{increment:depositAmount},
                     isActivated:true
               }
             });
@@ -301,7 +301,7 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
                 where: {id: uAndISaving.id},
                 data: {
                     partnerCapital:{increment:depositAmount},
-                    totalCapital:{increment:depositAmount},
+                    totalInvestmentFund:{increment:depositAmount},
                     isActivated:true
               }
             })
@@ -326,7 +326,7 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
             message: `U And I account "${uAndISaving.Savingsname}" successfully funded from U-Wallet`,
             data: {
                 uWalletBalance: updateUWallet.balance,
-                UAndIBalance: updatedUAndI.totalCapital
+                UAndIBalance: updatedUAndI.totalInvestmentFund
             }
         })
     }

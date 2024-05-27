@@ -126,20 +126,26 @@ function getCurrentDollarRate() {
     return 1200.00;
 }
 exports.getCurrentDollarRate = getCurrentDollarRate;
+function getRandomNumberBetween(min, max) {
+    if (min > max) {
+        throw new Error('The min value must be less than or equal to the max value.');
+    }
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 var getForUPercentage = function () {
-    return 10;
+    return getRandomNumberBetween(9, 15);
 };
 exports.getForUPercentage = getForUPercentage;
 var getEmergencypercentage = function () {
-    return 12;
+    return getRandomNumberBetween(12, 16);
 };
 exports.getEmergencypercentage = getEmergencypercentage;
 var getUAndIPercentage = function () {
-    return 14;
+    return getRandomNumberBetween(13, 18);
 };
 exports.getUAndIPercentage = getUAndIPercentage;
 var getCabalpercentage = function () {
-    return 13;
+    return getRandomNumberBetween(12, 15);
 };
 exports.getCabalpercentage = getCabalpercentage;
 var calculateDailyReturns = function (_a) {

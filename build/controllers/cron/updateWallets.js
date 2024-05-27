@@ -184,7 +184,7 @@ function updateWallets(req, res, next) {
                         //update Uand I wallet with new percentage
                         var newCreatorReturns = (0, util_1.calculateDailyReturns)({ capital: uandIWallet.creatorCapital, interest: interestPercentage });
                         var newpartnerReturns = (0, util_1.calculateDailyReturns)({ capital: uandIWallet.partnerCapital, interest: interestPercentage });
-                        var newTotalCapital = uandIWallet.totalCapital + newCreatorReturns + newpartnerReturns;
+                        var newtotalInvestmentFund = uandIWallet.totalInvestmentFund + newCreatorReturns + newpartnerReturns;
                         var newInvestmentOfReturn = uandIWallet.totalInvestmentReturn + newCreatorReturns + newpartnerReturns;
                         return [
                             pris_client_1.default.uANDI.update({ where: { id: uandIWallet.id },
@@ -192,7 +192,7 @@ function updateWallets(req, res, next) {
                                     creatorInvestmentReturn: newCreatorReturns + uandIWallet.creatorInvestmentReturn,
                                     partnerInvestmentReturn: newpartnerReturns + uandIWallet.partnerInvestmentReturn,
                                     totalInvestmentReturn: newInvestmentOfReturn,
-                                    totalCapital: newTotalCapital
+                                    totalInvestmentFund: newtotalInvestmentFund
                                 }
                             }),
                             //create two transactions for creator and partner

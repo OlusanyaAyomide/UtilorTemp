@@ -147,7 +147,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
             //update Uand I wallet with new percentage
             const newCreatorReturns = calculateDailyReturns({capital:uandIWallet.creatorCapital,interest:interestPercentage})
             const newpartnerReturns = calculateDailyReturns({capital:uandIWallet.partnerCapital,interest:interestPercentage})
-            const newTotalCapital = uandIWallet.totalCapital + newCreatorReturns + newpartnerReturns
+            const newtotalInvestmentFund = uandIWallet.totalInvestmentFund + newCreatorReturns + newpartnerReturns
             const newInvestmentOfReturn = uandIWallet.totalInvestmentReturn + newCreatorReturns + newpartnerReturns
             return[
                 prismaClient.uANDI.update({where:{id:uandIWallet.id},
@@ -155,7 +155,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
                         creatorInvestmentReturn:newCreatorReturns + uandIWallet.creatorInvestmentReturn,
                         partnerInvestmentReturn:newpartnerReturns + uandIWallet.partnerInvestmentReturn,
                         totalInvestmentReturn:newInvestmentOfReturn,
-                        totalCapital:newTotalCapital
+                        totalInvestmentFund:newtotalInvestmentFund
                     }
                 },     
                 ),

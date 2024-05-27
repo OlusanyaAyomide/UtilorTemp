@@ -83,6 +83,11 @@ exports.getAllUserForU = (0, catch_async_1.default)(function (req, res, next) { 
             case 1:
                 allForU = _b.sent();
                 transformedForU = allForU.map(function (forU) { return (__assign(__assign({}, forU), { promoCode: forU.promoCode.map(function (pc) { return pc.promoCode; }) })); });
+                transformedForU.sort(function (a, b) {
+                    var totalInvestmentA = a.currency === "USD" ? a.totalInvestment * (0, util_1.getCurrentDollarRate)() : a.totalInvestment;
+                    var totalInvestmentB = b.currency === "USD" ? b.totalInvestment * (0, util_1.getCurrentDollarRate)() : b.totalInvestment;
+                    return totalInvestmentB - totalInvestmentA; // 
+                });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: transformedForU })];
         }
     });
@@ -156,7 +161,7 @@ exports.getAllUserUAndI = (0, catch_async_1.default)(function (req, res, next) {
                             ]
                         },
                         orderBy: {
-                            totalCapital: "desc"
+                            totalInvestmentFund: "desc"
                         },
                         include: {
                             promoCode: {
@@ -174,6 +179,11 @@ exports.getAllUserUAndI = (0, catch_async_1.default)(function (req, res, next) {
             case 1:
                 allUAndI = _b.sent();
                 transformedUAndI = allUAndI.map(function (uAndI) { return (__assign(__assign({}, uAndI), { promoCode: uAndI.promoCode.map(function (pc) { return pc.promoCode; }) })); });
+                transformedUAndI.sort(function (a, b) {
+                    var totalInvestmentA = a.currency === "USD" ? a.totalInvestmentFund * (0, util_1.getCurrentDollarRate)() : a.totalInvestmentFund;
+                    var totalInvestmentB = b.currency === "USD" ? b.totalInvestmentFund * (0, util_1.getCurrentDollarRate)() : b.totalInvestmentFund;
+                    return totalInvestmentB - totalInvestmentA; // 
+                });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: transformedUAndI })];
         }
     });
@@ -259,6 +269,11 @@ exports.getAllUserEmergency = (0, catch_async_1.default)(function (req, res, nex
             case 1:
                 allEmergency = _b.sent();
                 transformedEmergency = allEmergency.map(function (emergency) { return (__assign(__assign({}, emergency), { promoCode: emergency.promoCode.map(function (pc) { return pc.promoCode; }) })); });
+                transformedEmergency.sort(function (a, b) {
+                    var totalInvestmentA = a.currency === "USD" ? a.totalInvestment * (0, util_1.getCurrentDollarRate)() : a.totalInvestment;
+                    var totalInvestmentB = b.currency === "USD" ? b.totalInvestment * (0, util_1.getCurrentDollarRate)() : b.totalInvestment;
+                    return totalInvestmentB - totalInvestmentA; // 
+                });
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: transformedEmergency })];
         }
     });
@@ -501,7 +516,7 @@ exports.getSavingsList = (0, catch_async_1.default)(function (req, res, next) { 
                     savingsArray.push(item);
                 });
                 uandI.forEach(function (saving) {
-                    var totalUandI = saving.partnerCapital + saving.totalCapital + saving.totalInvestmentReturn;
+                    var totalUandI = saving.partnerCapital + saving.totalInvestmentFund + saving.totalInvestmentReturn;
                     var item = {
                         savingsName: saving.Savingsname,
                         savingsId: saving.id,

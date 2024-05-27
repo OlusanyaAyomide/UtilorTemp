@@ -101,12 +101,9 @@ exports.createNewUser = (0, catch_async_1.default)(function (req, res, next) { r
                             type: "MAILVERIFICATION",
                             expiredTime: (0, util_1.getTimeFromNow)(Number(process.env.OTP_EXPIRY_MINUTE))
                         }
-                    })
-                    // setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
-                ];
+                    })];
             case 6:
                 otpObject = _a.sent();
-                // setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Verification sent to email", data: {
                             MAILVERIFICATION: otpObject.id
                         } })];
@@ -147,14 +144,14 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                             isMailVerified: true
                         },
                     })
-                    //delete verifcation token from cookie
+                    //delete verification token from cookie
                     // res.clearCookie("MAILVERIFICATION")
                     //delete all OTp associated with user
                 ];
             case 2:
                 //update user mail verification status to true
                 _b.sent();
-                //delete verifcation token from cookie
+                //delete verification token from cookie
                 // res.clearCookie("MAILVERIFICATION")
                 //delete all OTp associated with user
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.deleteMany({
@@ -165,7 +162,7 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                     //add device to list of user Devices
                 ];
             case 3:
-                //delete verifcation token from cookie
+                //delete verification token from cookie
                 // res.clearCookie("MAILVERIFICATION")
                 //delete all OTp associated with user
                 _b.sent();
@@ -178,14 +175,14 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                     })];
             case 4:
                 _b.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Email succesfully verfied", data: {
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Email successfully verified", data: {
                             email: otpVerification.user.email,
                         } })];
         }
     });
 }); });
 exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, firstName, lastName, password, phoneNumber, merchantID, email, existingUser, referredByUser, hashedPassword, user, newuserWallet, referalUserWallet;
+    var _a, firstName, lastName, password, phoneNumber, merchantID, email, existingUser, referredByUser, hashedPassword, user, newuserWallet, referralUserWallet;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -272,12 +269,12 @@ exports.completeBasicDetail = (0, catch_async_1.default)(function (req, res, nex
                         where: { userId: referredByUser.id, currency: "NGN" },
                     })];
             case 9:
-                referalUserWallet = _b.sent();
-                if (!referalUserWallet) {
+                referralUserWallet = _b.sent();
+                if (!referralUserWallet) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Corresponding wallet is not found" })];
                 }
                 return [4 /*yield*/, pris_client_1.default.uWallet.update({
-                        where: { id: referalUserWallet.id },
+                        where: { id: referralUserWallet.id },
                         data: {
                             referralBalance: { increment: TempRates_1.referralAmount }
                         }

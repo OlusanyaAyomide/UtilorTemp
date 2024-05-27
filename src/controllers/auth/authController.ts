@@ -10,7 +10,6 @@ import { setAuthCredentials } from "../../utils/credentials-setup";
 import { generateDeviceId } from "../../utils/clientDevice";
 import type { User } from "@prisma/client";
 import { referralAmount } from "../../utils/TempRates";
-import { setCookie } from "../../utils/CookieService";
 
 
 export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
@@ -56,7 +55,6 @@ export const createNewUser = catchDefaultAsync(async(req,res,next)=>{
             expiredTime:getTimeFromNow(Number(process.env.OTP_EXPIRY_MINUTE))
         }
     })
-    // setCookie({res,name:"MAILVERIFICATION",value:otpObject.id})
 
     return ResponseHandler.sendSuccessResponse({res,message:"Verification sent to email",data:{
         MAILVERIFICATION:otpObject.id
@@ -99,7 +97,7 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
         },
     })
 
-    //delete verifcation token from cookie
+    //delete verification token from cookie
 
     // res.clearCookie("MAILVERIFICATION")
  
@@ -121,7 +119,7 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
         }
     })
     
-    return ResponseHandler.sendSuccessResponse({res,message:"Email succesfully verfied",data:{
+    return ResponseHandler.sendSuccessResponse({res,message:"Email successfully verified",data:{
         email:otpVerification.user.email,
     }})
 
@@ -197,15 +195,15 @@ export const completeBasicDetail = catchDefaultAsync(async (req,res,next)=>{
         })
 
         //update user "that referred new user" wallet
-        const referalUserWallet = await prismaClient.uWallet.findFirst({
+        const referralUserWallet = await prismaClient.uWallet.findFirst({
             where:{userId:referredByUser.id,currency:"NGN"},
         })
        
-        if(!referalUserWallet){
+        if(!referralUserWallet){
             return ResponseHandler.sendErrorResponse({res,error:"Corresponding wallet is not found"})
         }
         await prismaClient.uWallet.update({
-            where:{id:referalUserWallet.id},
+            where:{id:referralUserWallet.id},
             data:{
                 referralBalance:{increment:referralAmount}
             }
