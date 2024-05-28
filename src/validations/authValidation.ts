@@ -155,7 +155,7 @@ export async function newDeviceValidation(req:Request,
 
     const verificationId = req.cookies["identityToken"]
     if(!verificationId){
-        return ResponseHandler.sendErrorResponse({res,error:"Verifcation session exppired",status_code:"LOGIN_REDIRECT"})
+        return ResponseHandler.sendErrorResponse({res,error:"Verification session exppired",status_code:"LOGIN_REDIRECT"})
     }
 
     return next()

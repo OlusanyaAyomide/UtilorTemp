@@ -24,7 +24,7 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
             }
         })
 
-        await mailSender({to:user?.email || "",subject:"Utilor Sign up code",body:otpCode,name:`Utilor Verifcation`})
+        await mailSender({to:user?.email || "",subject:"Utilor Sign up code",body:otpCode,name:`Utilor Verification`})
 
         //set otpId to user response cookie 
         // setCookie({res,name:"MAILVERIFICATION",value:newOtpObject.id})
@@ -61,7 +61,7 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
     //         }
     //     })
 
-    //     await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identiy"})
+    //     await mailSender({to: user?.email|| "",subject:"Utilor Sign In Identification",body:otpCode,name:"Confirm Identity"})
 
     //     setCookie({res,name:"identityToken",value:newDeviceOtp.id})
 
@@ -91,7 +91,7 @@ export const credentialSignIn= catchDefaultAsync(async(req,res,next)=>{
         {expiresIn:"2h"}
     )
 
-    //check is session with devideID and token already exists
+    //check is session with device ID and token already exists
     const isSessionExisting = await prismaClient.session.findFirst({
         where:{
             deviceId,

@@ -200,3 +200,24 @@ export async function addPromoCodeValidation(
 
     return next();
 }
+
+export async function savingsInterestValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+ 
+    const investmentSchema = Joi.object({
+        duration : Joi.number().required(),
+    });
+
+
+    const validation = investmentSchema.validate(req.query);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}

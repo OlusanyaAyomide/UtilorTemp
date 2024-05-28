@@ -4,6 +4,7 @@ import prismaClient from "../../prisma/pris-client";
 import { SavingsArrayData } from "../../interfaces/interface";
 import { calculateSavingsPercentage, getCurrentDollarRate } from "../../utils/util";
 import { group } from "console";
+import calculateInterests from "../../services/transactionServices";
 
 
 
@@ -491,8 +492,38 @@ export const getSavingsList = catchDefaultAsync(async(req,res,next)=>{
     return ResponseHandler.sendSuccessResponse({
         res,data:savingsArray
     })
+})
+
+
+export const getAllSavingsInterest = catchDefaultAsync(async(req,res,next)=>{
+    const  durationString = req.query.duration
+    const duration = Number(durationString)
     
+    const userId = req.user?.userId 
+
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
+
+    const forus = await prismaClient.transaction.findMany({
+        where:{userId,transactionType:"INTEREST",description:"FORU"}
+    })
     
+    const emergency = await prismaClient.transaction.findMany({
+        where:{userId,transactionType:"INTEREST",description:"EMERGENCY"}
+    })
+    
+    const uandI = await prismaClient.transaction.findMany({
+        where:{userId,transactionType:"INTEREST",description:"UANDI"}
+    })
+
+    const savingsSummary = {
+        foru:calculateInterests({transactions:forus,duration}),
+        uandI:calculateInterests({transactions:uandI,duration}),
+        emergency:calculateInterests({transactions:emergency,duration})
+    }
+  
+    return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
 
 
 })

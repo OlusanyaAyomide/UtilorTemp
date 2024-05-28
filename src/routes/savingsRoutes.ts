@@ -1,10 +1,10 @@
 import express from "express"
 import { verifyUserStats } from "../middlewares/verifyUserStatus"
 import { verifyUsers } from "../middlewares/verifyUser"
-import { addPromoCodeValidation, createCabalValidation, createForUValidation, createUAndIValidation, depositForUValidation, sendCabalInvitationValidation, startCabalValidation } from "../validations/savingsValidation"
+import { addPromoCodeValidation, createCabalValidation, createForUValidation, createUAndIValidation, depositForUValidation, savingsInterestValidation, sendCabalInvitationValidation, startCabalValidation } from "../validations/savingsValidation"
 import { depositIntoEmergencySavings, depositIntoForUSavings, depositIntoMyCabalSaving, depositIntoUANDISavings } from "../controllers/savings/savingsDeposit"
 import { createMyCabal, createNewEmergency, createNewForUplan, createNewUAndISavings } from "../controllers/savings/createSavings"
-import { getAllCabalUsers, getAllSavingsData, getAllUserEmergency, getAllUserForU, getAllUserUAndI, getSavingsList, getSingleEmergency, getSingleForU } from "../controllers/savings/savingsRetrival"
+import { getAllCabalUsers, getAllSavingsData, getAllSavingsInterest, getAllUserEmergency, getAllUserForU, getAllUserUAndI, getSavingsList, getSingleEmergency, getSingleForU } from "../controllers/savings/savingsRetrival"
 import { JoinMyCabal, addPromoCodeToEmergency, addPromoCodeToUAndI, addPromoCodeToUsave, sendMyCabalInvitation, startCabalGroup } from "../controllers/savings/savingsUtils"
 
 
@@ -41,6 +41,7 @@ savingRoutes.route("/cabal/deposit").post(verifyUsers,verifyUserStats,depositFor
 savingRoutes.route("/cabal/start").post(verifyUsers,verifyUserStats,startCabalValidation,startCabalGroup)
 savingRoutes.route("/summary").get(verifyUsers,verifyUserStats,getAllSavingsData)
 savingRoutes.route("/summary/list").get(verifyUsers,verifyUserStats,getSavingsList)
+savingRoutes.route("/summary/interest").get(verifyUsers,verifyUserStats,savingsInterestValidation,getAllSavingsInterest)
 
 
 
