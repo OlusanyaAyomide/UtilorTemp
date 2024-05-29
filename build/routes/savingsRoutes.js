@@ -38,6 +38,7 @@ savingRoutes.route("/cabal/deposit").post(verifyUser_1.verifyUsers, verifyUserSt
 savingRoutes.route("/cabal/start").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.startCabalValidation, savingsUtils_1.startCabalGroup);
 savingRoutes.route("/summary").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllSavingsData);
 savingRoutes.route("/summary/list").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSavingsList);
+savingRoutes.route("/summary/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getAllSavingsInterest);
 // savingRoutes.route("/foru/withdraw").post(createForUValidation, verifyUsers,verifyUserStats,createNewForUplan)
 // UWallet Routes should be moved
 exports.default = savingRoutes;

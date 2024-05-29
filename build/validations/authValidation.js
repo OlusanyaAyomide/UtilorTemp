@@ -188,7 +188,7 @@ function newDeviceValidation(req, res, next) {
             }
             verificationId = req.cookies["identityToken"];
             if (!verificationId) {
-                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verifcation session exppired", status_code: "LOGIN_REDIRECT" })];
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Verification session exppired", status_code: "LOGIN_REDIRECT" })];
             }
             return [2 /*return*/, next()];
         });

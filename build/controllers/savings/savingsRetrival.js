@@ -50,11 +50,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSavingsList = exports.getAllSavingsData = exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
+exports.getAllSavingsInterest = exports.getSavingsList = exports.getAllSavingsData = exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var util_1 = require("../../utils/util");
+var transactionServices_1 = __importDefault(require("../../services/transactionServices"));
 exports.getAllUserForU = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var userId, allForU, transformedForU;
     var _a;
@@ -558,6 +559,42 @@ exports.getSavingsList = (0, catch_async_1.default)(function (req, res, next) { 
                         res: res,
                         data: savingsArray
                     })];
+        }
+    });
+}); });
+exports.getAllSavingsInterest = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var durationString, duration, userId, forus, emergency, uandI, savingsSummary;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                durationString = req.query.duration;
+                duration = Number(durationString);
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.transaction.findMany({
+                        where: { userId: userId, transactionType: "INTEREST", description: "FORU" }
+                    })];
+            case 1:
+                forus = _b.sent();
+                return [4 /*yield*/, pris_client_1.default.transaction.findMany({
+                        where: { userId: userId, transactionType: "INTEREST", description: "EMERGENCY" }
+                    })];
+            case 2:
+                emergency = _b.sent();
+                return [4 /*yield*/, pris_client_1.default.transaction.findMany({
+                        where: { userId: userId, transactionType: "INTEREST", description: "UANDI" }
+                    })];
+            case 3:
+                uandI = _b.sent();
+                savingsSummary = {
+                    foru: (0, transactionServices_1.default)({ transactions: forus, duration: duration }),
+                    uandI: (0, transactionServices_1.default)({ transactions: uandI, duration: duration }),
+                    emergency: (0, transactionServices_1.default)({ transactions: emergency, duration: duration })
+                };
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: savingsSummary })];
         }
     });
 }); });
