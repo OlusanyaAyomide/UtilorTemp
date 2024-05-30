@@ -50,7 +50,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllSavingsInterest = exports.getSavingsList = exports.getAllSavingsData = exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
+exports.getUAndISavingInterest = exports.getEmergencySavingsInterest = exports.getForUSavingsInterest = exports.getAllSavingsInterest = exports.getSavingsList = exports.getAllSavingsData = exports.getSingleUANDI = exports.getSingleEmergency = exports.getAllUserEmergency = exports.getAllCabalUsers = exports.getAllUserUAndI = exports.getSingleForU = exports.getAllUserForU = void 0;
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
@@ -325,6 +325,52 @@ exports.getSingleEmergency = (0, catch_async_1.default)(function (req, res, next
         }
     });
 }); });
+exports.getSingleUANDI = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var detail, singleForU, transactions, transformedEmergency, data;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                detail = req.params.id;
+                if (!detail) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Id is required" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.uANDI.findFirst({
+                        where: { id: detail },
+                        include: {
+                            promoCode: {
+                                select: {
+                                    promoCode: {
+                                        select: {
+                                            name: true,
+                                            percentageIncrease: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    })];
+            case 1:
+                singleForU = _b.sent();
+                if (!singleForU) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Emergency Id is invalid" })];
+                }
+                if ((singleForU.creatorId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) || (singleForU.partnerId !== req.user.userId)) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not permitted to view this savings" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.transaction.findMany({
+                        where: {
+                            featureId: singleForU.id
+                        }
+                    })];
+            case 2:
+                transactions = _b.sent();
+                transformedEmergency = __assign(__assign({}, singleForU), { promoCode: singleForU.promoCode.map(function (pc) { return pc.promoCode; }) });
+                data = __assign(__assign({}, transformedEmergency), { transactions: transactions });
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: data })];
+        }
+    });
+}); });
 exports.getAllSavingsData = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     var userId, totalForUNairaBalance, totalForUDollarbalaance, allForus, totalEmergencyNairaBalance, totalEmergencyDollarBalance, allEmergency, totalUAndINairaBalance, totalUAndIDollarBalance, allUandI, totalUserNairaCabal, totalUserDollarCabal, allUserCabal, savingsSummary;
     var _a;
@@ -593,6 +639,78 @@ exports.getAllSavingsInterest = (0, catch_async_1.default)(function (req, res, n
                     foru: (0, transactionServices_1.default)({ transactions: forus, duration: duration }),
                     uandI: (0, transactionServices_1.default)({ transactions: uandI, duration: duration }),
                     emergency: (0, transactionServices_1.default)({ transactions: emergency, duration: duration })
+                };
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: savingsSummary })];
+        }
+    });
+}); });
+exports.getForUSavingsInterest = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var durationString, duration, userId, forus, savingsSummary;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                durationString = req.query.duration;
+                duration = Number(durationString);
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.transaction.findMany({
+                        where: { userId: userId, transactionType: "INTEREST", description: "FORU" }
+                    })];
+            case 1:
+                forus = _b.sent();
+                savingsSummary = {
+                    foru: (0, transactionServices_1.default)({ transactions: forus, duration: duration })
+                };
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: savingsSummary })];
+        }
+    });
+}); });
+exports.getEmergencySavingsInterest = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var durationString, duration, userId, emergency, savingsSummary;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                durationString = req.query.duration;
+                duration = Number(durationString);
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.transaction.findMany({
+                        where: { userId: userId, transactionType: "INTEREST", description: "EMERGENCY" }
+                    })];
+            case 1:
+                emergency = _b.sent();
+                savingsSummary = {
+                    emergency: (0, transactionServices_1.default)({ transactions: emergency, duration: duration })
+                };
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: savingsSummary })];
+        }
+    });
+}); });
+exports.getUAndISavingInterest = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var durationString, duration, userId, uAndI, savingsSummary;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                durationString = req.query.duration;
+                duration = Number(durationString);
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.transaction.findMany({
+                        where: { userId: userId, transactionType: "INTEREST", description: "UANDI" }
+                    })];
+            case 1:
+                uAndI = _b.sent();
+                savingsSummary = {
+                    uandi: (0, transactionServices_1.default)({ transactions: uAndI, duration: duration })
                 };
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: savingsSummary })];
         }

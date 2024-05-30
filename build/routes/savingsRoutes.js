@@ -17,18 +17,22 @@ savingRoutes.route("/foru/new").post(verifyUser_1.verifyUsers, verifyUserStatus_
 savingRoutes.route("/foru/deposit").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.depositForUValidation, savingsDeposit_1.depositIntoForUSavings);
 savingRoutes.route("/foru/promocode/add").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.addPromoCodeValidation, savingsUtils_1.addPromoCodeToUsave);
 savingRoutes.route("/foru/retrieve/all").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllUserForU);
+savingRoutes.route("/foru/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getForUSavingsInterest);
 savingRoutes.route("/foru/detail/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSingleForU);
-// ForU routes
+// EMERGENCY routes
 savingRoutes.route("/emergency/new").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.createForUValidation, createSavings_1.createNewEmergency);
 savingRoutes.route("/emergency/deposit").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.depositForUValidation, savingsDeposit_1.depositIntoEmergencySavings);
 savingRoutes.route("/emergency/promocode/add").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.addPromoCodeValidation, savingsUtils_1.addPromoCodeToEmergency);
 savingRoutes.route("/emergency/retrieve/all").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllUserEmergency);
+savingRoutes.route("/emergency/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getEmergencySavingsInterest);
 savingRoutes.route("/emergency/detail/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSingleEmergency);
 //UANDI
 savingRoutes.route("/uandi/new").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.createUAndIValidation, createSavings_1.createNewUAndISavings);
 savingRoutes.route("/uandi/deposit").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.depositForUValidation, savingsDeposit_1.depositIntoUANDISavings);
 savingRoutes.route("/uandi/promocode/add").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.addPromoCodeValidation, savingsUtils_1.addPromoCodeToUAndI);
 savingRoutes.route("/uandi/retrieve/all").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllUserUAndI);
+savingRoutes.route("/uandi/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getUAndISavingInterest);
+savingRoutes.route("/uandi/detail/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSingleUANDI);
 //MYCABAL
 savingRoutes.route("/cabal/new").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.createCabalValidation, createSavings_1.createMyCabal);
 savingRoutes.route("/cabal/invitaion").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.sendCabalInvitationValidation, savingsUtils_1.sendMyCabalInvitation);
@@ -39,6 +43,4 @@ savingRoutes.route("/cabal/start").post(verifyUser_1.verifyUsers, verifyUserStat
 savingRoutes.route("/summary").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllSavingsData);
 savingRoutes.route("/summary/list").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSavingsList);
 savingRoutes.route("/summary/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getAllSavingsInterest);
-// savingRoutes.route("/foru/withdraw").post(createForUValidation, verifyUsers,verifyUserStats,createNewForUplan)
-// UWallet Routes should be moved
 exports.default = savingRoutes;

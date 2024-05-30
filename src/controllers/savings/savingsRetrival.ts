@@ -255,6 +255,7 @@ export const getSingleEmergency = catchDefaultAsync(async (req,res,next)=>{
     if(!singleEmergency){
         return ResponseHandler.sendErrorResponse({res,error:"Emergency Id is invalid"})
     }
+    
     if(singleEmergency.userId !== req.user?.userId){
         return ResponseHandler.sendErrorResponse({res,error:"Not permitted to view this savings"})
     }
@@ -274,6 +275,51 @@ export const getSingleEmergency = catchDefaultAsync(async (req,res,next)=>{
     return ResponseHandler.sendSuccessResponse({res,data})
 })
 
+export const getSingleUANDI = catchDefaultAsync(async(req,res,next)=>{
+    const detail = req.params.id
+
+    if(!detail){
+        return ResponseHandler.sendErrorResponse({res,error:"Id is required"})
+    }
+
+    const singleForU = await prismaClient.uANDI.findFirst({
+        where:{id:detail},
+        include: {
+            promoCode: {
+              select: {
+                promoCode: {
+                  select: {
+                    name: true,
+                    percentageIncrease: true,
+                  },
+                },
+              },
+            },
+          },
+    })
+
+    if(!singleForU){
+        return ResponseHandler.sendErrorResponse({res,error:"Emergency Id is invalid"})
+    }
+    
+    if((singleForU.creatorId !== req.user?.userId) || (singleForU.partnerId !== req.user.userId)){
+        return ResponseHandler.sendErrorResponse({res,error:"Not permitted to view this savings"})
+    }
+
+    const transactions = await prismaClient.transaction.findMany({
+        where:{
+            featureId:singleForU.id
+        }
+    })
+
+    const transformedEmergency = {
+        ...singleForU,
+        promoCode: singleForU.promoCode.map(pc => pc.promoCode),
+      };
+    const data = {...transformedEmergency,transactions}
+
+    return ResponseHandler.sendSuccessResponse({res,data})
+})
 export const getAllSavingsData = catchDefaultAsync(async(req,res,next)=>{
 
     const userId = req.user?.userId 
@@ -525,5 +571,71 @@ export const getAllSavingsInterest = catchDefaultAsync(async(req,res,next)=>{
   
     return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
 
+})
 
+export const getForUSavingsInterest = catchDefaultAsync(async (req,res,next)=>{
+    const  durationString = req.query.duration
+    const duration = Number(durationString)
+    
+    const userId = req.user?.userId 
+
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
+
+    const forus = await prismaClient.transaction.findMany({
+        where:{userId,transactionType:"INTEREST",description:"FORU"}
+    })
+    
+
+    const savingsSummary = {
+        foru:calculateInterests({transactions:forus,duration})
+    }
+  
+    return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
+})
+
+export const getEmergencySavingsInterest = catchDefaultAsync(async (req,res,next)=>{
+    const  durationString = req.query.duration
+    const duration = Number(durationString)
+    
+    const userId = req.user?.userId 
+
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
+
+    const emergency = await prismaClient.transaction.findMany({
+        where:{userId,transactionType:"INTEREST",description:"EMERGENCY"}
+    })
+    
+
+    const savingsSummary = {
+        emergency:calculateInterests({transactions:emergency,duration})
+    }
+  
+    return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
+})
+
+
+export const getUAndISavingInterest = catchDefaultAsync(async(req,res,next)=>{
+    const  durationString = req.query.duration
+    const duration = Number(durationString)
+    
+    const userId = req.user?.userId 
+
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
+
+    const uAndI = await prismaClient.transaction.findMany({
+        where:{userId,transactionType:"INTEREST",description:"UANDI"}
+    })
+    
+
+    const savingsSummary = {
+        uandi:calculateInterests({transactions:uAndI,duration})
+    }
+  
+    return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
 })
