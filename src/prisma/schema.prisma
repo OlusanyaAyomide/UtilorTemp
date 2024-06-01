@@ -312,7 +312,7 @@ model USaveForUPromoCode {
   usaveForUId String
   promoCodeId String
   usaveForU   USaveForU @relation(fields: [usaveForUId], references: [id])
-  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id])
+  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id],onDelete: Cascade)
 
   @@id([usaveForUId, promoCodeId])  // Composite primary key
 }
@@ -321,7 +321,7 @@ model EmergencyPromoCode {
   emergencyId String
   promoCodeId String
   emergency   Emergency @relation(fields: [emergencyId], references: [id])
-  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id])
+  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id] , onDelete: Cascade)
 
   @@id([emergencyId, promoCodeId])  // Composite primary key
 }
@@ -330,7 +330,7 @@ model UAndIPromoCode {
   uAndIId String
   promoCodeId String
   uAndI   UANDI @relation(fields: [uAndIId], references: [id])
-  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id]) 
+  promoCode   PromoCodes @relation(fields: [promoCodeId], references: [id] , onDelete: Cascade) 
 
   @@id([uAndIId, promoCodeId])  // Composite primary key  
 }

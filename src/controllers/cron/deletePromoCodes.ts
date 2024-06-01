@@ -5,18 +5,13 @@ import ResponseHandler from "../../utils/response-handler";
 export async function  deletePromoCodes(req:Request,res:Response,next:NextFunction){
 
     const currentDate = new Date()
-    const outdatedCodes = await prismaClient.promoCodes.findMany({
-        include:{
-            emergencies:true,
-            usaveForUs:true,
-            uAndIs:true
+    const outdatedCodes = await prismaClient.promoCodes.deleteMany({
+        where:{
+            expiredAt:{
+                lte: currentDate
+            }
         }
-        // where:{
-        //     expiredAt:{
-        //         lte: currentDate
-        //     }
-        // }
     })
 
-    return ResponseHandler.sendSuccessResponse({res,data:outdatedCodes})
+    return ResponseHandler.sendSuccessResponse({res,data:"Outdated codes deleted"})
 }

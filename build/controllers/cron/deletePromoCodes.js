@@ -49,21 +49,16 @@ function deletePromoCodes(req, res, next) {
             switch (_a.label) {
                 case 0:
                     currentDate = new Date();
-                    return [4 /*yield*/, pris_client_1.default.promoCodes.findMany({
-                            include: {
-                                emergencies: true,
-                                usaveForUs: true,
-                                uAndIs: true
+                    return [4 /*yield*/, pris_client_1.default.promoCodes.deleteMany({
+                            where: {
+                                expiredAt: {
+                                    lte: currentDate
+                                }
                             }
-                            // where:{
-                            //     expiredAt:{
-                            //         lte: currentDate
-                            //     }
-                            // }
                         })];
                 case 1:
                     outdatedCodes = _a.sent();
-                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: outdatedCodes })];
+                    return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: "Outdated codes deleted" })];
             }
         });
     });

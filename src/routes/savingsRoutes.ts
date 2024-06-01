@@ -48,5 +48,4 @@ savingRoutes.route("/summary/list").get(verifyUsers,verifyUserStats,getSavingsLi
 savingRoutes.route("/summary/interest").get(verifyUsers,verifyUserStats,savingsInterestValidation,getAllSavingsInterest)
 
 
-
 export default savingRoutes
