@@ -266,18 +266,18 @@ var depositIntoMyCabalSavingViaFlutterwave = function (dataFromWebhook, transact
                 return [4 /*yield*/, pris_client_1.default.userCabal.findMany({
                         where: { cabalGroupId: (_a = userCabal_1.cabelGroup) === null || _a === void 0 ? void 0 : _a.id }
                     })
-                    //create a dashboard notifcation for all user in cabal
+                    //create a dashboard notification for all user in cabal
                 ];
             case 6:
                 allUsers = _b.sent();
-                //create a dashboard notifcation for all user in cabal
+                //create a dashboard notification for all user in cabal
                 return [4 /*yield*/, pris_client_1.default.notification.createMany({
                         data: allUsers.map(function (item) {
                             return { userId: item.userId, description: "".concat(userCabal_1.user.firstName, " ").concat(userCabal_1.user.lastName, " Deposited ").concat(userCabal_1.cabelGroup.currency, " ").concat(depositAmount_1, " into ").concat(userCabal_1.cabelGroup.groupName) };
                         })
                     })];
             case 7:
-                //create a dashboard notifcation for all user in cabal
+                //create a dashboard notification for all user in cabal
                 _b.sent();
                 _b.label = 8;
             case 8: return [2 /*return*/];

@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateSavingsPercentage = exports.calculateDailyReturns = exports.getCabalpercentage = exports.getUAndIPercentage = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
+exports.getWithdrawalInterest = exports.calculateSavingsPercentage = exports.calculateDailyReturns = exports.getCabalpercentage = exports.getUAndIPercentage = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
 var bcrypt_1 = __importDefault(require("bcrypt"));
 function generateOTP() {
     var otpLength = 4;
@@ -167,3 +167,9 @@ var calculateSavingsPercentage = function (_a) {
     return roundedPercentage;
 };
 exports.calculateSavingsPercentage = calculateSavingsPercentage;
+var getWithdrawalInterest = function (_a) {
+    var capital = _a.capital, amount = _a.amount, interest = _a.interest;
+    var withdrawalpercentage = (amount / capital) * interest;
+    return withdrawalpercentage;
+};
+exports.getWithdrawalInterest = getWithdrawalInterest;

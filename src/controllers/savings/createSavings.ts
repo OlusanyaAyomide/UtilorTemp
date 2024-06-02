@@ -122,7 +122,7 @@ export const createMyCabal = catchDefaultAsync(async(req,res,next)=>{
         }
     })
     
-    return ResponseHandler.sendSuccessResponse({res,message:`New My Cabal Savings ${newCabal.groupName} has succesfully been created`,data:{cabalId:newCabal.id}})
+    return ResponseHandler.sendSuccessResponse({res,message:`New My Cabal Savings ${newCabal.groupName} has successfully been created`,data:{cabalId:newCabal.id}})
 
 })
 

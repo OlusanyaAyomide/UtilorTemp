@@ -12,7 +12,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
     })
     try{
         const allForU = await prismaClient.uSaveForU.findMany({
-            where:{isActivated:true},
+            where:{isActivated:true,isCompleted:false},
             include:{
                 promoCode:{
                     include:{
@@ -67,7 +67,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
 
 
         const allEmergency = await prismaClient.emergency.findMany({
-            where:{isActivated:true},
+            where:{isActivated:true,isCompleted:false},
             include:{
                 promoCode:{
                     include:{
@@ -122,7 +122,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
 
 
         const allUandIs = await prismaClient.uANDI.findMany({
-            where:{isActivated:true},
+            where:{isActivated:true,isCompleted:false},
             include:{
                 promoCode:{
                     include:{
@@ -197,7 +197,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
         //add to all userCabal
         const allCabals = await prismaClient.cabalGroup.findMany({
             where:{
-                hasStarted:true,
+                hasStarted:true,isCompleted:false
             },
             include:{
                 userCabals:true

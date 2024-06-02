@@ -221,3 +221,46 @@ export async function savingsInterestValidation(
 
     return next();
 }
+
+
+export async function forUWithdrawalValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+
+    const investmentSchema = Joi.object({
+        forUId : Joi.string().required(),
+        amount : Joi.number().required()
+    });
+
+    const validation = investmentSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}
+
+export async function emergencyUWithdrawalValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+
+    const investmentSchema = Joi.object({
+        emergencyId : Joi.string().required(),
+        amount : Joi.number().required()
+    });
+
+    const validation = investmentSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}

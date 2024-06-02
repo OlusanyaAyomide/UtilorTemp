@@ -219,7 +219,7 @@ export const depositIntoMyCabalSavingViaFlutterwave = async(dataFromWebhook: Web
     const allUsers = await prismaClient.userCabal.findMany({
         where:{cabalGroupId:userCabal.cabelGroup?.id}
     })
-    //create a dashboard notifcation for all user in cabal
+    //create a dashboard notification for all user in cabal
     await prismaClient.notification.createMany({
         data:allUsers.map((item)=>{
             return {userId:item.userId,description:`${userCabal.user.firstName} ${userCabal.user.lastName} Deposited ${userCabal.cabelGroup.currency} ${depositAmount} into ${userCabal.cabelGroup.groupName}`}

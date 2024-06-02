@@ -60,7 +60,7 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.uSaveForU.findFirst({
-                        where: { id: depositData.id }
+                        where: { id: depositData.id, isCompleted: false }
                     })];
             case 1:
                 forUAccount = _b.sent();
@@ -218,7 +218,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.uANDI.findFirst({
-                        where: { id: depositData.id }
+                        where: { id: depositData.id, isCompleted: false }
                     })];
             case 1:
                 uAndISaving = _d.sent();
@@ -404,7 +404,7 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.cabalGroup.findFirst({
-                        where: { id: depositData.id }
+                        where: { id: depositData.id, isCompleted: false }
                     })];
             case 1:
                 cabalGroup = _a.sent();
@@ -512,11 +512,11 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                 return [4 /*yield*/, pris_client_1.default.userCabal.findMany({
                         where: { cabalGroupId: cabalGroup === null || cabalGroup === void 0 ? void 0 : cabalGroup.id }
                     })
-                    //create a dashboard notifcation for all user in cabal
+                    //create a dashboard notification for all user in cabal
                 ];
             case 13:
                 allUsers = _a.sent();
-                //create a dashboard notifcation for all user in cabal
+                //create a dashboard notification for all user in cabal
                 return [4 /*yield*/, pris_client_1.default.notification.createMany({
                         data: allUsers.map(function (item) {
                             var _a, _b;
@@ -526,7 +526,7 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                     // Return success response
                 ];
             case 14:
-                //create a dashboard notifcation for all user in cabal
+                //create a dashboard notification for all user in cabal
                 _a.sent();
                 // Return success response
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({
@@ -588,7 +588,7 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.emergency.findFirst({
-                        where: { id: depositData.id }
+                        where: { id: depositData.id, isCompleted: false }
                     })];
             case 1:
                 emergencyAccount = _b.sent();

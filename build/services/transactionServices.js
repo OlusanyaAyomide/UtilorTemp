@@ -34,12 +34,8 @@ function calculateInterests(_a) {
         var today = new Date();
         var diffTime = Math.abs(today.getTime() - createdDate.getTime());
         var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        console.log(diffDays);
         if (diffDays >= 0 && diffDays <= duration) {
-            // console.log(diffDays,"Inside")
-            console.log(diffDays, result[duration - diffDays]);
             var interestInNaira = item.transactionCurrency === "USD" ? item.amount * (0, util_1.getCurrentDollarRate)() : item.amount;
-            console.log(interestInNaira, item.amount);
             var previousInterest = result[duration - diffDays].interest;
             result[duration - diffDays] = __assign(__assign({}, result[duration - diffDays]), { interest: previousInterest + interestInNaira });
         }

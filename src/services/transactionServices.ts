@@ -25,12 +25,8 @@ export default function calculateInterests({transactions, duration}:{transaction
       const today = new Date();
       const diffTime = Math.abs(today.getTime() - createdDate.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      console.log(diffDays)
       if (diffDays >=0 && diffDays <= duration) {
-        // console.log(diffDays,"Inside")
-        console.log(diffDays,result[duration-diffDays])
         const interestInNaira = item.transactionCurrency === "USD"? item.amount * getCurrentDollarRate():item.amount
-        console.log(interestInNaira,item.amount)
         const previousInterest = result[duration - diffDays].interest
         result[duration - diffDays] = {...result[duration - diffDays],interest:previousInterest + interestInNaira};
       }

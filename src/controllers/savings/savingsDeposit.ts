@@ -23,7 +23,7 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
 
     // Check if ForU account is valid
     const forUAccount = await prismaClient.uSaveForU.findFirst({
-        where: {id: depositData.id}
+        where: {id: depositData.id,isCompleted:false}
     })
 
     if (!forUAccount) {
@@ -195,7 +195,7 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
 
     // Check if ForU account is valid
     const uAndISaving = await prismaClient.uANDI.findFirst({
-        where: {id: depositData.id}
+        where: {id: depositData.id,isCompleted:false}
     })
 
 
@@ -385,7 +385,7 @@ export const depositIntoMyCabalSaving = catchDefaultAsync(async(req, res, next) 
 
     // Check if CabalGroup account is valid
     const cabalGroup = await prismaClient.cabalGroup.findFirst({
-        where: {id: depositData.id}
+        where: {id: depositData.id,isCompleted:false}
     })
 
 
@@ -500,7 +500,7 @@ export const depositIntoMyCabalSaving = catchDefaultAsync(async(req, res, next) 
             where:{cabalGroupId:cabalGroup?.id}
         })
 
-        //create a dashboard notifcation for all user in cabal
+        //create a dashboard notification for all user in cabal
         await prismaClient.notification.createMany({
             data:allUsers.map((item)=>{
                 return {userId:item.userId,description:`${req.user?.firstName} ${req.user?.lastName} Deposited ${cabalGroup.currency} ${depositAmount} into ${cabalGroup.groupName}`}
@@ -573,7 +573,7 @@ export const depositIntoEmergencySavings = catchDefaultAsync(async(req, res, nex
 
     // Check if ForU account is valid
     const emergencyAccount = await prismaClient.emergency.findFirst({
-        where: {id: depositData.id}
+        where: {id: depositData.id,isCompleted:false}
     })
 
     if (!emergencyAccount) {

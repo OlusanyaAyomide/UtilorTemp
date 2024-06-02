@@ -180,7 +180,7 @@ exports.createMyCabal = (0, catch_async_1.default)(function (req, res, next) { r
                     })];
             case 1:
                 newCabal = _a.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "New My Cabal Savings ".concat(newCabal.groupName, " has succesfully been created"), data: { cabalId: newCabal.id } })];
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "New My Cabal Savings ".concat(newCabal.groupName, " has successfully been created"), data: { cabalId: newCabal.id } })];
         }
     });
 }); });

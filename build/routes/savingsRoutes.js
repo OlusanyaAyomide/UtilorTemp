@@ -11,11 +11,13 @@ var savingsDeposit_1 = require("../controllers/savings/savingsDeposit");
 var createSavings_1 = require("../controllers/savings/createSavings");
 var savingsRetrival_1 = require("../controllers/savings/savingsRetrival");
 var savingsUtils_1 = require("../controllers/savings/savingsUtils");
+var savingsWithdrawal_1 = require("../controllers/savings/savingsWithdrawal");
 var savingRoutes = express_1.default.Router();
 // ForU routes
 savingRoutes.route("/foru/new").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.createForUValidation, createSavings_1.createNewForUplan);
 savingRoutes.route("/foru/deposit").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.depositForUValidation, savingsDeposit_1.depositIntoForUSavings);
 savingRoutes.route("/foru/promocode/add").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.addPromoCodeValidation, savingsUtils_1.addPromoCodeToUsave);
+savingRoutes.route("/foru/withdrawal").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.forUWithdrawalValidation, savingsWithdrawal_1.ForUWithdrawal);
 savingRoutes.route("/foru/retrieve/all").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllUserForU);
 savingRoutes.route("/foru/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getForUSavingsInterest);
 savingRoutes.route("/foru/detail/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSingleForU);
@@ -23,6 +25,7 @@ savingRoutes.route("/foru/detail/:id").get(verifyUser_1.verifyUsers, verifyUserS
 savingRoutes.route("/emergency/new").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.createForUValidation, createSavings_1.createNewEmergency);
 savingRoutes.route("/emergency/deposit").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.depositForUValidation, savingsDeposit_1.depositIntoEmergencySavings);
 savingRoutes.route("/emergency/promocode/add").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.addPromoCodeValidation, savingsUtils_1.addPromoCodeToEmergency);
+savingRoutes.route("/emergency/withdrawal").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.emergencyUWithdrawalValidation, savingsWithdrawal_1.emergencywithdrawal);
 savingRoutes.route("/emergency/retrieve/all").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllUserEmergency);
 savingRoutes.route("/emergency/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getEmergencySavingsInterest);
 savingRoutes.route("/emergency/detail/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSingleEmergency);

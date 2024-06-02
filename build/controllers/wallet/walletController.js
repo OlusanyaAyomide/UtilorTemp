@@ -189,15 +189,6 @@ var depositIntoUWalletViaFlutterwave = function (dataFromWebhook, transaction) {
                     throw new Error("U-Wallet not found");
                 }
                 depositAmount = (0, transactions_util_1.getConvertedRate)({ amount: transaction.amount, from: transaction.transactionCurrency, to: uWallet.currency });
-                // if (uWallet.currency === "USD" && transaction.transactionCurrency == "NGN") {
-                //     let dollarRate = getCurrentDollarRate();
-                //     convertedAmount = transaction.amount / dollarRate
-                // } else if (uWallet.currency === "NGN" && transaction.transactionCurrency == "USD") {
-                //     let dollarRate = getCurrentDollarRate();
-                //     convertedAmount = transaction.amount * dollarRate
-                // } else {
-                //     convertedAmount = transaction.amount
-                // }
                 return [4 /*yield*/, pris_client_1.default.uWallet.update({
                         where: { id: transaction.featureId },
                         data: {
@@ -205,15 +196,6 @@ var depositIntoUWalletViaFlutterwave = function (dataFromWebhook, transaction) {
                         }
                     })];
             case 5:
-                // if (uWallet.currency === "USD" && transaction.transactionCurrency == "NGN") {
-                //     let dollarRate = getCurrentDollarRate();
-                //     convertedAmount = transaction.amount / dollarRate
-                // } else if (uWallet.currency === "NGN" && transaction.transactionCurrency == "USD") {
-                //     let dollarRate = getCurrentDollarRate();
-                //     convertedAmount = transaction.amount * dollarRate
-                // } else {
-                //     convertedAmount = transaction.amount
-                // }
                 _a.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(transaction.id, "SUCCESS")];
             case 6:

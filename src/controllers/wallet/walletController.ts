@@ -148,15 +148,7 @@ export const depositIntoUWalletViaFlutterwave = async(dataFromWebhook: WebhookDa
     // let convertedAmount = 0;
 
     const depositAmount = getConvertedRate({amount:transaction.amount,from:transaction.transactionCurrency,to:uWallet.currency})
-    // if (uWallet.currency === "USD" && transaction.transactionCurrency == "NGN") {
-    //     let dollarRate = getCurrentDollarRate();
-    //     convertedAmount = transaction.amount / dollarRate
-    // } else if (uWallet.currency === "NGN" && transaction.transactionCurrency == "USD") {
-    //     let dollarRate = getCurrentDollarRate();
-    //     convertedAmount = transaction.amount * dollarRate
-    // } else {
-    //     convertedAmount = transaction.amount
-    // }
+
 
     await prismaClient.uWallet.update({
         where: {id: transaction.featureId},

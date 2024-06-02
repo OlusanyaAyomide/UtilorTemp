@@ -39,6 +39,7 @@ enum TRANSACTION_TYPE {
   DEPOSIT
   INTEREST
   REFERRAL
+  SAVING_DEPOSIT
 }
 
 enum CURRENCY {
@@ -176,7 +177,7 @@ model USaveForU {
   createdAt             DateTime               @default(now())
   iconLink              String
   promoCode USaveForUPromoCode[]
-
+  isCompleted  Boolean                           @default(false) 
 }
 
 
@@ -216,6 +217,7 @@ model UANDI{
   createdAt             DateTime               @default(now())
   iconLink              String
   promoCode             UAndIPromoCode[]
+  isCompleted  Boolean                           @default(false) 
 }
 
 
@@ -269,6 +271,7 @@ model CabalGroup{
   currency    CURRENCY
   iconLink   String
   description String
+  isCompleted Boolean @default(false)
 
 }
 
@@ -290,6 +293,7 @@ model Emergency {
   createdAt             DateTime               @default(now())
   iconLink              String
   promoCode             EmergencyPromoCode[]
+  isCompleted  Boolean                           @default(false) 
 
 }
 

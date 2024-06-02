@@ -120,3 +120,8 @@ export const calculateSavingsPercentage = ({initial,currentTotal,startDate,endDa
   const  roundedPercentage = Math.round((completedPercentage + Number.EPSILON) * 100) / 100; 
   return roundedPercentage
 }
+
+export const getWithdrawalInterest = ({capital,amount,interest}:{capital:number,amount:number,interest:number})=>{
+  const withdrawalpercentage = (amount/capital) * interest
+  return withdrawalpercentage
+}

@@ -59,7 +59,7 @@ function updateWallets(req, res, next) {
                 case 2:
                     _a.trys.push([2, 12, , 14]);
                     return [4 /*yield*/, pris_client_1.default.uSaveForU.findMany({
-                            where: { isActivated: true },
+                            where: { isActivated: true, isCompleted: false },
                             include: {
                                 promoCode: {
                                     include: {
@@ -111,7 +111,7 @@ function updateWallets(req, res, next) {
                     //update all emergency wallets simultaneously
                     _a.sent();
                     return [4 /*yield*/, pris_client_1.default.emergency.findMany({
-                            where: { isActivated: true },
+                            where: { isActivated: true, isCompleted: false },
                             include: {
                                 promoCode: {
                                     include: {
@@ -162,7 +162,7 @@ function updateWallets(req, res, next) {
                     //update all wallets simultaneously
                     _a.sent();
                     return [4 /*yield*/, pris_client_1.default.uANDI.findMany({
-                            where: { isActivated: true },
+                            where: { isActivated: true, isCompleted: false },
                             include: {
                                 promoCode: {
                                     include: {
@@ -235,7 +235,7 @@ function updateWallets(req, res, next) {
                     _a.sent();
                     return [4 /*yield*/, pris_client_1.default.cabalGroup.findMany({
                             where: {
-                                hasStarted: true,
+                                hasStarted: true, isCompleted: false
                             },
                             include: {
                                 userCabals: true
