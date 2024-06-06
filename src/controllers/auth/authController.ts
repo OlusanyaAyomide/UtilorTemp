@@ -96,10 +96,6 @@ export const mailVerification = catchDefaultAsync(async(req,res,next)=>{
             isMailVerified:true
         },
     })
-
-    //delete verification token from cookie
-
-    // res.clearCookie("MAILVERIFICATION")
  
 
     //delete all OTp associated with user
@@ -574,7 +570,7 @@ export const googleSignIn = catchDefaultAsync(async(req,res,next)=>{
     }
 
     if(!user.isGoogleUser){
-        return ResponseHandler.sendErrorResponse({res,error:"Sign In with email and pasword"})
+        return ResponseHandler.sendErrorResponse({res,error:"Sign In with email and password"})
     }
     //set user response cookies
     const isAuthorized = await setAuthCredentials({req,res,id:user.id,email:user.email})

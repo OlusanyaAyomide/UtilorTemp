@@ -1,12 +1,12 @@
 import express from "express"
 import { verifyUserStats } from "../middlewares/verifyUserStatus"
 import { verifyUsers } from "../middlewares/verifyUser"
-import { addPromoCodeValidation, createCabalValidation, createForUValidation, createUAndIValidation, depositForUValidation, emergencyUWithdrawalValidation, forUWithdrawalValidation, savingsInterestValidation, sendCabalInvitationValidation, startCabalValidation } from "../validations/savingsValidation"
+import { addPromoCodeValidation, createCabalValidation, createForUValidation, createUAndIValidation, depositForUValidation, emergencyUWithdrawalValidation, forUWithdrawalValidation, savingsInterestValidation, sendCabalInvitationValidation, startCabalValidation, uAndIValidation } from "../validations/savingsValidation"
 import { depositIntoEmergencySavings, depositIntoForUSavings, depositIntoMyCabalSaving, depositIntoUANDISavings } from "../controllers/savings/savingsDeposit"
 import { createMyCabal, createNewEmergency, createNewForUplan, createNewUAndISavings } from "../controllers/savings/createSavings"
 import { getAllCabalUsers, getAllSavingsData, getAllSavingsInterest, getAllUserEmergency, getAllUserForU, getAllUserUAndI, getEmergencySavingsInterest, getForUSavingsInterest, getSavingsList, getSingleEmergency, getSingleForU, getSingleUANDI, getUAndISavingInterest } from "../controllers/savings/savingsRetrival"
 import { JoinMyCabal, addPromoCodeToEmergency, addPromoCodeToUAndI, addPromoCodeToUsave, sendMyCabalInvitation, startCabalGroup } from "../controllers/savings/savingsUtils"
-import { ForUWithdrawal, emergencywithdrawal } from "../controllers/savings/savingsWithdrawal"
+import { ForUWithdrawal, emergencywithdrawal, uAndIWithdrawal } from "../controllers/savings/savingsWithdrawal"
 
 
 
@@ -34,6 +34,7 @@ savingRoutes.route("/emergency/detail/:id").get(verifyUsers,verifyUserStats,getS
 savingRoutes.route("/uandi/new").post(verifyUsers , verifyUserStats ,createUAndIValidation , createNewUAndISavings)
 savingRoutes.route("/uandi/deposit").post(verifyUsers , verifyUserStats ,depositForUValidation ,depositIntoUANDISavings)
 savingRoutes.route("/uandi/promocode/add").post(verifyUsers,verifyUserStats,addPromoCodeValidation,addPromoCodeToUAndI)
+savingRoutes.route("/uandi/withdrawal").post(verifyUsers,verifyUserStats,uAndIValidation,uAndIWithdrawal)
 savingRoutes.route("/uandi/retrieve/all").get( verifyUsers,verifyUserStats,getAllUserUAndI)
 savingRoutes.route("/uandi/interest").get(verifyUsers,verifyUserStats,savingsInterestValidation,getUAndISavingInterest)
 savingRoutes.route("/uandi/detail/:id").get(verifyUsers,verifyUserStats,getSingleUANDI)

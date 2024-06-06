@@ -34,8 +34,8 @@ export const ForUWithdrawal = catchDefaultAsync(async (req,res,next)=>{
     }
 
     //get user naira uwallet 
-    const userWallet = prismaClient.uWallet.findMany({where:{userId}})
-    const userNairaWallet = (await userWallet).find((wallet=>wallet.currency === "NGN"))
+    const userWallet = await prismaClient.uWallet.findMany({where:{userId}})
+    const userNairaWallet =  userWallet.find((wallet=>wallet.currency === "NGN"))
     if(!userNairaWallet){
         return ResponseHandler.sendErrorResponse({res,error:"Payment wallet can not be processed"})
     }
@@ -121,7 +121,7 @@ export const ForUWithdrawal = catchDefaultAsync(async (req,res,next)=>{
             transactionCurrency:forU.currency,
             description: "FORU",
             paymentMethod:"UWALLET",
-            transactionType: "DEPOSIT",
+            transactionType: "WITHDRAWAL",
             featureId:forU.id
         }
     })
@@ -171,8 +171,8 @@ export const emergencywithdrawal = catchDefaultAsync(async (req,res,next)=>{
     }
 
     //get user naira uwallet 
-    const userWallet = prismaClient.uWallet.findMany({where:{userId}})
-    const userNairaWallet = (await userWallet).find((wallet=>wallet.currency === "NGN"))
+    const userWallet = await prismaClient.uWallet.findMany({where:{userId}})
+    const userNairaWallet = userWallet.find((wallet=>wallet.currency === "NGN"))
     if(!userNairaWallet){
         return ResponseHandler.sendErrorResponse({res,error:"Payment wallet can not be processed"})
     }
@@ -258,7 +258,7 @@ export const emergencywithdrawal = catchDefaultAsync(async (req,res,next)=>{
             transactionCurrency:emergency.currency,
             description:"EMERGENCY",
             paymentMethod:"UWALLET",
-            transactionType: "DEPOSIT",
+            transactionType: "WITHDRAWAL",
             featureId:emergency.id
         }
     })
@@ -277,5 +277,221 @@ export const emergencywithdrawal = catchDefaultAsync(async (req,res,next)=>{
         }
     })
 
+    return ResponseHandler.sendSuccessResponse({res,message:`${wallet_tx_amount} has been added to u wallet account`})
+})
+
+
+export const uAndIWithdrawal = catchDefaultAsync(async(req,res,next)=>{
+    const {uAndIId,amount} :{uAndIId:string,amount:number} = req.body
+    const userId = req.user?.userId
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
+    const uAndI = await prismaClient.uANDI.findFirst({
+        where:{
+            id:uAndIId,
+            OR:[
+                {creatorId:userId},
+                {partnerId:userId}
+            ]   
+        }
+    })
+    if(!uAndI){
+        return ResponseHandler.sendErrorResponse({res,error:"U And I Saving Account not found"})
+    }
+
+    const isCreator = uAndI.creatorId === userId
+
+    //get user naira uwallet 
+    const userWallet = await prismaClient.uWallet.findMany({where:{userId}})
+    const userNairaWallet = userWallet.find((wallet=>wallet.currency === "NGN"))
+    if(!userNairaWallet){
+        return ResponseHandler.sendErrorResponse({res,error:"Payment wallet can not be processed"})
+    }
+
+    // Compare the createdAt date with the date one month ago
+  
+
+    const daysFromCreation = getDifferenceInDays(uAndI.createdAt,(new Date))
+    const isDateCompleted = isGreaterThanDay(uAndI.endingDate)
+
+    const isOlderThanAMonth = daysFromCreation > 30
+
+    if(!isOlderThanAMonth){
+        return ResponseHandler.sendErrorResponse({res,error:"U And I Savings not older than one month"})
+    }
+    
+    let wallet_tx_amount = 0
+    let uAndI_tx_amount = 0
+    
+    //withdrawals out of uAndI is only available for users more than 1 month savings
+
+    if(isCreator){
+        if(!isDateCompleted){
+            if(amount > uAndI.creatorCapital){
+                return ResponseHandler.sendErrorResponse({res,error:"U And I Savings account balance is less than requested balance"})
+            }
+    
+            //if user is withdrawing all capital,mark savings as completed
+            //user can not witdraw investment if savings date is not complete
+            const isAllSavingsAmount = (uAndI.creatorCapital === amount ) && (uAndI.partnerCapital  === 0)      
+            await prismaClient.uANDI.update({
+                where:{id:uAndI.id},
+                data:{
+                    totalInvestmentFund:{decrement:amount},
+                    creatorCapital:{decrement:amount},
+                    isCompleted:isAllSavingsAmount
+                }
+            })
+            
+            //convert withdrawal amount to naira
+            const convertedRate = getConvertedRate({amount,from:uAndI.currency,to:"NGN"})
+            await prismaClient.uWallet.update(
+                {where:{id:userNairaWallet.id},
+                data:{
+                    balance:{increment:convertedRate}
+                }
+            })
+            uAndI_tx_amount = amount
+            wallet_tx_amount = convertedRate
+       
+        }
+        else{
+            //if completed use totalInvestment as users now have access to their investment
+            //users can withdraw an amount less than their capital and corresponding investment'
+            //is then calculated
+            if(amount > uAndI.creatorCapital ){
+                return ResponseHandler.sendErrorResponse({res,error:"U and I Savings account balance is less than requested balance"})
+            }
+            const isAllSavingsAmount = (uAndI.creatorCapital === amount) && (uAndI.partnerCapital === 0)       
+            
+            //if user is withdrawing partial, get interest similar to withdraw percentage
+            const interestOnWithdrawal = isAllSavingsAmount?
+                uAndI.creatorInvestmentReturn:getWithdrawalInterest({capital:uAndI.creatorCapital,amount,interest:uAndI.creatorInvestmentReturn})
+            
+            await prismaClient.uANDI.update({
+                where:{id:uAndIId},
+                data:{
+                    totalInvestmentFund:{decrement:(amount + interestOnWithdrawal)},
+                    creatorCapital:{decrement:amount},
+                    creatorInvestmentReturn:{decrement:interestOnWithdrawal},  
+                    isCompleted:isAllSavingsAmount,
+                    totalInvestmentReturn:{decrement:interestOnWithdrawal}              }
+            })
+            const convertedRate = getConvertedRate({amount,from:uAndI.currency,to:"NGN"})
+            const convertedInterest = getConvertedRate({amount:interestOnWithdrawal,from:uAndI.currency,to:"NGN"})
+
+            await prismaClient.uWallet.update(
+                {where:{id:userNairaWallet.id},
+                data:{
+                    balance:{increment:(convertedRate + convertedInterest)}
+                }
+            })
+
+            uAndI_tx_amount = amount
+            wallet_tx_amount =  convertedRate + convertedInterest
+        }
+    }else{
+        if(!isDateCompleted){
+            if(amount > uAndI.partnerCapital){
+                return ResponseHandler.sendErrorResponse({res,error:"U And I Savings account balance is less than requested balance"})
+            }
+    
+            //if user is withdrawing all capital,mark savings as completed
+            //user can not witdraw investment if savings date is not complete
+            const isAllSavingsAmount = (uAndI.partnerCapital === amount ) && (uAndI.creatorCapital  === 0)      
+            await prismaClient.uANDI.update({
+                where:{id:uAndI.id},
+                data:{
+                    totalInvestmentFund:{decrement:amount},
+                    partnerCapital:{decrement:amount},
+                    isCompleted:isAllSavingsAmount
+                }
+            })
+            
+            //convert withdrawal amount to naira
+            const convertedRate = getConvertedRate({amount,from:uAndI.currency,to:"NGN"})
+            await prismaClient.uWallet.update(
+                {where:{id:userNairaWallet.id},
+                data:{
+                    balance:{increment:convertedRate}
+                }
+            })
+            uAndI_tx_amount = amount
+            wallet_tx_amount = convertedRate 
+       
+        }
+        else{
+            //if completed use totalInvestment as users now have access to their investment
+            //users can withdraw an amount less than their capital and corresponding investment'
+            //is then calculated
+            if(amount > uAndI.partnerCapital ){
+                return ResponseHandler.sendErrorResponse({res,error:"U and I Savings account balance is less than requested balance"})
+            }
+            const isAllSavingsAmount = (uAndI.partnerCapital === amount) && (uAndI.creatorCapital === 0)       
+            
+            //if user is withdrawing partial, get interest similar to withdraw percentage
+            const interestOnWithdrawal = isAllSavingsAmount?
+                uAndI.partnerInvestmentReturn:getWithdrawalInterest({capital:uAndI.partnerCapital,amount,interest:uAndI.partnerInvestmentReturn})
+    
+            await prismaClient.uANDI.update({
+                where:{id:uAndIId},
+                data:{
+                    totalInvestmentFund:{decrement:(amount + interestOnWithdrawal)},
+                    partnerCapital:{decrement:amount},
+                    partnerInvestmentReturn:{decrement:interestOnWithdrawal},  
+                    isCompleted:isAllSavingsAmount,
+                    totalInvestmentReturn:{decrement:interestOnWithdrawal}              }
+            })
+
+            const convertedRate = getConvertedRate({amount,from:uAndI.currency,to:"NGN"})
+            const convertedInterest = getConvertedRate({amount:interestOnWithdrawal,from:uAndI.currency,to:"NGN"})
+
+            await prismaClient.uWallet.update(
+                {where:{id:userNairaWallet.id},
+                data:{
+                    balance:{increment:(convertedRate + convertedInterest)}
+                }
+            })
+
+            uAndI_tx_amount = amount
+            wallet_tx_amount =  convertedRate + convertedInterest
+        }
+    }
+    // const convertedRate = getConvertedRate({amount,from:uAndI.currency,to:"NGN"})
+    // const convertedInterest = getConvertedRate({amount:interestOnWithdrawal,from:emergency.currency,to:"NGN"})
+    //create corresponding transactions for withdrawal from for u
+    await prismaClient.transaction.create({
+        data:{
+            userId:userId,
+            transactionReference:generateTransactionRef(),
+            amount:uAndI_tx_amount,
+            transactionCurrency:uAndI.currency,
+            description:"UANDI",
+            paymentMethod:"UWALLET",
+            transactionType: "WITHDRAWAL",  
+            featureId:uAndI.id
+        }
+    })
+
+    //create transaction for uwallet increment
+    await prismaClient.transaction.create({
+        data:{
+            userId:userId,
+            transactionReference:generateTransactionRef(),
+            amount:wallet_tx_amount,
+            transactionCurrency:"NGN",
+            description:"UWALLET",
+            paymentMethod:"UWALLET",
+            transactionType:"SAVING_DEPOSIT",
+            featureId:userNairaWallet.id  
+        }
+    })
+    await prismaClient.notification.createMany({
+        data:[
+            {userId:uAndI.creatorId,description:`${req.user?.firstName} ${req.user?.lastName} Withdrawed ${uAndI.currency} ${uAndI_tx_amount} from ${uAndI.Savingsname} `},
+            {userId:uAndI.partnerId,description:`${req.user?.firstName} ${req.user?.lastName} Withdrawed ${uAndI.currency} ${uAndI_tx_amount} from ${uAndI.Savingsname} `},
+        ]
+    })
     return ResponseHandler.sendSuccessResponse({res,message:`${wallet_tx_amount} has been added to u wallet account`})
 })
