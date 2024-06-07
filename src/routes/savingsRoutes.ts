@@ -1,12 +1,12 @@
 import express from "express"
 import { verifyUserStats } from "../middlewares/verifyUserStatus"
 import { verifyUsers } from "../middlewares/verifyUser"
-import { addPromoCodeValidation, createCabalValidation, createForUValidation, createUAndIValidation, depositForUValidation, emergencyUWithdrawalValidation, forUWithdrawalValidation, savingsInterestValidation, sendCabalInvitationValidation, startCabalValidation, uAndIValidation } from "../validations/savingsValidation"
+import { addPromoCodeValidation, cabalWithdrawalidation, createCabalValidation, createForUValidation, createUAndIValidation, depositForUValidation, emergencyUWithdrawalValidation, forUWithdrawalValidation, savingsInterestValidation, sendCabalInvitationValidation, startCabalValidation, uAndIValidation } from "../validations/savingsValidation"
 import { depositIntoEmergencySavings, depositIntoForUSavings, depositIntoMyCabalSaving, depositIntoUANDISavings } from "../controllers/savings/savingsDeposit"
 import { createMyCabal, createNewEmergency, createNewForUplan, createNewUAndISavings } from "../controllers/savings/createSavings"
 import { getAllCabalUsers, getAllSavingsData, getAllSavingsInterest, getAllUserEmergency, getAllUserForU, getAllUserUAndI, getEmergencySavingsInterest, getForUSavingsInterest, getSavingsList, getSingleEmergency, getSingleForU, getSingleUANDI, getUAndISavingInterest } from "../controllers/savings/savingsRetrival"
 import { JoinMyCabal, addPromoCodeToEmergency, addPromoCodeToUAndI, addPromoCodeToUsave, sendMyCabalInvitation, startCabalGroup } from "../controllers/savings/savingsUtils"
-import { ForUWithdrawal, emergencywithdrawal, uAndIWithdrawal } from "../controllers/savings/savingsWithdrawal"
+import { ForUWithdrawal, MyCabalWithdrawal, emergencywithdrawal, uAndIWithdrawal } from "../controllers/savings/savingsWithdrawal"
 
 
 
@@ -42,10 +42,13 @@ savingRoutes.route("/uandi/detail/:id").get(verifyUsers,verifyUserStats,getSingl
 //MYCABAL
 savingRoutes.route("/cabal/new").post(verifyUsers,verifyUserStats,createCabalValidation,createMyCabal)
 savingRoutes.route("/cabal/invitaion").post(verifyUsers,verifyUserStats,sendCabalInvitationValidation,sendMyCabalInvitation)
-savingRoutes.route("/cabal/join/:id").get(verifyUsers,verifyUserStats,JoinMyCabal)
-savingRoutes.route("/cabal/users/all/:id").get(verifyUsers,verifyUserStats,getAllCabalUsers)
 savingRoutes.route("/cabal/deposit").post(verifyUsers,verifyUserStats,depositForUValidation,depositIntoMyCabalSaving)
 savingRoutes.route("/cabal/start").post(verifyUsers,verifyUserStats,startCabalValidation,startCabalGroup)
+savingRoutes.route("/cabal/withdrawal").post(verifyUsers,verifyUserStats,cabalWithdrawalidation,MyCabalWithdrawal)
+savingRoutes.route("/cabal/join/:id").get(verifyUsers,verifyUserStats,JoinMyCabal)
+savingRoutes.route("/cabal/users/all/:id").get(verifyUsers,verifyUserStats,getAllCabalUsers)
+
+//OVERVIEW
 savingRoutes.route("/summary").get(verifyUsers,verifyUserStats,getAllSavingsData)
 savingRoutes.route("/summary/list").get(verifyUsers,verifyUserStats,getSavingsList)
 savingRoutes.route("/summary/interest").get(verifyUsers,verifyUserStats,savingsInterestValidation,getAllSavingsInterest)

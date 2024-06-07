@@ -285,3 +285,24 @@ export async function uAndIValidation(
 
     return next();
 }
+
+export async function cabalWithdrawalidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+
+    const investmentSchema = Joi.object({
+        cabalGroupId : Joi.string().required(),
+        amount : Joi.number().required()
+    });
+
+    const validation = investmentSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}

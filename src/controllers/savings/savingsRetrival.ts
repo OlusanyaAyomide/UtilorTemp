@@ -4,7 +4,7 @@ import prismaClient from "../../prisma/pris-client";
 import { SavingsArrayData } from "../../interfaces/interface";
 import { calculateSavingsPercentage, getCurrentDollarRate } from "../../utils/util";
 import { group } from "console";
-import calculateInterests from "../../services/transactionServices";
+import calculateInterests, { getFirstDepositDay } from "../../services/transactionServices";
 
 
 
@@ -49,7 +49,6 @@ export const getAllUserForU = catchDefaultAsync(async (req,res,next)=>{
 
 export const getSingleForU = catchDefaultAsync(async (req,res,next)=>{
     const detail = req.params.id
-
     if(!detail){
         return ResponseHandler.sendErrorResponse({res,error:"Id is required"})
     }

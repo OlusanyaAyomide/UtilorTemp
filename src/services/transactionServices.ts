@@ -1,5 +1,6 @@
 import { Transaction } from "@prisma/client";
 import { getCurrentDollarRate } from "../utils/util";
+import prismaClient from "../prisma/pris-client";
 
 export function getInitialDates(duration: number) {
   const dates: {date: string, interest: 0}[] = [];
@@ -33,4 +34,17 @@ export default function calculateInterests({transactions, duration}:{transaction
     })
 
   return result
+}
+
+
+export const getFirstDepositDay =async ({featureId,userId}:{featureId:string,userId:string})=>{
+  const transactions = await prismaClient.transaction.findMany({
+    where:{userId,featureId},
+    orderBy:{
+      createdAt:"asc"
+    }
+  })
+  if((transactions.length === 0) ){return null}
+  return transactions[0].createdAt
+
 }

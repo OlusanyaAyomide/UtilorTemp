@@ -46,11 +46,11 @@ export const getUserNotifications = catchDefaultAsync(async (req,res,next)=>{
       return ResponseHandler.sendErrorResponse({res,code:500,error:"server error"})
   }
 
-  const notications = await prismaClient.notification.findMany({
+  const notifications = await prismaClient.notification.findMany({
     where:{userId},
     orderBy:{createdAt:"desc"}
   })
-  return ResponseHandler.sendSuccessResponse({res,data:notications})
+  return ResponseHandler.sendSuccessResponse({res,data:notifications})
 })
 
 

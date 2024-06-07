@@ -14,7 +14,7 @@ export interface IDepositForU {
     paymentMethod: 'UWALLET' | 'BANK' | 'CARD';
 }
 
-//deposit data can re used but has been copied for convinience
+//deposit data can re used but has been copied for convenience
 export interface IDepositUAndI {
     id: string;
     amount: number

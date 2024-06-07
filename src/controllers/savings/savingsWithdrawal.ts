@@ -1,4 +1,5 @@
 import prismaClient from "../../prisma/pris-client";
+import { getFirstDepositDay } from "../../services/transactionServices";
 import catchDefaultAsync from "../../utils/catch-async";
 import { getDifferenceInDays, isGreaterThanDay } from "../../utils/dateUtils";
 import ResponseHandler from "../../utils/response-handler";
@@ -22,9 +23,15 @@ export const ForUWithdrawal = catchDefaultAsync(async (req,res,next)=>{
         return ResponseHandler.sendErrorResponse({res,error:"Savings could not be retrieved"})
     }
 
-    const daysFromCreation = getDifferenceInDays(forU.createdAt,(new Date))
+    const firstDepositDay = await getFirstDepositDay({userId,featureId:forUId})
+    if(!firstDepositDay){
+        return ResponseHandler.sendErrorResponse({res,error:"No deposit has been made"})
+    }
+    //const daysFromCreation = getDifferenceInDays(firstDepositDay,(new Date))
+    const daysFromCreation = getDifferenceInDays(forU.createdAt,(new Date()))
     const isDateCompleted = isGreaterThanDay(forU.endingDate)
 
+    
     // Compare the createdAt date with the date one month ago
     //withdrawals out of foru is only available for users more than 1 month savings
     const isOlderThanAMonth = daysFromCreation > 30
@@ -158,8 +165,15 @@ export const emergencywithdrawal = catchDefaultAsync(async (req,res,next)=>{
     if(!emergency){
         return ResponseHandler.sendErrorResponse({res,error:"Savings could not be retrieved"})
     }
+    
+    const firstDepositDay = await getFirstDepositDay({userId,featureId:emergencyId})
+    if(!firstDepositDay){
+        return ResponseHandler.sendErrorResponse({res,error:"No deposit has been made"})
+    }
 
-    const daysFromCreation = getDifferenceInDays(emergency.createdAt,(new Date))
+    //const daysFromCreation = getDifferenceInDays(firstDepositDay,(new Date))
+
+    const daysFromCreation = getDifferenceInDays(emergency.createdAt,(new Date()))
     const isDateCompleted = isGreaterThanDay(emergency.endingDate)
 
     // Compare the createdAt date with the date one month ago
@@ -310,9 +324,14 @@ export const uAndIWithdrawal = catchDefaultAsync(async(req,res,next)=>{
     }
 
     // Compare the createdAt date with the date one month ago
-  
+    
+    const firstDepositDay = await getFirstDepositDay({userId,featureId:uAndIId})
+    if(!firstDepositDay){
+        return ResponseHandler.sendErrorResponse({res,error:"No deposit has been made"})
+    }
+    //const daysFromCreation = getDifferenceInDays(firstDepositDay,(new Date))
 
-    const daysFromCreation = getDifferenceInDays(uAndI.createdAt,(new Date))
+    const daysFromCreation = getDifferenceInDays(uAndI.createdAt,(new Date()))
     const isDateCompleted = isGreaterThanDay(uAndI.endingDate)
 
     const isOlderThanAMonth = daysFromCreation > 30
@@ -494,4 +513,155 @@ export const uAndIWithdrawal = catchDefaultAsync(async(req,res,next)=>{
         ]
     })
     return ResponseHandler.sendSuccessResponse({res,message:`${wallet_tx_amount} has been added to u wallet account`})
+})
+
+
+export const MyCabalWithdrawal = catchDefaultAsync(async(req,res,next)=>{
+    const {cabalGroupId,amount} :{cabalGroupId:string,amount:number} = req.body
+    const userId = req.user?.userId
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
+    const userCabal = await prismaClient.userCabal.findFirst({
+        where:{
+            userId,cabalGroupId
+        },
+        include:{
+            cabelGroup:true
+        }
+    })
+    if(!userCabal){
+        return ResponseHandler.sendErrorResponse({res,error:"Cabal Group Id is invalid"})
+    }
+
+    //get user naira uwallet 
+    const userWallet = await prismaClient.uWallet.findMany({where:{userId}})
+    const userNairaWallet = userWallet.find((wallet=>wallet.currency === "NGN"))
+    if(!userNairaWallet){
+        return ResponseHandler.sendErrorResponse({res,error:"Payment wallet can not be processed"})
+    }
+
+    const firstDepositDay = await getFirstDepositDay({userId,featureId:userCabal.id})
+    if(!firstDepositDay){
+        return ResponseHandler.sendErrorResponse({res,error:"No deposit has been made"})
+    }
+ 
+    //const daysFromCreation = getDifferenceInDays(firstDepositDay,(new Date()))
+    const daysFromCreation = getDifferenceInDays(userCabal.createdAt,(new Date()))
+    const isDateCompleted = isGreaterThanDay(userCabal.cabelGroup.lockedInDate)
+
+    // Compare the createdAt date with the date one month ago
+    //withdrawals out of emergency is only available for users more than 1 month savings
+    const isOlderThanAMonth = daysFromCreation > 30
+
+    if(!isOlderThanAMonth){
+        return ResponseHandler.sendErrorResponse({res,error:"Cabal Savings not older than one month"})
+    }
+    
+    if( amount >  userCabal.cabalCapital){
+        return ResponseHandler.sendErrorResponse({res,error:"Cabal saving balance is less than amount"})
+    }
+
+    let wallet_tx_amount = 0
+    let cabal_tx_amount = 0
+
+    if(!isDateCompleted){
+
+        //if user is withdrawing all capital,mark savings as completed
+        //user can not witdraw investment if savings date is not complete
+
+        await prismaClient.userCabal.update({
+            where:{id:userCabal.id},
+            data:{
+                totalBalance:{decrement:amount},
+                cabalCapital:{decrement:amount},
+            }
+        })
+        
+        //convert withdrawal amount to naira
+        const convertedRate = getConvertedRate({amount,from:userCabal.cabelGroup.currency,to:"NGN"})
+        await prismaClient.uWallet.update(
+            {where:{id:userNairaWallet.id},
+            data:{
+                balance:{increment:convertedRate}
+            }
+        })
+        cabal_tx_amount = amount
+        wallet_tx_amount = convertedRate
+   
+    }
+    else{
+        //if completed use totalInvestment as users now have access to their investment
+        //users can withdraw an amount less than their capital and corresponding investment'
+        //is then calculated
+        if(amount > userCabal.cabalCapital ){
+            return ResponseHandler.sendErrorResponse({res,error:"U and I Savings account balance is less than requested balance"})
+        }      
+        const isAllSavingsAmount = amount === userCabal.cabalCapital
+        //if user is withdrawing partial, get interest similar to withdraw percentage
+        const interestOnWithdrawal = isAllSavingsAmount?
+            userCabal.cabalRoI:getWithdrawalInterest({capital:userCabal.totalBalance,amount,interest:userCabal.cabalRoI})
+        
+        await prismaClient.userCabal.update({
+            where:{id:userCabal.id},
+            data:{
+                totalBalance:{decrement:(amount + interestOnWithdrawal)},
+                cabalCapital:{decrement:amount},
+                cabalRoI:{decrement:interestOnWithdrawal},  
+                }
+            })
+        const convertedRate = getConvertedRate({amount,from:userCabal.cabelGroup.currency,to:"NGN"})
+        const convertedInterest = getConvertedRate({amount:interestOnWithdrawal,from:userCabal.cabelGroup.currency,to:"NGN"})
+
+        await prismaClient.uWallet.update(
+            {where:{id:userNairaWallet.id},
+            data:{
+                balance:{increment:(convertedRate + convertedInterest)}
+            }
+        })
+
+        cabal_tx_amount = amount
+        wallet_tx_amount =  convertedRate + convertedInterest
+    }
+
+    await prismaClient.transaction.create({
+        data:{
+            userId:userId,
+            transactionReference:generateTransactionRef(),
+            amount:cabal_tx_amount,
+            transactionCurrency:userCabal.cabelGroup.currency,
+            description:"CABAL",
+            paymentMethod:"UWALLET",
+            transactionType: "WITHDRAWAL",
+            featureId:userCabal.id
+        }
+    })
+
+    //create transaction for uwallet increment
+    await prismaClient.transaction.create({
+        data:{
+            userId:userId,
+            transactionReference:generateTransactionRef(),
+            amount:wallet_tx_amount,
+            transactionCurrency:"NGN",
+            description:"UWALLET",
+            paymentMethod:"UWALLET",
+            transactionType:"SAVING_DEPOSIT",
+            featureId:userNairaWallet.id  
+        }
+    })
+    const allCabals = await prismaClient.userCabal.findMany({
+        where:{cabalGroupId:cabalGroupId}
+    })
+    //create notifications for all
+    await prismaClient.notification.createMany({
+        data:allCabals.map((item)=>{
+            return {
+                userId:item.userId,
+                description:`${req.user?.firstName} ${req.user?.lastName} Withdrawed ${userCabal.cabelGroup.currency} ${cabal_tx_amount} from ${userCabal.cabelGroup.groupName}`}
+        })
+    })
+    
+    return ResponseHandler.sendSuccessResponse({res,message:`${wallet_tx_amount} was added to wallet`})
+
 })
