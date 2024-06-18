@@ -247,13 +247,14 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
 
     }
     catch(err){
+        console.log(err)
         await prismaClient.cronTracker.update({
             where:{id:cronTracker.id},
             data:{
                 status:"FAIL"
             }
         })
-        return ResponseHandler.sendErrorResponse({res,error:"An error was encountered",code:500})
+        return ResponseHandler.sendErrorResponse({res,error:"An error was encountered",code:500,data:JSON.stringify(err)})
     }
 
 }
