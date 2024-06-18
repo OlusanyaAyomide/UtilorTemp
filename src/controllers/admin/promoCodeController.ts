@@ -30,6 +30,6 @@ export const createPromoCode = catchDefaultAsync(async(req,res,next)=>{
         }
     })
 
-    return ResponseHandler.sendSuccessResponse({res,message:"promo code created succesfully",data:newCode})
+    return ResponseHandler.sendSuccessResponse({res,message:"promo code created successfully",data:newCode})
 
 })

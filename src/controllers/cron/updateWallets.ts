@@ -253,7 +253,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
                 status:"FAIL"
             }
         })
-        return ResponseHandler.sendErrorResponse({res,error:"An error was encountered"})
+        return ResponseHandler.sendErrorResponse({res,error:"An error was encountered",code:500})
     }
 
 }

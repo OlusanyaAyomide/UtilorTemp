@@ -1,4 +1,4 @@
-import { CURRENCY, DESCRIPTION_TYPE } from "@prisma/client"
+import { CURRENCY, DESCRIPTION_TYPE, DividendDuration, InvestmentType } from "@prisma/client"
 export interface ICreateForU {
     currency: 'NGN' | 'USD';
     savingsName: string;
@@ -69,4 +69,19 @@ export interface IPromoCodeToSaving{
 export interface IUpdateBvn{
     bvnNumber : string
     dateOfBirth : string
+}
+
+export interface ICreateNewUVestFund{
+    companyName:string
+    currency:CURRENCY
+    unitPrice:number
+    historicPerformance:{year:string,performance:number}[]
+    annualReturns:number
+    companyLogo:string
+    about :string
+    howYouEarn :string
+    termsOfUse :string
+    investmentType:InvestmentType
+    dividendDuration:DividendDuration
+    nextDividendDate:string
 }

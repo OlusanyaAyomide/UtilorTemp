@@ -6,7 +6,7 @@ import { createPromoCode } from "../controllers/admin/promoCodeController"
 
 const adminRoutes = express.Router()
 
-// ForU routes
+// ForU route
 adminRoutes.route("/promocode/create").post(verifyAdminStatus,createPromoCodeValidation,createPromoCode)
 
 
