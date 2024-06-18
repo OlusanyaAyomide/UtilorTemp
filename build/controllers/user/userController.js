@@ -92,7 +92,7 @@ exports.retrieveConsentToken = (0, catch_async_1.default)(function (req, res, ne
     });
 }); });
 exports.getUserNotifications = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var userId, notications;
+    var userId, notifications;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -106,8 +106,8 @@ exports.getUserNotifications = (0, catch_async_1.default)(function (req, res, ne
                         orderBy: { createdAt: "desc" }
                     })];
             case 1:
-                notications = _b.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: notications })];
+                notifications = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: notifications })];
         }
     });
 }); });

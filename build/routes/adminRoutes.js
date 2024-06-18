@@ -8,6 +8,6 @@ var verifyAdminStatus_1 = require("../controllers/admin/verifyAdminStatus");
 var adminValidation_1 = require("../validations/adminValidation");
 var promoCodeController_1 = require("../controllers/admin/promoCodeController");
 var adminRoutes = express_1.default.Router();
-// ForU routes
+// ForU route
 adminRoutes.route("/promocode/create").post(verifyAdminStatus_1.verifyAdminStatus, adminValidation_1.createPromoCodeValidation, promoCodeController_1.createPromoCode);
 exports.default = adminRoutes;

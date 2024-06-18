@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.emergencyUWithdrawalValidation = exports.forUWithdrawalValidation = exports.savingsInterestValidation = exports.addPromoCodeValidation = exports.startCabalValidation = exports.sendCabalInvitationValidation = exports.createCabalValidation = exports.createUAndIValidation = exports.depositUWalletValidation = exports.depositForUValidation = exports.createForUValidation = void 0;
+exports.cabalWithdrawalidation = exports.uAndIValidation = exports.emergencyUWithdrawalValidation = exports.forUWithdrawalValidation = exports.savingsInterestValidation = exports.addPromoCodeValidation = exports.startCabalValidation = exports.sendCabalInvitationValidation = exports.createCabalValidation = exports.createUAndIValidation = exports.depositUWalletValidation = exports.depositForUValidation = exports.createForUValidation = void 0;
 var joi_1 = __importDefault(require("joi"));
 var response_handler_1 = __importDefault(require("../utils/response-handler"));
 var client_1 = require("@prisma/client");
@@ -262,3 +262,39 @@ function emergencyUWithdrawalValidation(req, res, next) {
     });
 }
 exports.emergencyUWithdrawalValidation = emergencyUWithdrawalValidation;
+function uAndIValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var investmentSchema, validation, error;
+        return __generator(this, function (_a) {
+            investmentSchema = joi_1.default.object({
+                uAndIId: joi_1.default.string().required(),
+                amount: joi_1.default.number().required()
+            });
+            validation = investmentSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.uAndIValidation = uAndIValidation;
+function cabalWithdrawalidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var investmentSchema, validation, error;
+        return __generator(this, function (_a) {
+            investmentSchema = joi_1.default.object({
+                cabalGroupId: joi_1.default.string().required(),
+                amount: joi_1.default.number().required()
+            });
+            validation = investmentSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.cabalWithdrawalidation = cabalWithdrawalidation;

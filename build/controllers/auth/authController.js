@@ -144,15 +144,11 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                             isMailVerified: true
                         },
                     })
-                    //delete verification token from cookie
-                    // res.clearCookie("MAILVERIFICATION")
                     //delete all OTp associated with user
                 ];
             case 2:
                 //update user mail verification status to true
                 _b.sent();
-                //delete verification token from cookie
-                // res.clearCookie("MAILVERIFICATION")
                 //delete all OTp associated with user
                 return [4 /*yield*/, pris_client_1.default.verificationOTp.deleteMany({
                         where: {
@@ -162,8 +158,6 @@ exports.mailVerification = (0, catch_async_1.default)(function (req, res, next) 
                     //add device to list of user Devices
                 ];
             case 3:
-                //delete verification token from cookie
-                // res.clearCookie("MAILVERIFICATION")
                 //delete all OTp associated with user
                 _b.sent();
                 deviceId = (0, clientDevice_1.generateDeviceId)(req);
@@ -676,7 +670,7 @@ exports.googleSignIn = (0, catch_async_1.default)(function (req, res, next) { re
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Email does not exist " })];
                 }
                 if (!user.isGoogleUser) {
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Sign In with email and pasword" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Sign In with email and password" })];
                 }
                 return [4 /*yield*/, (0, credentials_setup_1.setAuthCredentials)({ req: req, res: res, id: user.id, email: user.email })];
             case 3:

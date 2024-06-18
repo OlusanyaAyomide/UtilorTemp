@@ -288,6 +288,7 @@ function updateWallets(req, res, next) {
                     return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Wallets updated successfully" })];
                 case 12:
                     err_1 = _a.sent();
+                    console.log(err_1);
                     return [4 /*yield*/, pris_client_1.default.cronTracker.update({
                             where: { id: cronTracker.id },
                             data: {
@@ -296,7 +297,7 @@ function updateWallets(req, res, next) {
                         })];
                 case 13:
                     _a.sent();
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "An error was encountered" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "An error was encountered", code: 500, data: JSON.stringify(err_1) })];
                 case 14: return [2 /*return*/];
             }
         });

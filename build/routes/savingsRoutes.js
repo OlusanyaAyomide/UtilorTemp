@@ -33,16 +33,19 @@ savingRoutes.route("/emergency/detail/:id").get(verifyUser_1.verifyUsers, verify
 savingRoutes.route("/uandi/new").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.createUAndIValidation, createSavings_1.createNewUAndISavings);
 savingRoutes.route("/uandi/deposit").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.depositForUValidation, savingsDeposit_1.depositIntoUANDISavings);
 savingRoutes.route("/uandi/promocode/add").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.addPromoCodeValidation, savingsUtils_1.addPromoCodeToUAndI);
+savingRoutes.route("/uandi/withdrawal").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.uAndIValidation, savingsWithdrawal_1.uAndIWithdrawal);
 savingRoutes.route("/uandi/retrieve/all").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllUserUAndI);
 savingRoutes.route("/uandi/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getUAndISavingInterest);
 savingRoutes.route("/uandi/detail/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSingleUANDI);
 //MYCABAL
 savingRoutes.route("/cabal/new").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.createCabalValidation, createSavings_1.createMyCabal);
 savingRoutes.route("/cabal/invitaion").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.sendCabalInvitationValidation, savingsUtils_1.sendMyCabalInvitation);
-savingRoutes.route("/cabal/join/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsUtils_1.JoinMyCabal);
-savingRoutes.route("/cabal/users/all/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllCabalUsers);
 savingRoutes.route("/cabal/deposit").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.depositForUValidation, savingsDeposit_1.depositIntoMyCabalSaving);
 savingRoutes.route("/cabal/start").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.startCabalValidation, savingsUtils_1.startCabalGroup);
+savingRoutes.route("/cabal/withdrawal").post(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.cabalWithdrawalidation, savingsWithdrawal_1.MyCabalWithdrawal);
+savingRoutes.route("/cabal/join/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsUtils_1.JoinMyCabal);
+savingRoutes.route("/cabal/users/all/:id").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllCabalUsers);
+//OVERVIEW
 savingRoutes.route("/summary").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getAllSavingsData);
 savingRoutes.route("/summary/list").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsRetrival_1.getSavingsList);
 savingRoutes.route("/summary/interest").get(verifyUser_1.verifyUsers, verifyUserStatus_1.verifyUserStats, savingsValidation_1.savingsInterestValidation, savingsRetrival_1.getAllSavingsInterest);

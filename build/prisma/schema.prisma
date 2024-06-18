@@ -39,6 +39,7 @@ enum TRANSACTION_TYPE {
   DEPOSIT
   INTEREST
   REFERRAL
+  SAVING_DEPOSIT
 }
 
 enum CURRENCY {
@@ -59,6 +60,22 @@ enum CRON_TYPES {
   MANAGE_REFERRALS
 
 
+}
+
+enum InvestmentType {
+  CONSERVATIVE
+  MODERATE
+  AGGRESSIVE
+}
+
+enum DividendDuration {
+  DAILY
+  WEEKLY
+  BIMONTHLY
+  MONTHLY
+  QUARTERLY
+  BIYEARLY
+  ANNUALLY
 }
 
 model User {
@@ -95,11 +112,14 @@ model User {
   transactions        Transaction[]
   notifications       Notification[]
   consentToken        ConsentToken[]
-    cabalAsAdmin        CabalGroup[]
+  cabalAsAdmin        CabalGroup[]
 
   uWalletAccounts     UWallet[]
   referrals           User[] @relation("UserToUser")
   referredBy          User?    @relation("UserToUser", fields: [referredById], references: [id])
+
+  uvestInvestment UserMutualFund[]
+
   referredById String?
   redeemedForSelf     Boolean @default(false)
   redeemedForReferral Boolean @default(false)
@@ -107,8 +127,6 @@ model User {
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 }
-
-
 
 model VerificationOTp {
   id          String           @id @unique() @default(uuid())
@@ -157,8 +175,6 @@ model Transaction {
   note String?
 }
 
-
-
 // U-SAVE/FORU account model
 model USaveForU {
   id                    String                 @id @unique() @default(uuid())
@@ -176,10 +192,8 @@ model USaveForU {
   createdAt             DateTime               @default(now())
   iconLink              String
   promoCode USaveForUPromoCode[]
-
+  isCompleted  Boolean                           @default(false) 
 }
-
-
 
 model UWallet {
   id       String   @id @unique() @default(uuid())
@@ -216,8 +230,8 @@ model UANDI{
   createdAt             DateTime               @default(now())
   iconLink              String
   promoCode             UAndIPromoCode[]
+  isCompleted  Boolean                           @default(false) 
 }
-
 
 model Notification{
   id                    String                 @id @unique() @default(uuid())
@@ -227,7 +241,6 @@ model Notification{
   createdAt             DateTime                 @default(now())
   imageUrl              String?
 }
-
 
 
 model ConsentToken{
@@ -240,7 +253,6 @@ model ConsentToken{
   createdAt             DateTime             @default(now())
   
 }
-
 
 
 model UserCabal{
@@ -269,9 +281,9 @@ model CabalGroup{
   currency    CURRENCY
   iconLink   String
   description String
+  isCompleted Boolean @default(false)
 
 }
-
 
 // U-SAVE/FORU account model
 model Emergency {
@@ -290,6 +302,7 @@ model Emergency {
   createdAt             DateTime               @default(now())
   iconLink              String
   promoCode             EmergencyPromoCode[]
+  isCompleted  Boolean                           @default(false) 
 
 }
 
@@ -335,10 +348,59 @@ model UAndIPromoCode {
   @@id([uAndIId, promoCodeId])  // Composite primary key  
 }
 
-
 model CronTracker{
   id                  String                 @id @unique() @default(uuid())
   modfiedAt           DateTime                @default(now())
   type CRON_TYPES
   status TRANSACTION_STATUS                   @default(PENDING)  
+}
+
+model MutualFundperformance{
+  id                  String                 @id @unique() @default(uuid())
+  year  String
+  performance Float
+  mutualFund            MutualFundCompanies      @relation(fields: [mutualFundId], references: [id])
+  mutualFundId          String
+}
+
+model MutualFundPriceHistory{
+  id                  String                 @id @unique() @default(uuid())
+  createdAt             DateTime               @default(now())
+  returns  Float
+  mutualFund            MutualFundCompanies      @relation(fields: [mutualFundId], references: [id])
+  mutualFundId          String 
+}
+
+model MutualFundCompanies{ 
+  id                  String                 @id @unique() @default(uuid())
+  companyName           String
+  historicPerformance  MutualFundperformance[]
+  priceHistory  MutualFundPriceHistory[]
+  currency       CURRENCY
+  unitPrice   Float
+  annualReturns Float
+  companyLogo String
+  about String
+  howYouEarn String
+  termsOfUse String
+  investmentType InvestmentType
+  userPortfolios UserMutualFund[]
+  dividendDuration DividendDuration
+  nextDividendDate DateTime
+  createdAt             DateTime               @default(now())
+} 
+
+model UserMutualFund{
+  id                    String                 @id @unique() @default(uuid())
+  user                  User                   @relation(fields: [userId], references: [id])
+  userId                String
+  mutualFund            MutualFundCompanies      @relation(fields: [mutualFundId], references: [id])
+  mutualFundId          String
+  capital               Float
+  returnOfInvestment    Float
+  visibleBalance        Float
+  activeBalance         Float
+  autoRenew             Boolean @default(false)
+  isActive              Boolean @default(false)
+  createdAt             DateTime               @default(now())
 }
