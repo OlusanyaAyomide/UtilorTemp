@@ -1,4 +1,4 @@
-import { ICreateNewUVestFund, ICreatePromoCode } from "../../interfaces/bodyInterface";
+import { ICreateNewUVestFund } from "../../interfaces/bodyInterface";
 import prismaClient from "../../prisma/pris-client";
 import catchDefaultAsync from "../../utils/catch-async";
 import ResponseHandler from "../../utils/response-handler";
@@ -22,7 +22,7 @@ export const createNewUvestFund = catchDefaultAsync(async(req,res,next)=>{
         }
     })
 
-    return ResponseHandler.sendSuccessResponse({res,message:"New Mutual Fund Successfully created"})
+    return ResponseHandler.sendSuccessResponse({res,message:`New Mutual Fund ${data.companyName} Successfully created`})
 })
 
 

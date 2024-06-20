@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46,47 +35,68 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createNewUvestFund = void 0;
+exports.getIndividualFundCompany = exports.getMutualFundCompanies = void 0;
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
-exports.createNewUvestFund = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, historicPerformance, data, createdUVestFund;
+exports.getMutualFundCompanies = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, investmentType, investmentCurrency, mutualFunds;
+    var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req.body, historicPerformance = _a.historicPerformance, data = __rest(_a, ["historicPerformance"]);
-                return [4 /*yield*/, pris_client_1.default.mutualFundCompanies.create({
-                        data: __assign({ historicPerformance: {
-                                create: historicPerformance.map(function (item) { return item; })
-                            } }, data)
-                    })];
-            case 1:
-                createdUVestFund = _b.sent();
-                return [4 /*yield*/, pris_client_1.default.mutualFundPriceHistory.create({
-                        data: {
-                            mutualFundId: createdUVestFund.id,
-                            returns: data.annualReturns
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                investmentType = req.query.investmentType;
+                investmentCurrency = req.query.currency;
+                return [4 /*yield*/, pris_client_1.default.mutualFundCompanies.findMany({
+                        where: {
+                            investmentType: investmentType,
+                            currency: investmentCurrency,
                         }
                     })];
-            case 2:
-                _b.sent();
-                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "New Mutual Fund ".concat(data.companyName, " Successfully created") })];
+            case 1:
+                mutualFunds = _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: mutualFunds })];
+        }
+    });
+}); });
+exports.getIndividualFundCompany = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var userId, mutualFundId, mutualFunds;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                mutualFundId = req.params.id;
+                return [4 /*yield*/, pris_client_1.default.mutualFundCompanies.findFirst({
+                        where: {
+                            id: mutualFundId
+                        },
+                        include: {
+                            priceHistory: {
+                                orderBy: {
+                                    createdAt: "desc"
+                                }
+                            },
+                            historicPerformance: true
+                        }
+                    })];
+            case 1:
+                mutualFunds = _b.sent();
+                if (!mutualFunds) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Mutaul Fund Company not found" })];
+                }
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: mutualFunds })];
         }
     });
 }); });

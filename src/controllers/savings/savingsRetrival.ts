@@ -92,7 +92,6 @@ export const getSingleForU = catchDefaultAsync(async (req,res,next)=>{
     return ResponseHandler.sendSuccessResponse({res,data})
 })
 
-
 //get all UandI where the user is either the creator or the partner
 export const getAllUserUAndI = catchDefaultAsync(async(req,res,next)=>{
     const userId = req.user?.userId 
@@ -141,8 +140,6 @@ export const getAllUserUAndI = catchDefaultAsync(async(req,res,next)=>{
 
 })
 
-
-
 //returns all user in a cabal
 export const getAllCabalUsers = catchDefaultAsync(async(req,res,next)=>{
     const userId = req.user?.userId 
@@ -188,8 +185,6 @@ export const getAllCabalUsers = catchDefaultAsync(async(req,res,next)=>{
 
     return ResponseHandler.sendSuccessResponse({res,data:allUsers})
 })
-
-
 
 export const getAllUserEmergency = catchDefaultAsync(async (req,res,next)=>{
     const userId = req.user?.userId 
@@ -319,6 +314,7 @@ export const getSingleUANDI = catchDefaultAsync(async(req,res,next)=>{
 
     return ResponseHandler.sendSuccessResponse({res,data})
 })
+
 export const getAllSavingsData = catchDefaultAsync(async(req,res,next)=>{
 
     const userId = req.user?.userId 
@@ -415,7 +411,6 @@ export const getAllSavingsData = catchDefaultAsync(async(req,res,next)=>{
 
     return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
 })
-
 
 export const getSavingsList = catchDefaultAsync(async(req,res,next)=>{
     const userId = req.user?.userId 
@@ -539,7 +534,6 @@ export const getSavingsList = catchDefaultAsync(async(req,res,next)=>{
     })
 })
 
-
 export const getAllSavingsInterest = catchDefaultAsync(async(req,res,next)=>{
     const  durationString = req.query.duration
     const duration = Number(durationString)
@@ -615,7 +609,6 @@ export const getEmergencySavingsInterest = catchDefaultAsync(async (req,res,next
   
     return ResponseHandler.sendSuccessResponse({res,data:savingsSummary})
 })
-
 
 export const getUAndISavingInterest = catchDefaultAsync(async(req,res,next)=>{
     const  durationString = req.query.duration

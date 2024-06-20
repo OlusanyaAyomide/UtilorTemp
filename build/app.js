@@ -14,6 +14,8 @@ var userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 var walletRoutes_1 = __importDefault(require("./routes/walletRoutes"));
 var adminRoutes_1 = __importDefault(require("./routes/adminRoutes"));
 var cronRoutes_1 = __importDefault(require("./routes/cronRoutes"));
+var uvestRoutes_1 = __importDefault(require("./routes/uvestRoutes."));
+var generalRoutes_1 = __importDefault(require("./routes/generalRoutes"));
 var app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: ['http://localhost:3000', 'https://utilourapp-z36b.vercel.app', "*"],
@@ -25,9 +27,11 @@ app.use((0, cookie_parser_1.default)());
 app.set("trust proxy", 1);
 app.use('/auth', authRoutes_1.default);
 app.use('/savings', savingsRoutes_1.default);
+app.use('/uvest', uvestRoutes_1.default);
 app.use('/hooks', webhooks_1.default);
 app.use('/user', userRoutes_1.default);
 app.use('/wallet', walletRoutes_1.default);
+app.use('/general', generalRoutes_1.default);
 app.use('/admin', adminRoutes_1.default);
 app.use('/cron', cronRoutes_1.default);
 app.all('*', function (req, res) {

@@ -10,6 +10,8 @@ import userRoutes from "./routes/userRoutes"
 import walletRoutes from "./routes/walletRoutes"
 import adminRoutes from "./routes/adminRoutes"
 import cronRoutes from "./routes/cronRoutes"
+import uvestRoutes from "./routes/uvestRoutes."
+import generalRoutes from "./routes/generalRoutes"
 
 
 declare module "express-serve-static-core" {
@@ -33,9 +35,11 @@ app.set("trust proxy",1)
 
 app.use('/auth',authRoutes)
 app.use('/savings',savingRoutes)
+app.use('/uvest',uvestRoutes)
 app.use('/hooks',hookRoutes)
 app.use('/user',userRoutes)
 app.use('/wallet',walletRoutes)
+app.use('/general',generalRoutes)
 app.use('/admin',adminRoutes)
 app.use('/cron',cronRoutes)
 
