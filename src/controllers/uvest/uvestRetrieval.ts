@@ -52,3 +52,5 @@ export const getIndividualFundCompany = catchDefaultAsync(async(req,res,next)=>{
 
     return ResponseHandler.sendSuccessResponse({res,data:mutualFunds})
 })
+
+

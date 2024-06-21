@@ -8,7 +8,7 @@ var catchDefaultAsync = function (handler) {
     return function (req, res, next) {
         Promise.resolve(handler(req, res, next)).catch(function (error) {
             console.error('Error caught in catchAsync:', error);
-            response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Server error" });
+            response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Server - error" });
         });
     };
 };

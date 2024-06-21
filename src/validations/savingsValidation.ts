@@ -42,7 +42,8 @@ export async function depositForUValidation(
     const depositSchema = Joi.object({
         id: Joi.string().required(),
         amount:Joi.number().required().min(1),
-        paymentMethod: Joi.string().required().regex(paymentMethodRegex).message("Payment method must be either 'UWALLET', 'BANK', or 'CARD' ")
+        paymentMethod: Joi.string().required().regex(paymentMethodRegex).message("Payment method must be either 'UWALLET', 'BANK', or 'CARD'"),
+        pin:Joi.string().required(),
     });
 
     const validation = depositSchema.validate(req.body);
@@ -68,7 +69,7 @@ export async function depositUWalletValidation(
         id: Joi.string().required(),
         amount:Joi.number().required().min(1),
         currency: Joi.string().valid(...Object.values(CURRENCY)).required(),
-        paymentMethod: Joi.string().valid("CARD", "BANK").required()
+        paymentMethod: Joi.string().valid("CARD", "BANK").required(),
     });
 
     const validation = depositSchema.validate(req.body);

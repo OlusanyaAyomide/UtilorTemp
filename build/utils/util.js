@@ -92,7 +92,7 @@ function bcryptCompare(_a) {
         var password = _b.password, hashedPassword = _b.hashedPassword;
         return __generator(this, function (_c) {
             switch (_c.label) {
-                case 0: return [4 /*yield*/, bcrypt_1.default.compare(password, hashedPassword)];
+                case 0: return [4 /*yield*/, bcrypt_1.default.compare(password, hashedPassword || "")];
                 case 1:
                     isValid = _c.sent();
                     return [2 /*return*/, isValid];

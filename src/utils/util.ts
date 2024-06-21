@@ -44,8 +44,8 @@ export async function bcryptHash(password:string){
 }
 
 
-export async function  bcryptCompare({password,hashedPassword}:{password:string,hashedPassword:string}){
-    const isValid =  await bcrypt.compare(password,hashedPassword)
+export async function  bcryptCompare({password,hashedPassword}:{password:string,hashedPassword:string | null}){
+    const isValid =  await bcrypt.compare(password,hashedPassword || "")
     return isValid
 }
 

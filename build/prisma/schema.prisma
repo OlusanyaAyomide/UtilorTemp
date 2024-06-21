@@ -363,12 +363,6 @@ model MutualFundperformance{
   mutualFundId          String
 }
 
-model NewsLetter {
-    id                  String                 @id @unique() @default(uuid())
-    email               String
-    createdAt           DateTime               @default(now())
-}
-
 model MutualFundPriceHistory{
   id                  String                 @id @unique() @default(uuid())
   createdAt             DateTime               @default(now())
@@ -394,7 +388,14 @@ model MutualFundCompanies{
   dividendDuration DividendDuration
   nextDividendDate DateTime
   createdAt             DateTime               @default(now())
-} 
+}
+
+model NewsLetter {
+    id                  String                 @id @unique() @default(uuid())
+    email               String
+    createdAt           DateTime               @default(now())
+}
+
 
 model UserMutualFund{
   id                    String                 @id @unique() @default(uuid())
@@ -402,11 +403,11 @@ model UserMutualFund{
   userId                String
   mutualFund            MutualFundCompanies      @relation(fields: [mutualFundId], references: [id])
   mutualFundId          String
-  capital               Float
-  returnOfInvestment    Float
-  visibleBalance        Float
-  activeBalance         Float
-  autoRenew             Boolean @default(false)
-  isActive              Boolean @default(false)
+  capital               Float                   @default(0)
+  returnOfInvestment    Float                   @default(0)
+  visibleBalance        Float                   @default(0)
+  activeBalance         Float                   @default(0)
+  autoRenew             Boolean                 @default(false)
+  isActive              Boolean                @default(false)
   createdAt             DateTime               @default(now())
 }

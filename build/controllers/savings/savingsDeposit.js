@@ -47,7 +47,7 @@ var util_1 = require("../../utils/util");
 var requests_1 = require("../../config/requests");
 var transactions_util_1 = require("../../utils/transactions.util");
 exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var tx_ref, depositData, user, forUAccount, amount, uWallet, depositAmount, newForUDepositTransaction, newUWalletWithdrawalTransaction, updateUWallet, updateForU, paymentInformation, paymentLink, newTransaction;
+    var tx_ref, depositData, user, forUAccount, isPinValid, amount, uWallet, depositAmount, newForUDepositTransaction, newUWalletWithdrawalTransaction, updateUWallet, updateForU, paymentInformation, paymentLink, newTransaction;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -60,7 +60,8 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.uSaveForU.findFirst({
-                        where: { id: depositData.id, isCompleted: false }
+                        where: { id: depositData.id, isCompleted: false },
+                        include: { user: true }
                     })];
             case 1:
                 forUAccount = _b.sent();
@@ -71,15 +72,21 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                 if (forUAccount.userId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not allowed to make this forUDeposit" })];
                 }
+                return [4 /*yield*/, (0, util_1.bcryptCompare)({ hashedPassword: forUAccount.user.pin, password: depositData.pin })];
+            case 2:
+                isPinValid = _b.sent();
+                if (!isPinValid) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Entered Pin is Invalid" })];
+                }
                 amount = depositData.amount;
-                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 12];
+                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 13];
                 return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
                         where: {
                             userId: user.userId,
                             currency: "NGN" // user can only pay in NGN
                         }
                     })];
-            case 2:
+            case 3:
                 uWallet = _b.sent();
                 // Respond with error if no valid wallet
                 if (!uWallet) {
@@ -104,7 +111,7 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                     })
                     //create a withdrawal transaction in the wallet
                 ];
-            case 3:
+            case 4:
                 newForUDepositTransaction = _b.sent();
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
@@ -120,7 +127,7 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                     })
                     // Remove from wallet
                 ];
-            case 4:
+            case 5:
                 newUWalletWithdrawalTransaction = _b.sent();
                 return [4 /*yield*/, pris_client_1.default.uWallet.update({
                         where: { id: uWallet.id },
@@ -128,19 +135,19 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                             balance: { decrement: depositData.amount },
                         }
                     })];
-            case 5:
+            case 6:
                 updateUWallet = _b.sent();
-                if (!!updateUWallet) return [3 /*break*/, 8];
+                if (!!updateUWallet) return [3 /*break*/, 9];
                 // Update Transactions status to failed
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "FAIL")];
-            case 6:
+            case 7:
                 // Update Transactions status to failed
                 _b.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newForUDepositTransaction.id, "FAIL")];
-            case 7:
+            case 8:
                 _b.sent();
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Could not debit from U-Wallet" })];
-            case 8: return [4 /*yield*/, pris_client_1.default.uSaveForU.update({
+            case 9: return [4 /*yield*/, pris_client_1.default.uSaveForU.update({
                     where: { id: forUAccount.id },
                     data: {
                         investmentCapital: { increment: depositAmount },
@@ -148,15 +155,15 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                         isActivated: true
                     }
                 })];
-            case 9:
+            case 10:
                 updateForU = _b.sent();
                 // Update Generic Transactions status to successful
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "SUCCESS")];
-            case 10:
+            case 11:
                 // Update Generic Transactions status to successful
                 _b.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newForUDepositTransaction.id, "SUCCESS")];
-            case 11:
+            case 12:
                 _b.sent();
                 // Return success response
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({
@@ -168,7 +175,7 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                             forUBalance: updateForU.totalInvestment
                         }
                     })];
-            case 12:
+            case 13:
                 paymentInformation = {
                     user: user,
                     tx_ref: tx_ref,
@@ -178,9 +185,9 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                     productId: depositData.id
                 };
                 return [4 /*yield*/, (0, requests_1.generatePaymentLink)(paymentInformation)];
-            case 13:
+            case 14:
                 paymentLink = _b.sent();
-                if (!paymentLink) return [3 /*break*/, 15];
+                if (!paymentLink) return [3 /*break*/, 16];
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
                             userId: user.userId,
@@ -193,19 +200,19 @@ exports.depositIntoForUSavings = (0, catch_async_1.default)(function (req, res, 
                             featureId: forUAccount.id
                         }
                     })];
-            case 14:
+            case 15:
                 newTransaction = _b.sent();
                 console.log("_____________ ".concat(newTransaction.transactionReference, "___________"));
                 if (!newTransaction) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Transaction could not be initialized", code: 500 })];
                 }
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: paymentLink })];
-            case 15: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated" })];
+            case 16: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated" })];
         }
     });
 }); });
 exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var tx_ref, depositData, user, uAndISaving, amount, uWallet, depositAmount, newUandITransaction, newUWalletWithdrawalTransaction, updateUWallet, isUserCreator, updatedUAndI, paymentInformation, paymentLink, newTransaction;
+    var tx_ref, depositData, user, uAndISaving, isUserCreator, isPinValid, isPinValid, amount, uWallet, depositAmount, newUandITransaction, newUWalletWithdrawalTransaction, updateUWallet, updatedUAndI, paymentInformation, paymentLink, newTransaction;
     var _a, _b, _c;
     return __generator(this, function (_d) {
         switch (_d.label) {
@@ -218,7 +225,11 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.uANDI.findFirst({
-                        where: { id: depositData.id, isCompleted: false }
+                        where: { id: depositData.id, isCompleted: false },
+                        include: {
+                            creator: true,
+                            partner: true
+                        }
                     })];
             case 1:
                 uAndISaving = _d.sent();
@@ -229,15 +240,32 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                 if ((uAndISaving.creatorId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) && (uAndISaving.partnerId !== ((_b = req.user) === null || _b === void 0 ? void 0 : _b.userId))) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not permitted to make deposit" })];
                 }
+                isUserCreator = uAndISaving.creatorId === ((_c = req.user) === null || _c === void 0 ? void 0 : _c.userId);
+                if (!isUserCreator) return [3 /*break*/, 3];
+                return [4 /*yield*/, (0, util_1.bcryptCompare)({ hashedPassword: uAndISaving.creator.pin, password: depositData.pin })];
+            case 2:
+                isPinValid = _d.sent();
+                if (!isPinValid) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Entered Pin is Invalid" })];
+                }
+                return [3 /*break*/, 5];
+            case 3: return [4 /*yield*/, (0, util_1.bcryptCompare)({ hashedPassword: uAndISaving.partner.pin, password: depositData.pin })];
+            case 4:
+                isPinValid = _d.sent();
+                if (!isPinValid) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Entered Pin is Invalid" })];
+                }
+                _d.label = 5;
+            case 5:
                 amount = depositData.amount;
-                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 16];
+                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 20];
                 return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
                         where: {
                             userId: user.userId,
                             currency: "NGN" // user can only pay in NGN
                         }
                     })];
-            case 2:
+            case 6:
                 uWallet = _d.sent();
                 // Respond with error if no valid wallet
                 if (!uWallet) {
@@ -262,7 +290,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     })
                     //create a withdrawal transaction in the wallet
                 ];
-            case 3:
+            case 7:
                 newUandITransaction = _d.sent();
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
@@ -278,7 +306,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     })
                     // Remove actual value  from wallet
                 ];
-            case 4:
+            case 8:
                 newUWalletWithdrawalTransaction = _d.sent();
                 return [4 /*yield*/, pris_client_1.default.uWallet.update({
                         where: { id: uWallet.id },
@@ -286,22 +314,21 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                             balance: { decrement: depositData.amount }
                         }
                     })];
-            case 5:
+            case 9:
                 updateUWallet = _d.sent();
-                if (!!updateUWallet) return [3 /*break*/, 8];
+                if (!!updateUWallet) return [3 /*break*/, 12];
                 // Update Transactions status to failed
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUandITransaction.id, "FAIL")];
-            case 6:
+            case 10:
                 // Update Transactions status to failed
                 _d.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "FAIL")];
-            case 7:
+            case 11:
                 _d.sent();
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Could not debit from U-Wallet" })];
-            case 8:
-                isUserCreator = uAndISaving.creatorId === ((_c = req.user) === null || _c === void 0 ? void 0 : _c.userId);
+            case 12:
                 updatedUAndI = uAndISaving;
-                if (!isUserCreator) return [3 /*break*/, 10];
+                if (!isUserCreator) return [3 /*break*/, 14];
                 return [4 /*yield*/, pris_client_1.default.uANDI.update({
                         where: { id: uAndISaving.id },
                         data: {
@@ -310,10 +337,10 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                             isActivated: true
                         }
                     })];
-            case 9:
+            case 13:
                 updatedUAndI = _d.sent();
-                return [3 /*break*/, 12];
-            case 10: return [4 /*yield*/, pris_client_1.default.uANDI.update({
+                return [3 /*break*/, 16];
+            case 14: return [4 /*yield*/, pris_client_1.default.uANDI.update({
                     where: { id: uAndISaving.id },
                     data: {
                         partnerCapital: { increment: depositAmount },
@@ -321,17 +348,17 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                         isActivated: true
                     }
                 })];
-            case 11:
+            case 15:
                 updatedUAndI = _d.sent();
-                _d.label = 12;
-            case 12: 
+                _d.label = 16;
+            case 16: 
             // Update Generic Transactions status to successful
             return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "SUCCESS")];
-            case 13:
+            case 17:
                 // Update Generic Transactions status to successful
                 _d.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUandITransaction.id, "SUCCESS")];
-            case 14:
+            case 18:
                 _d.sent();
                 //create notification for both users
                 return [4 /*yield*/, pris_client_1.default.notification.createMany({
@@ -342,7 +369,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     })
                     // Return success response
                 ];
-            case 15:
+            case 19:
                 //create notification for both users
                 _d.sent();
                 // Return success response
@@ -355,7 +382,7 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                             UAndIBalance: updatedUAndI.totalInvestmentFund
                         }
                     })];
-            case 16:
+            case 20:
                 paymentInformation = {
                     user: user,
                     tx_ref: tx_ref,
@@ -365,9 +392,9 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                     productId: depositData.id
                 };
                 return [4 /*yield*/, (0, requests_1.generatePaymentLink)(paymentInformation)];
-            case 17:
+            case 21:
                 paymentLink = _d.sent();
-                if (!paymentLink) return [3 /*break*/, 19];
+                if (!paymentLink) return [3 /*break*/, 23];
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
                             userId: user.userId,
@@ -380,19 +407,19 @@ exports.depositIntoUANDISavings = (0, catch_async_1.default)(function (req, res,
                             featureId: uAndISaving.id
                         }
                     })];
-            case 18:
+            case 22:
                 newTransaction = _d.sent();
                 console.log("_____________ ".concat(newTransaction.transactionReference, "___________"));
                 if (!newTransaction) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Transaction could not be initialized", code: 500 })];
                 }
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: paymentLink })];
-            case 19: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated" })];
+            case 23: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated" })];
         }
     });
 }); });
 exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var tx_ref, depositData, user, cabalGroup, userCabal, amount, uWallet, depositAmount_1, newUandITransaction, newUWalletWithdrawalTransaction, updateUWallet, upddatedUserCabal, allUsers, paymentInformation, paymentLink, newTransaction;
+    var tx_ref, depositData, user, cabalGroup, userCabal, isPinValid, amount, uWallet, depositAmount_1, newUandITransaction, newUWalletWithdrawalTransaction, updateUWallet, upddatedUserCabal, allUsers, paymentInformation, paymentLink, newTransaction;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -418,6 +445,9 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                         where: {
                             cabalGroupId: cabalGroup.id,
                             userId: user.userId
+                        },
+                        include: {
+                            user: true
                         }
                     })];
             case 2:
@@ -425,15 +455,21 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                 if (!userCabal) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "User not prsent in Cabal Group" })];
                 }
+                return [4 /*yield*/, (0, util_1.bcryptCompare)({ hashedPassword: userCabal.user.pin, password: depositData.pin })];
+            case 3:
+                isPinValid = _a.sent();
+                if (!isPinValid) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Entered Pin is Invalid" })];
+                }
                 amount = depositData.amount;
-                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 15];
+                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 16];
                 return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
                         where: {
                             userId: user.userId,
                             currency: "NGN" // user can only pay in NGN
                         }
                     })];
-            case 3:
+            case 4:
                 uWallet = _a.sent();
                 // Respond with error if no valid wallet
                 if (!uWallet) {
@@ -458,7 +494,7 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                     })
                     //create a withdrawal transaction in the wallet
                 ];
-            case 4:
+            case 5:
                 newUandITransaction = _a.sent();
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
@@ -474,7 +510,7 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                     })
                     // Remove actual value  from wallet
                 ];
-            case 5:
+            case 6:
                 newUWalletWithdrawalTransaction = _a.sent();
                 return [4 /*yield*/, pris_client_1.default.uWallet.update({
                         where: { id: uWallet.id },
@@ -482,39 +518,39 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                             balance: { decrement: depositData.amount }
                         }
                     })];
-            case 6:
+            case 7:
                 updateUWallet = _a.sent();
-                if (!!updateUWallet) return [3 /*break*/, 9];
+                if (!!updateUWallet) return [3 /*break*/, 10];
                 // Update Transactions status to failed
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUandITransaction.id, "FAIL")];
-            case 7:
+            case 8:
                 // Update Transactions status to failed
                 _a.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "FAIL")];
-            case 8:
+            case 9:
                 _a.sent();
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Could not debit from U-Wallet" })];
-            case 9: return [4 /*yield*/, pris_client_1.default.userCabal.update({
+            case 10: return [4 /*yield*/, pris_client_1.default.userCabal.update({
                     where: { id: userCabal.id },
                     data: {
                         totalBalance: { increment: depositAmount_1 },
                         cabalCapital: { increment: depositAmount_1 },
                     }
                 })];
-            case 10:
+            case 11:
                 upddatedUserCabal = _a.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "SUCCESS")];
-            case 11:
+            case 12:
                 _a.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUandITransaction.id, "SUCCESS")];
-            case 12:
+            case 13:
                 _a.sent();
                 return [4 /*yield*/, pris_client_1.default.userCabal.findMany({
                         where: { cabalGroupId: cabalGroup === null || cabalGroup === void 0 ? void 0 : cabalGroup.id }
                     })
                     //create a dashboard notification for all user in cabal
                 ];
-            case 13:
+            case 14:
                 allUsers = _a.sent();
                 //create a dashboard notification for all user in cabal
                 return [4 /*yield*/, pris_client_1.default.notification.createMany({
@@ -525,7 +561,7 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                     })
                     // Return success response
                 ];
-            case 14:
+            case 15:
                 //create a dashboard notification for all user in cabal
                 _a.sent();
                 // Return success response
@@ -538,7 +574,7 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                             userCabalBalamce: upddatedUserCabal.totalBalance
                         }
                     })];
-            case 15:
+            case 16:
                 paymentInformation = {
                     user: user,
                     tx_ref: tx_ref,
@@ -548,9 +584,9 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                     productId: depositData.id
                 };
                 return [4 /*yield*/, (0, requests_1.generatePaymentLink)(paymentInformation)];
-            case 16:
+            case 17:
                 paymentLink = _a.sent();
-                if (!paymentLink) return [3 /*break*/, 18];
+                if (!paymentLink) return [3 /*break*/, 19];
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
                             userId: user.userId,
@@ -563,19 +599,19 @@ exports.depositIntoMyCabalSaving = (0, catch_async_1.default)(function (req, res
                             featureId: userCabal.id
                         }
                     })];
-            case 17:
+            case 18:
                 newTransaction = _a.sent();
                 console.log("_____________ ".concat(newTransaction.transactionReference, "___________"));
                 if (!newTransaction) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Transaction could not be initialized", code: 500 })];
                 }
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: paymentLink })];
-            case 18: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated" })];
+            case 19: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated" })];
         }
     });
 }); });
 exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var tx_ref, depositData, user, emergencyAccount, amount, uWallet, depositAmount, newForUDepositTransaction, newUWalletWithdrawalTransaction, updateUWallet, updateEmergency, paymentInformation, paymentLink, newTransaction;
+    var tx_ref, depositData, user, emergencyAccount, isPinValid, amount, uWallet, depositAmount, newForUDepositTransaction, newUWalletWithdrawalTransaction, updateUWallet, updateEmergency, paymentInformation, paymentLink, newTransaction;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -588,7 +624,8 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
                 }
                 return [4 /*yield*/, pris_client_1.default.emergency.findFirst({
-                        where: { id: depositData.id, isCompleted: false }
+                        where: { id: depositData.id, isCompleted: false },
+                        include: { user: true }
                     })];
             case 1:
                 emergencyAccount = _b.sent();
@@ -599,15 +636,21 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                 if (emergencyAccount.userId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.userId)) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Not allowed to make this forUDeposit" })];
                 }
+                return [4 /*yield*/, (0, util_1.bcryptCompare)({ hashedPassword: emergencyAccount.user.pin, password: depositData.pin })];
+            case 2:
+                isPinValid = _b.sent();
+                if (!isPinValid) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Entered Pin is Invalid" })];
+                }
                 amount = depositData.amount;
-                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 12];
+                if (!(depositData.paymentMethod === "UWALLET")) return [3 /*break*/, 13];
                 return [4 /*yield*/, pris_client_1.default.uWallet.findFirst({
                         where: {
                             userId: user.userId,
                             currency: "NGN" // user can only pay in NGN
                         }
                     })];
-            case 2:
+            case 3:
                 uWallet = _b.sent();
                 // Respond with error if no valid wallet
                 if (!uWallet) {
@@ -632,7 +675,7 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                     })
                     //create a withdrawal transaction in the wallet
                 ];
-            case 3:
+            case 4:
                 newForUDepositTransaction = _b.sent();
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
@@ -648,7 +691,7 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                     })
                     // Remove from wallet
                 ];
-            case 4:
+            case 5:
                 newUWalletWithdrawalTransaction = _b.sent();
                 return [4 /*yield*/, pris_client_1.default.uWallet.update({
                         where: { id: uWallet.id },
@@ -656,19 +699,19 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                             balance: { decrement: depositData.amount }
                         }
                     })];
-            case 5:
+            case 6:
                 updateUWallet = _b.sent();
-                if (!!updateUWallet) return [3 /*break*/, 8];
+                if (!!updateUWallet) return [3 /*break*/, 9];
                 // Update Transactions status to failed
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "FAIL")];
-            case 6:
+            case 7:
                 // Update Transactions status to failed
                 _b.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newForUDepositTransaction.id, "FAIL")];
-            case 7:
+            case 8:
                 _b.sent();
                 return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, code: 500, error: "Could not debit from U-Wallet" })];
-            case 8: return [4 /*yield*/, pris_client_1.default.emergency.update({
+            case 9: return [4 /*yield*/, pris_client_1.default.emergency.update({
                     where: { id: emergencyAccount.id },
                     data: {
                         investmentCapital: { increment: depositAmount },
@@ -676,15 +719,15 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                         isActivated: true
                     }
                 })];
-            case 9:
+            case 10:
                 updateEmergency = _b.sent();
                 // Update Generic Transactions status to successful
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newUWalletWithdrawalTransaction.id, "SUCCESS")];
-            case 10:
+            case 11:
                 // Update Generic Transactions status to successful
                 _b.sent();
                 return [4 /*yield*/, (0, transactions_util_1.updateTransactionStatus)(newForUDepositTransaction.id, "SUCCESS")];
-            case 11:
+            case 12:
                 _b.sent();
                 // Return success response
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({
@@ -696,7 +739,7 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                             forUBalance: updateEmergency.totalInvestment
                         }
                     })];
-            case 12:
+            case 13:
                 paymentInformation = {
                     user: user,
                     tx_ref: tx_ref,
@@ -706,9 +749,9 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                     productId: depositData.id
                 };
                 return [4 /*yield*/, (0, requests_1.generatePaymentLink)(paymentInformation)];
-            case 13:
+            case 14:
                 paymentLink = _b.sent();
-                if (!paymentLink) return [3 /*break*/, 15];
+                if (!paymentLink) return [3 /*break*/, 16];
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
                             userId: user.userId,
@@ -721,14 +764,14 @@ exports.depositIntoEmergencySavings = (0, catch_async_1.default)(function (req, 
                             featureId: emergencyAccount.id
                         }
                     })];
-            case 14:
+            case 15:
                 newTransaction = _b.sent();
                 console.log("_______EMERGENCY______ ".concat(newTransaction.transactionReference, "___________"));
                 if (!newTransaction) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Transaction could not be initialized", code: 500 })];
                 }
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: paymentLink })];
-            case 15: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated, Try Again" })];
+            case 16: return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Payment link could not be generated, Try Again" })];
         }
     });
 }); });

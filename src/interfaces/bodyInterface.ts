@@ -12,6 +12,7 @@ export interface IDepositForU {
     id: string;
     amount: number
     paymentMethod: 'UWALLET' | 'BANK' | 'CARD';
+    pin:string
 }
 
 //deposit data can re used but has been copied for convenience
@@ -19,12 +20,14 @@ export interface IDepositUAndI {
     id: string;
     amount: number
     paymentMethod: 'UWALLET' | 'BANK' | 'CARD';
+    pin:string
 }
 
 export interface IDepositToMyCabal {
     id: string;
     amount: number
     paymentMethod: 'UWALLET' | 'BANK' | 'CARD';
+    pin:string
 }
 
 export interface ICreateUandI extends ICreateForU{
@@ -85,3 +88,8 @@ export interface ICreateNewUVestFund{
     dividendDuration:DividendDuration
     nextDividendDate:string
 }
+
+
+// export interface IStartUVestInvestment{
+//     mutualId :string
+// }

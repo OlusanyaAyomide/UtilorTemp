@@ -2,9 +2,9 @@ import catchDefaultAsync from "../../utils/catch-async";
 import prismaClient from "../../prisma/pris-client";
 import ResponseHandler from "../../utils/response-handler";
 import {  IDepositForU, IDepositToMyCabal, IDepositUAndI } from "../../interfaces/bodyInterface";
-import { generateTransactionRef } from "../../utils/util";
+import { bcryptCompare, generateTransactionRef } from "../../utils/util";
 import { generatePaymentLink } from "../../config/requests";
-import { IPaymentInformation, IUWalletDepositInformation } from "../../interfaces/interface";
+import { IPaymentInformation } from "../../interfaces/interface";
 import { getConvertedRate, updateTransactionStatus} from "../../utils/transactions.util";
 import { UANDI } from "@prisma/client";
 
@@ -23,7 +23,8 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
 
     // Check if ForU account is valid
     const forUAccount = await prismaClient.uSaveForU.findFirst({
-        where: {id: depositData.id,isCompleted:false}
+        where: {id: depositData.id,isCompleted:false},
+        include:{user:true}
     })
 
     if (!forUAccount) {
@@ -33,6 +34,10 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
     //confirm user is allowed to make deposit
     if(forUAccount.userId !== req.user?.userId){
         return ResponseHandler.sendErrorResponse({res,error:"Not allowed to make this forUDeposit"})
+    }
+    const isPinValid = await bcryptCompare({hashedPassword:forUAccount.user.pin,password:depositData.pin})
+    if(!isPinValid){
+        return ResponseHandler.sendErrorResponse({res,error:"Entered Pin is Invalid"})
     }
 
     // Proceed if exists
@@ -181,8 +186,6 @@ export const depositIntoForUSavings = catchDefaultAsync(async(req, res, next) =>
     }
 })
 
-
-
 export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) => {
     const tx_ref = generateTransactionRef();
     const depositData: IDepositUAndI = req.body;
@@ -195,7 +198,11 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
 
     // Check if ForU account is valid
     const uAndISaving = await prismaClient.uANDI.findFirst({
-        where: {id: depositData.id,isCompleted:false}
+        where: {id: depositData.id,isCompleted:false},
+        include:{
+            creator:true,
+            partner:true
+        }
     })
 
 
@@ -206,6 +213,21 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
     //confirm user is valid to make deposit
     if((uAndISaving.creatorId !== req.user?.userId) && (uAndISaving.partnerId !== req.user?.userId)){
         return ResponseHandler.sendErrorResponse({res,error:"Not permitted to make deposit"})
+    }
+    const isUserCreator = uAndISaving.creatorId === req.user?.userId
+
+    //verify is supplied pin is invalid
+    if(isUserCreator){
+        const isPinValid = await bcryptCompare({hashedPassword:uAndISaving.creator.pin,password:depositData.pin})
+        if(!isPinValid){
+            return ResponseHandler.sendErrorResponse({res,error:"Entered Pin is Invalid"})
+        }
+    }
+    else{ 
+        const isPinValid = await bcryptCompare({hashedPassword:uAndISaving.partner.pin,password:depositData.pin})
+        if(!isPinValid){
+            return ResponseHandler.sendErrorResponse({res,error:"Entered Pin is Invalid"})
+        }
     }
 
     // Proceed if exists
@@ -284,7 +306,7 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
         // Add to UAndI
 
         
-        const isUserCreator = uAndISaving.creatorId === req.user?.userId
+        
         let updatedUAndI:UANDI = uAndISaving
         if(isUserCreator){
             updatedUAndI = await prismaClient.uANDI.update({
@@ -372,7 +394,6 @@ export const depositIntoUANDISavings = catchDefaultAsync(async(req, res, next) =
     }
 })
 
-
 export const depositIntoMyCabalSaving = catchDefaultAsync(async(req, res, next) => {
     const tx_ref = generateTransactionRef();
     const depositData: IDepositToMyCabal = req.body;
@@ -397,15 +418,25 @@ export const depositIntoMyCabalSaving = catchDefaultAsync(async(req, res, next) 
         return ResponseHandler.sendErrorResponse({res,error:"Cabal Group has not started yet"})
     }
     //confirm user is valid to make deposit
-    const userCabal =await  prismaClient.userCabal.findFirst({
+    const userCabal = await  prismaClient.userCabal.findFirst({
         where:{
             cabalGroupId:cabalGroup.id,
             userId:user.userId
+        },
+        include:{
+            user:true
         }
     })
 
     if(!userCabal){
         return ResponseHandler.sendErrorResponse({res,error:"User not prsent in Cabal Group"})
+    }
+
+    
+    //verify is supplied pin is invalid
+    const isPinValid = await bcryptCompare({hashedPassword:userCabal.user.pin,password:depositData.pin})
+    if(!isPinValid){
+        return ResponseHandler.sendErrorResponse({res,error:"Entered Pin is Invalid"})
     }
 
 
@@ -560,7 +591,6 @@ export const depositIntoMyCabalSaving = catchDefaultAsync(async(req, res, next) 
     }
 })
 
-
 export const depositIntoEmergencySavings = catchDefaultAsync(async(req, res, next) => {
     const tx_ref = generateTransactionRef();
     const depositData: IDepositForU = req.body;
@@ -573,7 +603,8 @@ export const depositIntoEmergencySavings = catchDefaultAsync(async(req, res, nex
 
     // Check if ForU account is valid
     const emergencyAccount = await prismaClient.emergency.findFirst({
-        where: {id: depositData.id,isCompleted:false}
+        where: {id: depositData.id,isCompleted:false},
+        include:{user:true}
     })
 
     if (!emergencyAccount) {
@@ -584,7 +615,11 @@ export const depositIntoEmergencySavings = catchDefaultAsync(async(req, res, nex
     if(emergencyAccount.userId !== req.user?.userId){
         return ResponseHandler.sendErrorResponse({res,error:"Not allowed to make this forUDeposit"})
     }
-
+    
+    const isPinValid = await bcryptCompare({hashedPassword:emergencyAccount.user.pin,password:depositData.pin})
+    if(!isPinValid){
+        return ResponseHandler.sendErrorResponse({res,error:"Entered Pin is Invalid"})
+    }
     // Proceed if exists
     const {amount} = depositData;
 

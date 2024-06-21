@@ -62,6 +62,45 @@ export async function createUvestValidation(
         return ResponseHandler.sendErrorResponse({ res, error });
     }
 
+    return next();
+}
+
+export async function updateUVestRateValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+    const createNewUVestFundSchema = Joi.object({
+        mutualId: Joi.string().required(),
+        rate: Joi.number().required(),
+    });
+
+    const validation = createNewUVestFundSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}
+
+export async function updateUnitPriceValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+    const createNewUVestFundSchema = Joi.object({
+        mutualId: Joi.string().required(),
+        unitPrice: Joi.number().required(),
+    });
+
+    const validation = createNewUVestFundSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
 
     return next();
 }

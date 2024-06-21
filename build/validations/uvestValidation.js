@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createUvestValidation = exports.depositUWalletValidation = void 0;
+exports.updateUnitPriceValidation = exports.updateUVestRateValidation = exports.createUvestValidation = exports.depositUWalletValidation = void 0;
 var joi_1 = __importDefault(require("joi"));
 var response_handler_1 = __importDefault(require("../utils/response-handler"));
 var client_1 = require("@prisma/client");
@@ -96,3 +96,39 @@ function createUvestValidation(req, res, next) {
     });
 }
 exports.createUvestValidation = createUvestValidation;
+function updateUVestRateValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var createNewUVestFundSchema, validation, error;
+        return __generator(this, function (_a) {
+            createNewUVestFundSchema = joi_1.default.object({
+                mutualId: joi_1.default.string().required(),
+                rate: joi_1.default.number().required(),
+            });
+            validation = createNewUVestFundSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.updateUVestRateValidation = updateUVestRateValidation;
+function updateUnitPriceValidation(req, res, next) {
+    return __awaiter(this, void 0, void 0, function () {
+        var createNewUVestFundSchema, validation, error;
+        return __generator(this, function (_a) {
+            createNewUVestFundSchema = joi_1.default.object({
+                mutualId: joi_1.default.string().required(),
+                unitPrice: joi_1.default.number().required(),
+            });
+            validation = createNewUVestFundSchema.validate(req.body);
+            if (validation.error) {
+                error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+                return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: error })];
+            }
+            return [2 /*return*/, next()];
+        });
+    });
+}
+exports.updateUnitPriceValidation = updateUnitPriceValidation;

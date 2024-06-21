@@ -75,7 +75,8 @@ function depositForUValidation(req, res, next) {
             depositSchema = joi_1.default.object({
                 id: joi_1.default.string().required(),
                 amount: joi_1.default.number().required().min(1),
-                paymentMethod: joi_1.default.string().required().regex(paymentMethodRegex).message("Payment method must be either 'UWALLET', 'BANK', or 'CARD' ")
+                paymentMethod: joi_1.default.string().required().regex(paymentMethodRegex).message("Payment method must be either 'UWALLET', 'BANK', or 'CARD'"),
+                pin: joi_1.default.string().required(),
             });
             validation = depositSchema.validate(req.body);
             if (validation.error) {
@@ -97,7 +98,7 @@ function depositUWalletValidation(req, res, next) {
                 id: joi_1.default.string().required(),
                 amount: joi_1.default.number().required().min(1),
                 currency: (_a = joi_1.default.string()).valid.apply(_a, Object.values(client_1.CURRENCY)).required(),
-                paymentMethod: joi_1.default.string().valid("CARD", "BANK").required()
+                paymentMethod: joi_1.default.string().valid("CARD", "BANK").required(),
             });
             validation = depositSchema.validate(req.body);
             if (validation.error) {

@@ -17,7 +17,7 @@ const catchDefaultAsync = (handler: CustomRequestHandler) => {
     return (req:IExpressRequest, res: Response, next: NextFunction) => {
         Promise.resolve(handler(req, res, next)).catch((error) => {
             console.error('Error caught in catchAsync:', error);
-            ResponseHandler.sendErrorResponse({res,code:500,error:"Server error"})
+            ResponseHandler.sendErrorResponse({res,code:500,error:"Server - error"})
         });
     };
 };

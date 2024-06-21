@@ -15,4 +15,6 @@ uvestRoutes.route("/mutual-funds/:id").get(verifyUsers,verifyUserStats,getIndivi
 
 
 
+
+
 export default uvestRoutes
