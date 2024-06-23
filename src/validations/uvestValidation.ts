@@ -104,3 +104,44 @@ export async function updateUnitPriceValidation(
 
     return next();
 }
+
+export async function startMutaulFundInvestmentValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+    const createNewUVestFundSchema = Joi.object({
+        mutualId: Joi.string().required(),
+    });
+
+    const validation = createNewUVestFundSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}
+
+export async function mutaulFundDepositValidation(
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<Response | void> {
+    const createNewUVestFundSchema = Joi.object({
+        mutualId: Joi.string().required(),
+        numberOfUnits: Joi.number().required(),
+        pin: Joi.string().required(),
+        paymentMethod: Joi.string().valid("CARD", "BANK", "UWALLET").required(),
+    });
+
+    const validation = createNewUVestFundSchema.validate(req.body);
+    if (validation.error) {
+        const error = validation.error.message ? validation.error.message : validation.error.details[0].message;
+        
+        return ResponseHandler.sendErrorResponse({ res, error });
+    }
+
+    return next();
+}

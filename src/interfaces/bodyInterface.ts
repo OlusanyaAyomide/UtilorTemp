@@ -1,4 +1,4 @@
-import { CURRENCY, DESCRIPTION_TYPE, DividendDuration, InvestmentType } from "@prisma/client"
+import { CURRENCY, DESCRIPTION_TYPE, DividendDuration, InvestmentType, PAYMENT_METHOD } from "@prisma/client"
 export interface ICreateForU {
     currency: 'NGN' | 'USD';
     savingsName: string;
@@ -90,6 +90,10 @@ export interface ICreateNewUVestFund{
 }
 
 
-// export interface IStartUVestInvestment{
-//     mutualId :string
-// }
+export interface IStartUVestInvestment{
+    mutualId :string
+    numberOfUnits:number
+    pin:string
+    paymentMethod:PAYMENT_METHOD
+
+}

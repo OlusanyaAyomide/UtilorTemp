@@ -11,7 +11,7 @@ export const updateAnnualReturns = catchDefaultAsync(async (req,res,next)=>{
         }
     })
     if(!mutualFundCompany){
-        return  ResponseHandler.sendErrorResponse({res,error:"Mutaul Fund Company not found"})
+        return  ResponseHandler.sendErrorResponse({res,error:"Mutual Fund Company not found"})
     }
 
     await prismaClient.mutualFundCompanies.update({
@@ -53,17 +53,44 @@ export const updateMutualFundUnitPrice = catchDefaultAsync(async (req,res,next)=
     return ResponseHandler.sendSuccessResponse({res,message:"Mutual Fund Unit Price has been updated"})
 })
 
-// export const StartMutaulFundInvestment = catchDefaultAsync(async (req,res,next)=>{
-//     const {mutualId}:{mutualId:string} = req.body
+export const startMutualFundInvestment = catchDefaultAsync(async (req,res,next)=>{
+    const {mutualId}:{mutualId:string} = req.body
 
-//     const userId = req.user?.userId 
+    const userId = req.user?.userId 
 
-//     if(!userId){
-//         return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
-//     }
+    if(!userId){
+        return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
+    }
 
-//     const mutaulFundCompany = prismaClient.mutualFundCompanies.findFirst({
-//         where:{}
-//     })
+    const mutualFundCompany = await prismaClient.mutualFundCompanies.findFirst({
+        where:{
+            id:mutualId
+        }
+    })
 
-// })
+    if(!mutualFundCompany){
+        return  ResponseHandler.sendErrorResponse({res,error:"Mutual Fund Company not found"})
+    }
+
+    const isAlreadyInvesting = await prismaClient.userMutualFund.findFirst({
+        where:{
+            mutualFundId:mutualId,
+            userId
+        }
+    })
+    if(isAlreadyInvesting){
+        return ResponseHandler.sendErrorResponse({res,error:"Active investment found, Fund investment instead"})
+    }
+
+    await prismaClient.userMutualFund.create({
+        data:{
+            mutualFundId:mutualId,
+            userId,
+        }
+    })
+
+    return ResponseHandler.sendSuccessResponse({res,message:`${mutualFundCompany.companyName} Investment has started`})
+
+
+
+})

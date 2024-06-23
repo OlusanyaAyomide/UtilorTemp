@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateMutualFundUnitPrice = exports.updateAnnualReturns = void 0;
+exports.startMutualFundInvestment = exports.updateMutualFundUnitPrice = exports.updateAnnualReturns = void 0;
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
@@ -57,7 +57,7 @@ exports.updateAnnualReturns = (0, catch_async_1.default)(function (req, res, nex
             case 1:
                 mutualFundCompany = _b.sent();
                 if (!mutualFundCompany) {
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Mutaul Fund Company not found" })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Mutual Fund Company not found" })];
                 }
                 return [4 /*yield*/, pris_client_1.default.mutualFundCompanies.update({
                         where: {
@@ -109,13 +109,47 @@ exports.updateMutualFundUnitPrice = (0, catch_async_1.default)(function (req, re
         }
     });
 }); });
-// export const StartMutaulFundInvestment = catchDefaultAsync(async (req,res,next)=>{
-//     const {mutualId}:{mutualId:string} = req.body
-//     const userId = req.user?.userId 
-//     if(!userId){
-//         return ResponseHandler.sendErrorResponse({res,error:"server error",code:500})
-//     }
-//     const mutaulFundCompany = prismaClient.mutualFundCompanies.findFirst({
-//         where:{}
-//     })
-// })
+exports.startMutualFundInvestment = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var mutualId, userId, mutualFundCompany, isAlreadyInvesting;
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                mutualId = req.body.mutualId;
+                userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
+                if (!userId) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "server error", code: 500 })];
+                }
+                return [4 /*yield*/, pris_client_1.default.mutualFundCompanies.findFirst({
+                        where: {
+                            id: mutualId
+                        }
+                    })];
+            case 1:
+                mutualFundCompany = _b.sent();
+                if (!mutualFundCompany) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Mutual Fund Company not found" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.userMutualFund.findFirst({
+                        where: {
+                            mutualFundId: mutualId,
+                            userId: userId
+                        }
+                    })];
+            case 2:
+                isAlreadyInvesting = _b.sent();
+                if (isAlreadyInvesting) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Active investment found, Fund investment instead" })];
+                }
+                return [4 /*yield*/, pris_client_1.default.userMutualFund.create({
+                        data: {
+                            mutualFundId: mutualId,
+                            userId: userId,
+                        }
+                    })];
+            case 3:
+                _b.sent();
+                return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "".concat(mutualFundCompany.companyName, " Investment has started") })];
+        }
+    });
+}); });

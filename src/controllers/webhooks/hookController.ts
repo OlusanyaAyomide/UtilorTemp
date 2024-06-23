@@ -3,6 +3,7 @@ import prismaClient from "../../prisma/pris-client";
 import { manageReferralBalance } from "./hookUtility";
 import { depositIntoEmeergencySavingViaFlutterwave, depositIntoForUSavingViaFlutterwave, depositIntoMyCabalSavingViaFlutterwave, depositIntoUAndISavingViaFlutterwave } from "../savings/hookDeposits";
 import { depositIntoUWalletViaFlutterwave } from "../wallet/walletController";
+import { depositIntoUVestViaFlutterwave } from "../uvest/hookDeposit";
 
 export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
     // Todo: Verify webhook payload comes from Flutterwave using the secret hash set in the Flutterwave Settings
@@ -41,6 +42,9 @@ export const channelWebHookData = async(dataFromWebhook: WebhookData2) => {
             break
         case "CABAL":
             depositIntoMyCabalSavingViaFlutterwave(dataFromWebhook,transaction)
+            break
+        case "UVEST":
+            depositIntoUVestViaFlutterwave(dataFromWebhook,transaction)
             break
         default:
             break;
