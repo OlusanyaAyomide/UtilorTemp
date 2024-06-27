@@ -1,6 +1,6 @@
 import { NextFunction,Request,Response } from "express";
 import prismaClient from "../../prisma/pris-client";
-import { calculateDailyReturns, generateTransactionRef, getCabalpercentage, getEmergencypercentage, getForUPercentage, getUAndIPercentage } from "../../utils/util";
+import { calculateDailyReturns, generateTransactionRef, getCabalpercentage, getEmergencypercentage, getForUPercentage, getUAndIPercentage, stringifyError } from "../../utils/util";
 import ResponseHandler from "../../utils/response-handler";
 
 export async function  updateWallets(req:Request,res:Response,next:NextFunction){
@@ -254,7 +254,7 @@ export async function  updateWallets(req:Request,res:Response,next:NextFunction)
                 status:"FAIL"
             }
         })
-        return ResponseHandler.sendErrorResponse({res,error:"An error was encountered",code:500,data:JSON.stringify(err)})
+        return ResponseHandler.sendErrorResponse({res,error:stringifyError(err),code:500})
     }
 
 }

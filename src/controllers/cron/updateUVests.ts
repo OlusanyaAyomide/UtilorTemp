@@ -1,6 +1,6 @@
 import { NextFunction ,Request,Response} from "express";
 import prismaClient from "../../prisma/pris-client";
-import { calculateDailyReturns, generateTransactionRef } from "../../utils/util";
+import { calculateDailyReturns, generateTransactionRef, stringifyError } from "../../utils/util";
 import ResponseHandler from "../../utils/response-handler";
 import {  addDateFrequency, getMidnightISODateTomorrow } from "../../utils/dateUtils";
 
@@ -60,73 +60,78 @@ export async function  updateUvestBalance(req:Request,res:Response,next:NextFunc
     }
     catch(err){
         console.log(err)
-        return ResponseHandler.sendErrorResponse({res,error:"An error was encountered",code:500,data:JSON.stringify(err)})
+        return ResponseHandler.sendErrorResponse({res,error:stringifyError(err),code:500})
     }
 
 }
 
 
 export async function  UpdateMutualFundDate(req:Request,res:Response,next:NextFunction){
-    const timeAtMidnight = getMidnightISODateTomorrow()
-    console.log(timeAtMidnight)
-    const retrievedMutualFunds = await prismaClient.mutualFundCompanies.findMany({
-        where:{
-            nextDividendDate:{
-                lte:timeAtMidnight
-            }
-        },
-        include:{
-            userPortfolios:true
-        }
-    })
-
-    const mutualFundDateUpdates = retrievedMutualFunds.map((mutualFund)=>{
-        const nextDividendDate = addDateFrequency({date:mutualFund.nextDividendDate,frequency:mutualFund.dividendDuration})  
-        return(
-            prismaClient.mutualFundCompanies.update({
-                where:{id:mutualFund.id},
-                data:{
-                    nextDividendDate
+    try{
+        const timeAtMidnight = getMidnightISODateTomorrow()
+        console.log(timeAtMidnight)
+        const retrievedMutualFunds = await prismaClient.mutualFundCompanies.findMany({
+            where:{
+                nextDividendDate:{
+                    lte:timeAtMidnight
                 }
-            })
-        )
-    })
-
-    //on dividend day , set active balance to visible balance, so units can be updated
-    const updatedMutualFund = retrievedMutualFunds.flatMap((mutualFundCompany)=>{
-        const updatedPortfolios = mutualFundCompany.userPortfolios.flatMap((portfolio)=>{
-            const portfolioUpdate = prismaClient.userMutualFund.update({
-                where:{id:portfolio.id},
-                data:{
-                    visibleBalance:portfolio.activeBalance,
-                    capital:!portfolio.autoRenew?portfolio.capital:portfolio.activeBalance
-                }
-            })
-            if(portfolio.autoRenew){
-                const portfolioUpdateTransaction =  prismaClient.transaction.create({
-                    data: {
-                        userId: portfolio.userId,
-                        amount:portfolio.activeBalance - portfolio.visibleBalance,
-                        transactionReference: generateTransactionRef(),
-                        transactionCurrency: mutualFundCompany.currency,
-                        description: "UVEST",
-                        paymentMethod:"UWALLET",
-                        transactionType: "DEPOSIT",
-                        featureId: portfolio.id
-                    }
-                });
-                return [portfolioUpdateTransaction,portfolioUpdate]
-            }else{
-                return portfolioUpdate
+            },
+            include:{
+                userPortfolios:true
             }
-            
         })
-        return updatedPortfolios
-    })
     
-    //update all transactions once
-    await prismaClient.$transaction([...updatedMutualFund,...mutualFundDateUpdates])
+        const mutualFundDateUpdates = retrievedMutualFunds.map((mutualFund)=>{
+            const nextDividendDate = addDateFrequency({date:mutualFund.nextDividendDate,frequency:mutualFund.dividendDuration})  
+            return(
+                prismaClient.mutualFundCompanies.update({
+                    where:{id:mutualFund.id},
+                    data:{
+                        nextDividendDate
+                    }
+                })
+            )
+        })
+    
+        //on dividend day , set active balance to visible balance, so units can be updated
+        const updatedMutualFund = retrievedMutualFunds.flatMap((mutualFundCompany)=>{
+            const updatedPortfolios = mutualFundCompany.userPortfolios.flatMap((portfolio)=>{
+                const portfolioUpdate = prismaClient.userMutualFund.update({
+                    where:{id:portfolio.id},
+                    data:{
+                        visibleBalance:portfolio.activeBalance,
+                        capital:!portfolio.autoRenew?portfolio.capital:portfolio.activeBalance
+                    }
+                })
+                if(portfolio.autoRenew){
+                    const portfolioUpdateTransaction =  prismaClient.transaction.create({
+                        data: {
+                            userId: portfolio.userId,
+                            amount:portfolio.activeBalance - portfolio.visibleBalance,
+                            transactionReference: generateTransactionRef(),
+                            transactionCurrency: mutualFundCompany.currency,
+                            description: "UVEST",
+                            paymentMethod:"UWALLET",
+                            transactionType: "DEPOSIT",
+                            featureId: portfolio.id
+                        }
+                    });
+                    return [portfolioUpdateTransaction,portfolioUpdate]
+                }else{
+                    return portfolioUpdate
+                }
+                
+            })
+            return updatedPortfolios
+        })
+        
+        //update all transactions once
+        await prismaClient.$transaction([...updatedMutualFund,...mutualFundDateUpdates])
+    
+        return ResponseHandler.sendSuccessResponse({res,data:retrievedMutualFunds})
+    }catch(err){
+        return ResponseHandler.sendErrorResponse({res,error:stringifyError(err),code:500})
+    }
 
-    return ResponseHandler.sendSuccessResponse({res,data:retrievedMutualFunds})
 
 }

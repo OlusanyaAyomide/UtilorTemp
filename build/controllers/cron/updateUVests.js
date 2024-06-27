@@ -116,7 +116,7 @@ function updateUvestBalance(req, res, next) {
                 case 5:
                     err_1 = _a.sent();
                     console.log(err_1);
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "An error was encountered", code: 500, data: JSON.stringify(err_1) })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: (0, util_1.stringifyError)(err_1), code: 500 })];
                 case 6: return [2 /*return*/];
             }
         });
@@ -125,10 +125,11 @@ function updateUvestBalance(req, res, next) {
 exports.updateUvestBalance = updateUvestBalance;
 function UpdateMutualFundDate(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var timeAtMidnight, retrievedMutualFunds, mutualFundDateUpdates, updatedMutualFund;
+        var timeAtMidnight, retrievedMutualFunds, mutualFundDateUpdates, updatedMutualFund, err_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    _a.trys.push([0, 3, , 4]);
                     timeAtMidnight = (0, dateUtils_1.getMidnightISODateTomorrow)();
                     console.log(timeAtMidnight);
                     return [4 /*yield*/, pris_client_1.default.mutualFundCompanies.findMany({
@@ -188,6 +189,10 @@ function UpdateMutualFundDate(req, res, next) {
                     //update all transactions once
                     _a.sent();
                     return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: retrievedMutualFunds })];
+                case 3:
+                    err_2 = _a.sent();
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: (0, util_1.stringifyError)(err_2), code: 500 })];
+                case 4: return [2 /*return*/];
             }
         });
     });

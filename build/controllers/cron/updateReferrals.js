@@ -43,12 +43,14 @@ exports.updateReferrals = void 0;
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 var TempRates_1 = require("../../utils/TempRates");
+var util_1 = require("../../utils/util");
 function updateReferrals(req, res, next) {
     return __awaiter(this, void 0, void 0, function () {
-        var thirtyDaysAgo, thiryDaysAgoDateTime, users, operations;
+        var thirtyDaysAgo, thiryDaysAgoDateTime, users, operations, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    _a.trys.push([0, 2, , 3]);
                     thirtyDaysAgo = new Date();
                     thiryDaysAgoDateTime = new Date(thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30));
                     return [4 /*yield*/, pris_client_1.default.user.findMany({
@@ -90,6 +92,10 @@ function updateReferrals(req, res, next) {
                         }
                     });
                     return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, message: "Updated ".concat(operations.length, " users"), data: users })];
+                case 2:
+                    err_1 = _a.sent();
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: (0, util_1.stringifyError)(err_1), code: 500 })];
+                case 3: return [2 /*return*/];
             }
         });
     });

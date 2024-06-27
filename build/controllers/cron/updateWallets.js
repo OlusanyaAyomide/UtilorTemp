@@ -297,7 +297,7 @@ function updateWallets(req, res, next) {
                         })];
                 case 13:
                     _a.sent();
-                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "An error was encountered", code: 500, data: JSON.stringify(err_1) })];
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: (0, util_1.stringifyError)(err_1), code: 500 })];
                 case 14: return [2 /*return*/];
             }
         });
