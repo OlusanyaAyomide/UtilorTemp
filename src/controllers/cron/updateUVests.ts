@@ -94,15 +94,32 @@ export async function  UpdateMutualFundDate(req:Request,res:Response,next:NextFu
 
     //on dividend day , set active balance to visible balance, so units can be updated
     const updatedMutualFund = retrievedMutualFunds.flatMap((mutualFundCompany)=>{
-        const updatedPortfolios = mutualFundCompany.userPortfolios.map((portfolio)=>{
-            return(
-                prismaClient.userMutualFund.update({
-                    where:{id:portfolio.id},
-                    data:{
-                        visibleBalance:portfolio.activeBalance
+        const updatedPortfolios = mutualFundCompany.userPortfolios.flatMap((portfolio)=>{
+            const portfolioUpdate = prismaClient.userMutualFund.update({
+                where:{id:portfolio.id},
+                data:{
+                    visibleBalance:portfolio.activeBalance,
+                    capital:!portfolio.autoRenew?portfolio.capital:portfolio.activeBalance
+                }
+            })
+            if(portfolio.autoRenew){
+                const portfolioUpdateTransaction =  prismaClient.transaction.create({
+                    data: {
+                        userId: portfolio.userId,
+                        amount:portfolio.activeBalance - portfolio.visibleBalance,
+                        transactionReference: generateTransactionRef(),
+                        transactionCurrency: mutualFundCompany.currency,
+                        description: "UVEST",
+                        paymentMethod:"UWALLET",
+                        transactionType: "DEPOSIT",
+                        featureId: portfolio.id
                     }
-                })
-            )
+                });
+                return [portfolioUpdateTransaction,portfolioUpdate]
+            }else{
+                return portfolioUpdate
+            }
+            
         })
         return updatedPortfolios
     })
