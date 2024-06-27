@@ -39,7 +39,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getWithdrawalInterest = exports.calculateSavingsPercentage = exports.calculateDailyReturns = exports.getCabalpercentage = exports.getUAndIPercentage = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
+exports.stringifyError = exports.getWithdrawalInterest = exports.calculateSavingsPercentage = exports.calculateDailyReturns = exports.getCabalpercentage = exports.getUAndIPercentage = exports.getEmergencypercentage = exports.getForUPercentage = exports.getCurrentDollarRate = exports.generateTransactionRef = exports.convertToDate = exports.bcryptCompare = exports.bcryptHash = exports.getTimeFromNow = exports.generateMerchantID = exports.generateOTP = void 0;
 var bcrypt_1 = __importDefault(require("bcrypt"));
 function generateOTP() {
     var otpLength = 4;
@@ -169,7 +169,23 @@ var calculateSavingsPercentage = function (_a) {
 exports.calculateSavingsPercentage = calculateSavingsPercentage;
 var getWithdrawalInterest = function (_a) {
     var capital = _a.capital, amount = _a.amount, interest = _a.interest;
-    var withdrawalpercentage = (amount / capital) * interest;
-    return withdrawalpercentage;
+    var withdrawalPercentage = (amount / capital) * interest;
+    return withdrawalPercentage;
 };
 exports.getWithdrawalInterest = getWithdrawalInterest;
+function stringifyError(error) {
+    if (error instanceof Error) {
+        var errorObj = {
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+        };
+        if ('cause' in error) {
+            errorObj.cause = error.cause;
+        }
+        return JSON.stringify(errorObj, null, 2); // pretty-print with 2 spaces indentation
+    }
+    // Fallback for non-Error objects
+    return JSON.stringify(error, null, 2);
+}
+exports.stringifyError = stringifyError;

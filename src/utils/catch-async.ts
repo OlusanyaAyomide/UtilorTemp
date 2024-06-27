@@ -3,6 +3,7 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 import ResponseHandler from './response-handler';
 import { IExpressRequest } from '../interfaces/user-interface';
 import * as core from 'express-serve-static-core';
+import { stringifyError } from './util';
 
 type ExpressQuest = Request<core.ParamsDictionary, any,any>
 
@@ -17,7 +18,7 @@ const catchDefaultAsync = (handler: CustomRequestHandler) => {
     return (req:IExpressRequest, res: Response, next: NextFunction) => {
         Promise.resolve(handler(req, res, next)).catch((error) => {
             console.error('Error caught in catchAsync:', error);
-            ResponseHandler.sendErrorResponse({res,code:500,error:"Server - error"})
+            ResponseHandler.sendErrorResponse({res,code:500,error:stringifyError(error)})
         });
     };
 };

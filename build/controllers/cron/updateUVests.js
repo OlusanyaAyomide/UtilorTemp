@@ -153,13 +153,32 @@ function UpdateMutualFundDate(req, res, next) {
                         }));
                     });
                     updatedMutualFund = retrievedMutualFunds.flatMap(function (mutualFundCompany) {
-                        var updatedPortfolios = mutualFundCompany.userPortfolios.map(function (portfolio) {
-                            return (pris_client_1.default.userMutualFund.update({
+                        var updatedPortfolios = mutualFundCompany.userPortfolios.flatMap(function (portfolio) {
+                            var portfolioUpdate = pris_client_1.default.userMutualFund.update({
                                 where: { id: portfolio.id },
                                 data: {
-                                    visibleBalance: portfolio.activeBalance
+                                    visibleBalance: portfolio.activeBalance,
+                                    capital: !portfolio.autoRenew ? portfolio.capital : portfolio.activeBalance
                                 }
-                            }));
+                            });
+                            if (portfolio.autoRenew) {
+                                var portfolioUpdateTransaction = pris_client_1.default.transaction.create({
+                                    data: {
+                                        userId: portfolio.userId,
+                                        amount: portfolio.activeBalance - portfolio.visibleBalance,
+                                        transactionReference: (0, util_1.generateTransactionRef)(),
+                                        transactionCurrency: mutualFundCompany.currency,
+                                        description: "UVEST",
+                                        paymentMethod: "UWALLET",
+                                        transactionType: "DEPOSIT",
+                                        featureId: portfolio.id
+                                    }
+                                });
+                                return [portfolioUpdateTransaction, portfolioUpdate];
+                            }
+                            else {
+                                return portfolioUpdate;
+                            }
                         });
                         return updatedPortfolios;
                     });

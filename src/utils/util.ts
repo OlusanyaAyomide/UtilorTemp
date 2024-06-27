@@ -126,7 +126,7 @@ export const getWithdrawalInterest = ({capital,amount,interest}:{capital:number,
   return withdrawalPercentage
 }
 
-function stringifyError(error: any): string {
+export function stringifyError(error: any): string {
   if (error instanceof Error) {
     const errorObj: { [key: string]: any } = {
       message: error.message,
