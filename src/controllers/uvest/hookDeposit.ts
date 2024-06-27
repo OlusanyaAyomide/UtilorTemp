@@ -46,8 +46,10 @@ export const depositIntoUVestViaFlutterwave = async(dataFromWebhook: WebhookData
         await prismaClient.userMutualFund.update({
             where:{id:userPortfolio.id},
             data:{
+                capital:{increment:depositAmount},
                 activeBalance:{increment:depositAmount},
-                visibleBalance:{increment:depositAmount}
+                visibleBalance:{increment:depositAmount},
+                isActive:true
             }
         })
 

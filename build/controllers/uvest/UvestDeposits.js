@@ -115,8 +115,10 @@ exports.depositIntoMutualFundInvestment = (0, catch_async_1.default)(function (r
                 return [4 /*yield*/, pris_client_1.default.userMutualFund.update({
                         where: { id: userPortfolio.id },
                         data: {
+                            capital: { increment: amount },
                             activeBalance: { increment: amount },
-                            visibleBalance: { increment: amount }
+                            visibleBalance: { increment: amount },
+                            isActive: true,
                         }
                     })];
             case 5:
@@ -167,6 +169,7 @@ exports.depositIntoMutualFundInvestment = (0, catch_async_1.default)(function (r
             case 9:
                 paymentLink = _a.sent();
                 if (!paymentLink) return [3 /*break*/, 11];
+                console.log(paymentInformation.amount);
                 return [4 /*yield*/, pris_client_1.default.transaction.create({
                         data: {
                             userId: user.userId,

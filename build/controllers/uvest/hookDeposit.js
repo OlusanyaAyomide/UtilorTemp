@@ -86,8 +86,10 @@ var depositIntoUVestViaFlutterwave = function (dataFromWebhook, transaction) { r
                 return [4 /*yield*/, pris_client_1.default.userMutualFund.update({
                         where: { id: userPortfolio.id },
                         data: {
+                            capital: { increment: depositAmount },
                             activeBalance: { increment: depositAmount },
-                            visibleBalance: { increment: depositAmount }
+                            visibleBalance: { increment: depositAmount },
+                            isActive: true
                         }
                     })];
             case 4:

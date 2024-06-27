@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isGreaterThanDay = exports.getDifferenceInDays = void 0;
+exports.addDateFrequency = exports.getMidnightISODateTomorrow = exports.isGreaterThanDay = exports.getDifferenceInDays = void 0;
 function getDifferenceInDays(startDate, endDate) {
     var date1 = new Date(startDate);
     var date2 = new Date(endDate);
@@ -19,3 +19,43 @@ function isGreaterThanDay(date) {
     return differenceInDays < 0;
 }
 exports.isGreaterThanDay = isGreaterThanDay;
+function getMidnightISODateTomorrow() {
+    var tomorrow = new Date();
+    var tomorrowAtDate = new Date(tomorrow.setDate(tomorrow.getDate() + 1)); // Add one day
+    return tomorrowAtDate.toISOString();
+}
+exports.getMidnightISODateTomorrow = getMidnightISODateTomorrow;
+//Add x amount of days to the date passed
+function addDateFrequency(_a) {
+    var date = _a.date, frequency = _a.frequency;
+    var result = new Date(date);
+    switch (frequency) {
+        case 'DAILY':
+            result.setDate(result.getDate() + 1);
+            break;
+        case 'WEEKLY':
+            result.setDate(result.getDate() + 7);
+            break;
+        case 'BIMONTHLY':
+            var daysInMonth = new Date(result.getFullYear(), result.getMonth() + 1, 0).getDate();
+            var bimonthlyDays = Math.ceil(daysInMonth / 2);
+            result.setDate(result.getDate() + bimonthlyDays);
+            break;
+        case 'MONTHLY':
+            result.setMonth(result.getMonth() + 1);
+            break;
+        case 'QUARTERLY':
+            result.setMonth(result.getMonth() + 3);
+            break;
+        case 'BIYEARLY':
+            result.setMonth(result.getMonth() + 6);
+            break;
+        case 'ANNUALLY':
+            result.setFullYear(result.getFullYear() + 1);
+            break;
+        default:
+            result.setDate(result.getDate());
+    }
+    return result;
+}
+exports.addDateFrequency = addDateFrequency;

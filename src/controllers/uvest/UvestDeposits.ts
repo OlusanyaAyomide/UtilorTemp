@@ -81,8 +81,10 @@ export const depositIntoMutualFundInvestment = catchDefaultAsync(async (req,res,
         const updatedFund = await prismaClient.userMutualFund.update({
             where:{id:userPortfolio.id},
             data:{
+                capital:{increment:amount},
                 activeBalance:{increment:amount},
-                visibleBalance:{increment:amount}
+                visibleBalance:{increment:amount},
+                isActive:true,
             }
         })
         
@@ -132,7 +134,7 @@ export const depositIntoMutualFundInvestment = catchDefaultAsync(async (req,res,
     const paymentLink = await generatePaymentLink(paymentInformation);
 
     if (paymentLink) {
-        
+        console.log(paymentInformation.amount)
         // Save the generic transaction to the database, holding the type of transaction created
         const newTransaction = await prismaClient.transaction.create({
             data: {
