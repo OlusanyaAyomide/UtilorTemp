@@ -19,7 +19,9 @@ var ENV_KEYS = [
     "EMAIL_SERVICE",
     "OTP_EXPIRY_MINUTE",
     "FLW_SECRET",
-    "FLW_HASH"
+    "FLW_HASH",
+    "AUDIENCE_ID",
+    "MAIL_CHIP_KEY"
 ];
 if (ENV_KEYS.some(function (k) { return !process.env[k]; })) {
     console.log("Server not started! 1 or more Environment Keys Missing");

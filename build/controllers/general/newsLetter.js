@@ -42,9 +42,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.unSubscribeFromNewsLetter = exports.retrieveAllSubscribers = exports.SubscribeToNewsLetter = void 0;
 var pris_client_1 = __importDefault(require("../../prisma/pris-client"));
 var catch_async_1 = __importDefault(require("../../utils/catch-async"));
+var MailChip_1 = require("../../utils/MailChip");
 var response_handler_1 = __importDefault(require("../../utils/response-handler"));
 exports.SubscribeToNewsLetter = (0, catch_async_1.default)(function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var email, isAlreadySubscribed;
+    var email, isAlreadySubscribed, subscriptionStatus;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -54,13 +55,19 @@ exports.SubscribeToNewsLetter = (0, catch_async_1.default)(function (req, res, n
                     })];
             case 1:
                 isAlreadySubscribed = _a.sent();
+                return [4 /*yield*/, (0, MailChip_1.mailChipConfig)({ email: email })];
+            case 2:
+                subscriptionStatus = _a.sent();
                 if (isAlreadySubscribed) {
+                    return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Already Subscribed" })];
+                }
+                if (!subscriptionStatus) {
                     return [2 /*return*/, response_handler_1.default.sendErrorResponse({ res: res, error: "Already Subscribed" })];
                 }
                 return [4 /*yield*/, pris_client_1.default.newsLetter.create({
                         data: { email: email }
                     })];
-            case 2:
+            case 3:
                 _a.sent();
                 return [2 /*return*/, response_handler_1.default.sendSuccessResponse({ res: res, data: "".concat(email, " added to news letter") })];
         }

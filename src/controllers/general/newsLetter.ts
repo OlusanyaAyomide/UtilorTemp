@@ -1,5 +1,6 @@
 import prismaClient from "../../prisma/pris-client";
 import catchDefaultAsync from "../../utils/catch-async";
+import { mailChipConfig } from "../../utils/MailChip";
 import ResponseHandler from "../../utils/response-handler";
 
 export const SubscribeToNewsLetter = catchDefaultAsync(async(req,res,next)=>{
@@ -8,12 +9,20 @@ export const SubscribeToNewsLetter = catchDefaultAsync(async(req,res,next)=>{
     const isAlreadySubscribed = await prismaClient.newsLetter.findFirst({
         where:{email}
     })
+
+    const subscriptionStatus = await mailChipConfig({email})
+
     if(isAlreadySubscribed){
+        return ResponseHandler.sendErrorResponse({res,error:"Already Subscribed"})
+    }
+
+    if(!subscriptionStatus){
         return ResponseHandler.sendErrorResponse({res,error:"Already Subscribed"})
     }
     await prismaClient.newsLetter.create({
         data:{email}
     })
+
     return ResponseHandler.sendSuccessResponse({res,data:`${email} added to news letter`})
 })
 
